@@ -1,2 +1,2 @@
 # FileOrganization
-Course on File Organization
+Course on [File Organization](File Organization)
