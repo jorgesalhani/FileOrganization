@@ -11,7 +11,7 @@ int main(void) {
     );
 
     DADOS* dados = dadosCriar(
-        '0', 0, "01/02/202", 1, "celularAA12", "Lugar Crime", "Descricao Crime"
+        '0', 0, "01/02/2082", 1, "celularAA1aa", "Lugar Crime", "Descricao Crime"
     );
 
     cabecalhoImprimir(cabecalho);

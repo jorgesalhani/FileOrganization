@@ -30,8 +30,14 @@ bool removidoValido(char removido) {
     return (removido != '0' && removido != '1') ? false : true;
 }
 
+int str_length(char* str) {
+    int count; 
+    for (count = 0; str[count] != '\0'; ++count);
+    return count; 
+}
+
 bool stringFixaValida(char* entrada, size_t tamanho) {
-    return (sizeof(entrada) <= sizeof(char)*tamanho) ? true : false;
+    return (str_length(entrada) <= sizeof(char)*tamanho) ? true : false;
 }
 
 bool dadosEntrada4BytesValida(int32_t entrada) {
@@ -41,7 +47,7 @@ bool dadosEntrada4BytesValida(int32_t entrada) {
 bool dadosEntradasValidas(char removido, int32_t idCrime, char dataCrime[10], int32_t numeroArtigo, char marcaCelular[12]) {
     if (
         removidoValido(removido) && stringFixaValida(dataCrime, 10) && 
-        stringFixaValida(marcaCelular, 10) && dadosEntrada4BytesValida(idCrime) &&
+        stringFixaValida(marcaCelular, 12) && dadosEntrada4BytesValida(idCrime) &&
         dadosEntrada4BytesValida(numeroArtigo)
     ) return true;
     return false;
@@ -59,7 +65,10 @@ DADOS* dadosCriar(
     
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
     if (!dadosExiste(dados)) return NULL;
-    if (!dadosEntradasValidas(removido, idCrime, dataCrime, numeroArtigo, marcaCelular)) return NULL;
+    if (!dadosEntradasValidas(removido, idCrime, dataCrime, numeroArtigo, marcaCelular)) {
+        dadosDeletar(&dados);
+        return NULL;
+    }
 
     dados->removido = removido;
     dados->idCrime = idCrime;
