@@ -7,15 +7,12 @@
 int main(void) {
 
     CABECALHO* cabecalho = cabecalhoCriar(
-        '0', 0, 0, 0
+        '0', 1, 2, 3
     );
 
     DADOS* dados = dadosCriar(
-        '0', 0, "01/02/2082", 1, "celularAA1aa", "Lugar Crime", "Descricao Crime"
+        '0', 2, "01/02/2082", 1, "celularA", "Lugar Crime", "Descricao Crime"
     );
-
-    cabecalhoImprimir(cabecalho);
-    dadosImprimir(dados);
 
     cabecalhoDeletar(&cabecalho);
     dadosDeletar(&dados);

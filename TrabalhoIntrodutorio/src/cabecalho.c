@@ -8,9 +8,9 @@
 
 struct cabecalho_ {
     char status;
-    int64_t proxByteOffset; 
-    int32_t nroRegArq; 
-    int32_t nroRegRem;
+    uint64_t proxByteOffset; 
+    uint32_t nroRegArq; 
+    uint32_t nroRegRem;
 };
 
 /*********************
@@ -26,15 +26,15 @@ bool statusValido(char status) {
     return (status != '0' && status != '1') ? false : true;
 }
 
-bool cabecalhoEntrada4BytesValida(int32_t entrada) {
-    return (sizeof(entrada) <= sizeof(int32_t)) ? true : false;
+bool cabecalhoEntrada4BytesValida(uint32_t entrada) {
+    return (sizeof(entrada) <= sizeof(uint32_t)) ? true : false;
 }
 
-bool cabecalhoEntrada8BytesValida(int64_t entrada) {
-    return (sizeof(entrada) <= sizeof(int64_t)) ? true : false;
+bool cabecalhoEntrada8BytesValida(uint64_t entrada) {
+    return (sizeof(entrada) <= sizeof(uint64_t)) ? true : false;
 }
 
-bool cabecalhoEntradasValidas(char status, int64_t proxByteOffset, int32_t nroRegArq, int32_t nroRegRem) {
+bool cabecalhoEntradasValidas(char status, uint64_t proxByteOffset, uint32_t nroRegArq, uint32_t nroRegRem) {
     if (
         statusValido(status) && cabecalhoEntrada8BytesValida(proxByteOffset) && 
         cabecalhoEntrada4BytesValida(nroRegArq) && cabecalhoEntrada4BytesValida(nroRegRem)
@@ -47,7 +47,7 @@ bool cabecalhoEntradasValidas(char status, int64_t proxByteOffset, int32_t nroRe
  * ******************
 */
 
-CABECALHO* cabecalhoCriar(char status, int64_t proxByteOffset, int32_t nroRegArq, int32_t nroRegRem) {
+CABECALHO* cabecalhoCriar(char status, uint64_t proxByteOffset, uint32_t nroRegArq, uint32_t nroRegRem) {
     CABECALHO* cabecalho = (CABECALHO*) malloc(sizeof(CABECALHO));
     if (!cabecalhoExiste(cabecalho)) return NULL;
     if (!cabecalhoEntradasValidas(status, proxByteOffset, nroRegArq, nroRegRem)) return NULL;
@@ -73,19 +73,19 @@ bool cabecalhoAtualizarStatus(CABECALHO* cabecalho, char novoStatus) {
     return true;
 }
 
-bool cabecalhoAtualizarProxByteOffset(CABECALHO* cabecalho, int64_t novoProxByteOffset) {
+bool cabecalhoAtualizarProxByteOffset(CABECALHO* cabecalho, uint64_t novoProxByteOffset) {
     if (!cabecalhoExiste(cabecalho) || !cabecalhoEntrada8BytesValida(novoProxByteOffset)) return false;
     cabecalho->proxByteOffset = novoProxByteOffset;
     return true;
 }
 
-bool cabecalhoAtualizarNroRegArq(CABECALHO* cabecalho, int32_t novoNroRegArq) {
+bool cabecalhoAtualizarNroRegArq(CABECALHO* cabecalho, uint32_t novoNroRegArq) {
     if (!cabecalhoExiste(cabecalho) || !cabecalhoEntrada4BytesValida(novoNroRegArq)) return false;
     cabecalho->nroRegArq = novoNroRegArq;
     return true;
 }
 
-bool cabecalhoAtualizarNroRegRem(CABECALHO* cabecalho, int32_t novoNroRegRem) {
+bool cabecalhoAtualizarNroRegRem(CABECALHO* cabecalho, uint32_t novoNroRegRem) {
     if (!cabecalhoExiste(cabecalho) || !cabecalhoEntrada4BytesValida(novoNroRegRem)) return false;
     cabecalho->nroRegRem = novoNroRegRem;
     return true;
