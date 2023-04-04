@@ -18,10 +18,6 @@ struct cabecalho_ {
  * *******************
 */
 
-bool cabecalhoExiste(CABECALHO* cabecalho) {
-    return cabecalho != NULL ? true : false;
-}
-
 bool statusValido(char status) {
     return (status != '0' && status != '1') ? false : true;
 }
@@ -46,6 +42,10 @@ bool cabecalhoEntradasValidas(char status, uint64_t proxByteOffset, uint32_t nro
  * FUNCOES PRINCIPAIS
  * ******************
 */
+
+bool cabecalhoExiste(CABECALHO* cabecalho) {
+    return cabecalho != NULL ? true : false;
+}
 
 CABECALHO* cabecalhoCriar(char status, uint64_t proxByteOffset, uint32_t nroRegArq, uint32_t nroRegRem) {
     CABECALHO* cabecalho = (CABECALHO*) malloc(sizeof(CABECALHO));
@@ -90,6 +90,28 @@ bool cabecalhoAtualizarNroRegRem(CABECALHO* cabecalho, uint32_t novoNroRegRem) {
     cabecalho->nroRegRem = novoNroRegRem;
     return true;
 }
+
+char cabecalhoObterStatus(CABECALHO* cabecalho) {
+    if (!cabecalhoExiste(cabecalho)) return 'X';
+    return cabecalho->status;
+}
+
+uint64_t cabecalhoObterProxByteOffset(CABECALHO* cabecalho) {
+    if (!cabecalhoExiste(cabecalho)) return 0;
+    return cabecalho->proxByteOffset;
+}
+
+uint32_t cabecalhoObterNroRegArq(CABECALHO* cabecalho) {
+    if (!cabecalhoExiste(cabecalho)) return 0;
+    return cabecalho->nroRegArq;
+}
+
+uint32_t cabecalhoObterNroRegRem(CABECALHO* cabecalho) {
+    if (!cabecalhoExiste(cabecalho)) return 0;
+    return cabecalho->nroRegRem;
+}
+
+
 
 bool cabecalhoDeletar(CABECALHO** cabecalho) {
     if (cabecalho == NULL || !cabecalhoExiste(*cabecalho)) return false;

@@ -23,10 +23,6 @@ struct dados_ {
  * *******************
 */
 
-bool dadosExiste(DADOS* dados) {
-    return dados != NULL ? true : false;
-}
-
 bool removidoValido(char removido) {
     return (removido != '0' && removido != '1') ? false : true;
 }
@@ -69,6 +65,10 @@ bool deletarStringsFixas(char* stringFixa) {
  * FUNCOES PRINCIPAIS
  * ******************
 */
+
+bool dadosExiste(DADOS* dados) {
+    return dados != NULL ? true : false;
+}
 
 DADOS* dadosCriar(
     char removido, uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, 
@@ -137,6 +137,46 @@ bool dadosAtualizarLugarCrime(DADOS* dados, char* novoLugarCrime) {
 
 bool dadosAtualizarDescricaoCrime(DADOS* dados, char* novoDescricaoCrime) {
 
+}
+
+char dadosObterRemovido(DADOS* dados) {
+    if (!dadosExiste(dados)) return 'X';
+    return dados->removido;
+}
+
+uint32_t dadosObterIdCrime(DADOS* dados) {
+    if (!dadosExiste(dados)) return -1;
+    return dados->idCrime;
+}
+
+char* dadosObterDataCrime(DADOS* dados) {
+    if (!dadosExiste(dados)) return "$$$$$$$$$$";
+    return dados->dataCrime;
+}
+
+uint32_t dadosObterNumeroArtigo(DADOS* dados) {
+    if (!dadosExiste(dados)) return -1;
+    return dados->numeroArtigo;
+}
+
+char* dadosObterMarcaCelular(DADOS* dados) {
+    if (!dadosExiste(dados)) return "$$$$$$$$$$$$";
+    return dados->marcaCelular;
+}
+
+char* dadosObterLugarCrime(DADOS* dados) {
+    if (!dadosExiste(dados)) return "|";
+    return dados->lugarCrime;
+}
+
+char* dadosObterDescricaoCrime(DADOS* dados) {
+    if (!dadosExiste(dados)) return "|";
+    return dados->descricaoCrime;
+}
+
+char dadosObterDelimitador(DADOS* dados) {
+    if (!dadosExiste(dados)) return '#';
+    return dados->delimitadorDados;
 }
 
 bool dadosDeletar(DADOS** dados) {
