@@ -105,31 +105,45 @@ void dadosImprimir(DADOS* dados) {
 }
 
 bool dadosAtualizarRemovido(DADOS* dados, char removido) {
-
+  if (!dadosExiste(dados)) return false;
+  dados->removido = removido;
+  return true;
 }
 
 bool dadosAtualizarIdCrime(DADOS* dados, uint32_t novoIdCrime) {
-
+  if (!dadosExiste(dados)) return false;
+  dados->idCrime = novoIdCrime;
+  return true;
 }
 
 bool dadosAtualizarDataCrime(DADOS* dados, char* novoDataCrime) {
-
+  if (!dadosExiste(dados)) return false;
+  dados->dataCrime = novoDataCrime;
+  return true;
 }
 
 bool dadosAtualizarNumeroArtigo(DADOS* dados, uint32_t novoNumeroArtigo) {
-
+  if (!dadosExiste(dados)) return false;
+  dados->numeroArtigo = novoNumeroArtigo;
+  return true;
 }
 
 bool dadosAtualizarMarcaCelular(DADOS* dados, char* novoMarcaCelular) {
-
+  if (!dadosExiste(dados)) return false;
+  dados->marcaCelular = novoMarcaCelular;
+  return true;
 }
 
 bool dadosAtualizarLugarCrime(DADOS* dados, char* novoLugarCrime) {
-
+  if (!dadosExiste(dados)) return false;
+  dados->lugarCrime = novoLugarCrime;
+  return true;
 }
 
 bool dadosAtualizarDescricaoCrime(DADOS* dados, char* novoDescricaoCrime) {
-
+  if (!dadosExiste(dados)) return false;
+  dados->descricaoCrime = novoDescricaoCrime;
+  return true;
 }
 
 char dadosObterRemovido(DADOS* dados) {
