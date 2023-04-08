@@ -107,7 +107,8 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, char delimitadorCampos) 
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
     fwrite(&descricaoCrime, sizeof(descricaoCrime), 1, arquivo);
-
+    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
+    
     fwrite(&delimitador, sizeof(char), 1, arquivo);
 
     return true;
