@@ -9,9 +9,9 @@
 
 struct dados_ {
     uint32_t idCrime;
-    char* dataCrime;
+    char dataCrime[TAMANHO_DATA_CRIME];
     uint32_t numeroArtigo; 
-    char* marcaCelular;
+    char marcaCelular[TAMANHO_MARCA_CELULAR];
     char* lugarCrime;
     char* descricaoCrime;
     char removido;
@@ -70,12 +70,10 @@ bool dadosExiste(DADOS* dados) {
 }
 
 DADOS* dadosCriar(
-    uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, char* marcaCelular, 
+    uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], uint32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
     char* lugarCrime, char* descricaoCrime, char removido) {
     
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
-    char* data = (char*) malloc(sizeof(char)*TAMANHO_DATA_CRIME);
-    char* celular = (char*) malloc(sizeof(char)*TAMANHO_MARCA_CELULAR);
     
     if (!dadosExiste(dados)) return NULL;
     if (!dadosEntradasValidas(removido, idCrime, dataCrime, numeroArtigo, marcaCelular)) {
@@ -83,14 +81,11 @@ DADOS* dadosCriar(
         return NULL;
     }
 
-    preencherCamposFixos(data, dataCrime, TAMANHO_DATA_CRIME);
-    preencherCamposFixos(celular, marcaCelular, TAMANHO_MARCA_CELULAR);
-
     dados->removido = removido;
     dados->idCrime = idCrime;
-    dados->dataCrime = data;
+    strcpy(dados->dataCrime, dataCrime);
     dados->numeroArtigo = numeroArtigo;
-    dados->marcaCelular = celular;
+    strcpy(dados->marcaCelular, marcaCelular);
     dados->lugarCrime = lugarCrime;
     dados->descricaoCrime = descricaoCrime;
 
@@ -174,8 +169,6 @@ char* dadosObterDescricaoCrime(DADOS* dados) {
 
 bool dadosDeletar(DADOS** dados) {
     if (dados == NULL || !dadosExiste(*dados)) return false;
-    free((*dados)->dataCrime);
-    free((*dados)->marcaCelular);
     free(*dados);
     *dados = NULL;
     dados = NULL;

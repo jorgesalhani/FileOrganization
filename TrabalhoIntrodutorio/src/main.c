@@ -37,7 +37,7 @@ int main(void) {
     );
 
     DADOS* dados = dadosCriar(
-        2, "01/02/2082", 1, "celularA", "Lugar Crime", "Descricao Crime", '0'
+        2, "01/02/2082", 1, "celularAAAB", "Lugar Crime", "Descricao Crime", '0'
     );
 
 
@@ -48,6 +48,8 @@ int main(void) {
 
     cabecalhoDeletar(&cabecalho);
     dadosDeletar(&dados);
+
+    binarioNaTela("out.bin");
 
 
     return 0;
