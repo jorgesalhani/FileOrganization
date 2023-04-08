@@ -72,7 +72,7 @@ bool tabelaAtualizarCabecalho(TABELA* tabela, CABECALHO* cabecalho) {
     return true;
 }
 
-bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, char delimitadorCampos) {
+bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, char delimitadorCampos, char delimitadorRegistro) {
     if (!delimitadorValido(delimitadorCampos)) return false;
     if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario) || 
         !dadosExiste(dados)) return false;
@@ -86,7 +86,7 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, char delimitadorCampos) 
     char* marcaCelular = dadosObterMarcaCelular(dados);
     char* lugarCrime = dadosObterLugarCrime(dados);
     char* descricaoCrime = dadosObterDescricaoCrime(dados);
-    char delimitador = dadosObterDelimitador(dados);
+    char delimitador = delimitadorRegistro;
 
     fwrite(&removido, sizeof(char), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);

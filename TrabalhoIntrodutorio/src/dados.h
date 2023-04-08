@@ -9,29 +9,143 @@
 
     typedef struct dados_ DADOS;
 
-    DADOS* dadosCriar(char removido, uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, 
-                      char* marcaCelular, char* lugarCrime, char* descricaoCrime);
+    /**
+     * @brief Alocacao de memoria para armazenar dados de ocorrencia criminal
+     * @param uint32_t idCrime. Codigo identificador do crime
+     * @param char* dataCrime. Data de ocorrencia do crime. Formato char[10] DD/MM/AAAA
+     * @param uint32_t numeroArtigo. Numero do artigo no codigo penal relacionado ao crime
+     * @param char* marcaCelular. Marca do celular furtado/roubado. Formato char[12]
+     * @param char* lugarCrime. Lugar no qual o crime ocorreu
+     * @param char* descricaoCrime. Descricao detalhada do crime
+     * @param char removido. Indica se o registro esta logicamente removido. Assume valores '0' ou '1'
+     * @return DADO* Ponteiro para o TAD dados
+    */
+    DADOS* dadosCriar(uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, char* marcaCelular, 
+                      char* lugarCrime, char* descricaoCrime, char removido);
 
+    /**
+     * @brief Imprime oconteudo dos dados
+     * @param DADOS* dados. Ponteiro para o TAD dados
+    */
     void dadosImprimir(DADOS* dados);
+
+    /**
+     * @brief Verifica existencia do TAD dados criado
+     * @param DADOS* dados. Ponteiro para o TAD dados
+     * @return bool true: caso existente e nao nulo. false: caso contrario
+    */
     bool dadosExiste(DADOS* dados);
 
-    bool dadosAtualizarRemovido(DADOS* dados, char removido);
+    /**
+     * @brief Atualiza campo idCrime
+     * @param DADOS* dados. Ponteiro para o TAD dados
+     * @param uint32_t novoIdCrime. Novo valor para o campo idCrime
+     * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
+    */
     bool dadosAtualizarIdCrime(DADOS* dados, uint32_t novoIdCrime);
+    
+    /**
+     * @brief Atualiza campo dataCrime
+     * @param DADOS* dados. Ponteiro para o TAD dados
+     * @param char* novoDataCrime. Novo valor para o campo dataCrime
+     * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
+    */
     bool dadosAtualizarDataCrime(DADOS* dados, char* novoDataCrime);
+    
+    /**
+     * @brief Atualiza campo numeroArtigo
+     * @param DADOS* dados. Ponteiro para o TAD dados
+     * @param uint32_t novoNumeroArtigo. Novo valor para o campo numeroArtigo
+     * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
+    */
     bool dadosAtualizarNumeroArtigo(DADOS* dados, uint32_t novoNumeroArtigo);
+    
+    /**
+     * @brief Atualiza campo marcaCelular
+     * @param DADOS* dados. Ponteiro para o TAD dados
+     * @param char* novoMarcaCelular. Novo valor para o campo marcaCelular
+     * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
+    */
     bool dadosAtualizarMarcaCelular(DADOS* dados, char* novoMarcaCelular);
+    
+    /**
+     * @brief Atualiza campo lugarCrime
+     * @param DADOS* dados. Ponteiro para o TAD dados
+     * @param char* novoLugarCrime. Novo valor para o campo lugarCrime
+     * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
+    */
     bool dadosAtualizarLugarCrime(DADOS* dados, char* novoLugarCrime);
+    
+    /**
+     * @brief Atualiza campo descricaoCrime
+     * @param DADOS* dados. Ponteiro para o TAD dados
+     * @param char* novoDescricaoCrime. Novo valor para o campo descricaoCrime
+     * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
+    */
     bool dadosAtualizarDescricaoCrime(DADOS* dados, char* novoDescricaoCrime);
+    
+    /**
+     * @brief Atualiza campo removido
+     * @param DADOS* dados. Ponteiro para o TAD dados
+     * @param char removido. Novo valor para o campo removido
+     * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
+    */
+    bool dadosAtualizarRemovido(DADOS* dados, char removido);
 
-    char dadosObterRemovido(DADOS* dados);
+    /**
+     * @brief Obter campo idCrime
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return uint32_t idCrime
+    */
     uint32_t dadosObterIdCrime(DADOS* dados);
-    char* dadosObterDataCrime(DADOS* dados);
-    uint32_t dadosObterNumeroArtigo(DADOS* dados);
-    char* dadosObterMarcaCelular(DADOS* dados);
-    char* dadosObterLugarCrime(DADOS* dados);
-    char* dadosObterDescricaoCrime(DADOS* dados);
-    char dadosObterDelimitador(DADOS* dados);
 
+    /**
+     * @brief Obter campo dataCrime
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return char* dataCrime
+    */
+    char* dadosObterDataCrime(DADOS* dados);
+    
+    /**
+     * @brief Obter campo numeroArtigo
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return uint32_t numeroArtigo
+    */
+    uint32_t dadosObterNumeroArtigo(DADOS* dados);
+    
+    /**
+     * @brief Obter campo marcaCelular
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return char* marcaCelular
+    */
+    char* dadosObterMarcaCelular(DADOS* dados);
+    
+    /**
+     * @brief Obter campo lugarCrime
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return char* lugarCrime
+    */
+    char* dadosObterLugarCrime(DADOS* dados);
+    
+    /**
+     * @brief Obter campo descricaoCrime
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return char* descricao Crime
+    */
+    char* dadosObterDescricaoCrime(DADOS* dados);
+    
+    /**
+     * @brief Obter campo removido
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return char removido
+    */
+    char dadosObterRemovido(DADOS* dados);
+
+    /**
+     * @brief Libera memoria alocada para o TAD dados
+     * @param DADOS** endereco do ponteiro do TAD dados
+     * @return bool true: caso desalocacao bem-sucedida. false: caso contratio
+    */
     bool dadosDeletar(DADOS** dados);
 
 #endif
