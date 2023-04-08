@@ -8,14 +8,13 @@
 */
 
 struct dados_ {
-    char removido;
     uint32_t idCrime;
     char* dataCrime;
     uint32_t numeroArtigo; 
     char* marcaCelular;
     char* lugarCrime;
     char* descricaoCrime;
-    char delimitadorDados;
+    char removido;
 };
 
 /*********************
@@ -71,8 +70,8 @@ bool dadosExiste(DADOS* dados) {
 }
 
 DADOS* dadosCriar(
-    char removido, uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, 
-    char* marcaCelular, char* lugarCrime, char* descricaoCrime) {
+    uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, char* marcaCelular, 
+    char* lugarCrime, char* descricaoCrime, char removido) {
     
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
     char* data = (char*) malloc(sizeof(char)*TAMANHO_DATA_CRIME);
@@ -94,7 +93,6 @@ DADOS* dadosCriar(
     dados->marcaCelular = celular;
     dados->lugarCrime = lugarCrime;
     dados->descricaoCrime = descricaoCrime;
-    dados->delimitadorDados = '#';
 
     return dados;
 }
@@ -172,11 +170,6 @@ char* dadosObterLugarCrime(DADOS* dados) {
 char* dadosObterDescricaoCrime(DADOS* dados) {
     if (!dadosExiste(dados)) return "|";
     return dados->descricaoCrime;
-}
-
-char dadosObterDelimitador(DADOS* dados) {
-    if (!dadosExiste(dados)) return '#';
-    return dados->delimitadorDados;
 }
 
 bool dadosDeletar(DADOS** dados) {
