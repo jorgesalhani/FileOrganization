@@ -30,26 +30,72 @@
 #include "funcoesFornecidas.h"
 #include "tabela.h"
 
+void erroGenerico() {
+  printf("Falha no processamento do arquivo.");
+  exit(1);
+}
+
+void erroSemRegistros() {
+  printf("Registro inexistente.");
+  exit(1);
+}
+
+void binarioCria() {
+  FILE *crimesDados = fopen("arquivos/antes/dados1.csv", "r");
+  char lixo[100];
+  char str[256];
+
+  //DADOS* dados = dadosCriar(0, 0, "", 0, "", "", "");
+  
+  fgets(str, 256, crimesDados);
+  while(fgets(str, 256, crimesDados)) {
+    int j = 0;
+    char strAux[256];
+    for(int i = 0; i < strlen(str); i++) {
+      if(str[i] == '\n' || str[i] == ',' || (i == strlen(str)-1 && feof(crimesDados))) {
+        
+        if(i == strlen(str)-1 && feof(crimesDados)) {
+          strAux[j] = str[i];
+        }
+        
+        printf("%s\n", strAux);
+        memset(strAux,0,strlen(strAux));
+        j = 0;
+        continue;
+      }
+      strAux[j] = str[i];
+      //printf("%c\n", strAux[j]);
+      j++;
+    }
+     printf("=====\n");
+  }
+
+  fclose(crimesDados);
+}
+
 int main(void) {
 
-    CABECALHO* cabecalho = cabecalhoCriar(
-        '0', 1, 2, 3
-    );
+  //binarioCria();
+  
+  
+  CABECALHO* cabecalho = cabecalhoCriar(
+      '0', 1, 2, 3
+  );
 
-    DADOS* dados = dadosCriar(
-        2, "01/02/2082", 1, "celularAAAB", "Lugar Crime", "Descricao Crime", '0'
-    );
+  DADOS* dados = dadosCriar(
+      '0', 2, "01/02/2082", 1, "celularA", "Lugar Crime", "Descricao Crime"
+  );
 
 
-    TABELA* tabela = tabelaCriar("out.bin");
-    tabelaAtualizarCabecalho(tabela, cabecalho);
-    tabelaAtualizarDados(tabela, dados, '|', '#');
-    tabelaDeletar(&tabela, true);
+  TABELA* tabela = tabelaCriar("out.bin");
+  tabelaAtualizarCabecalho(tabela, cabecalho);
+  tabelaAtualizarDados(tabela, dados, '|');
+  tabelaDeletar(&tabela, true);
 
-    cabecalhoDeletar(&cabecalho);
-    dadosDeletar(&dados);
+  cabecalhoDeletar(&cabecalho);
+  dadosDeletar(&dados);
 
-    binarioNaTela("out.bin");
+  binarioNaTela("out.bin");
 
 
     return 0;
