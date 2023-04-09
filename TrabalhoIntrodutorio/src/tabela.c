@@ -118,21 +118,21 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, METADADOS* metadados,
 }
 
 char* tabelaObterNomeArquivo(TABELA* tabela) {
-    if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario)) return NULL;
+    if (!tabelaExiste(tabela)) return NULL;
     return tabela->nome;
 }
 
 bool tabelaFecharArquivo(TABELA* tabela) {
     if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario)) return false;
     fclose(tabela->arquivoBinario);
+    tabela->arquivoBinario = NULL;
     return true;
 }
 
 bool tabelaDeletar(TABELA** tabela, bool manterArquivo) {
-    if (tabela == NULL || !tabelaExiste(*tabela) || 
-        !arquivoExiste((*tabela)->arquivoBinario)) return false;
+    if (tabela == NULL || !tabelaExiste(*tabela)) return false;
     
-    fclose((*tabela)->arquivoBinario);
+    if (arquivoExiste((*tabela)->arquivoBinario)) fclose((*tabela)->arquivoBinario);
     
     if (!manterArquivo) remove((*tabela)->nome);
     free(*tabela);

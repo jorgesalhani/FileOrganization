@@ -49,8 +49,8 @@ int main(void) {
     TABELA* tabela = tabelaCriarBinario(nomeArquivoEntrada, nomeArquivoSaida);
     if (!tabelaExiste(tabela)) erroGenerico();
 
+    tabelaFecharArquivo(tabela);
     binarioNaTela(tabelaObterNomeArquivo(tabela)); 
-    binarioNaTela("../arquivos/depois/binario1.bin");
     tabelaDeletar(&tabela, true);
     break;
   
