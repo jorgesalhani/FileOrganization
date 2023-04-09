@@ -2,7 +2,7 @@
     #define DADOS_H
     #define TAMANHO_DATA_CRIME 10
     #define TAMANHO_MARCA_CELULAR 12
-    #define NUMERO_CAMPOS 8
+    #define NUMERO_CAMPOS_VARIAVEIS 2
 
     #include <stdint.h>
     #include <stdlib.h>
@@ -159,10 +159,10 @@
     */
     bool dadosDeletar(DADOS** dados);
 
-    int dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados);
-    int dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados); 
+    uint64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados);
+    uint64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados); 
 
     bool dadosMetadadosDeletar(METADADOS** metadados);
-    int dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados);
+    uint64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados);
 
 #endif

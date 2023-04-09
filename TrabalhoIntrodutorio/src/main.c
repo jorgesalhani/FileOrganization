@@ -32,7 +32,7 @@
 #include "tabela.h"
 
 int main(void) {
-  tabelaCriarBinario("../arquivos/antes/dados1.csv", "lol");
+  tabelaCriarBinario("../arquivos/antes/dados2.csv", "lol");
 
   return 0;
 }

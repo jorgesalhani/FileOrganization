@@ -69,7 +69,6 @@ bool tabelaAtualizarCabecalho(TABELA* tabela, CABECALHO* cabecalho) {
     fwrite(&byteOffset, sizeof(uint64_t), 1, arquivo);
     fwrite(&nroRegArq, sizeof(uint32_t), 1, arquivo);
     fwrite(&nroRegRem, sizeof(uint32_t), 1, arquivo);
-    fflush(arquivo);
 
     return true;
 }
@@ -89,44 +88,31 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, METADADOS* metadados,
     char* marcaCelular = dadosObterMarcaCelular(dados);
     char delimitador = dadosObterDelimitadorRegistro(dados);
 
-    int tamanhoLugarCrime = dadosMetadadosObterTamanhoLugarCrime(metadados);
+    uint64_t tamanhoLugarCrime = dadosMetadadosObterTamanhoLugarCrime(metadados);
     char lugarCrime[tamanhoLugarCrime];
-    for (int i = 0; i < tamanhoLugarCrime; i++) lugarCrime[i] = dadosObterLugarCrime(dados)[i];
+    for (uint64_t i = 0; i < tamanhoLugarCrime; i++) lugarCrime[i] = dadosObterLugarCrime(dados)[i];
 
-    int tamanhoDescricaoCrime = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
+    uint64_t tamanhoDescricaoCrime = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
     char descricaoCrime[tamanhoDescricaoCrime];
-    for (int i = 0; i < tamanhoDescricaoCrime; i++) descricaoCrime[i] = dadosObterDescricaoCrime(dados)[i];
+    for (uint64_t i = 0; i < tamanhoDescricaoCrime; i++) descricaoCrime[i] = dadosObterDescricaoCrime(dados)[i];
 
     fwrite(&removido, sizeof(char), 1, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
-    fflush(arquivo);
     
     fwrite(&idCrime, sizeof(uint32_t), 1, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
-    fflush(arquivo);
 
     fwrite(dataCrime, sizeof(char), TAMANHO_DATA_CRIME, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
-    fflush(arquivo);
 
     fwrite(&numeroArtigo, sizeof(uint32_t), 1, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
-    fflush(arquivo);
 
     fwrite(marcaCelular, sizeof(char), TAMANHO_MARCA_CELULAR, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
-    fflush(arquivo);
 
     fwrite(lugarCrime, sizeof(lugarCrime), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
-    fflush(arquivo);
 
     fwrite(descricaoCrime, sizeof(descricaoCrime), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);    
-    fflush(arquivo);
     
     fwrite(&delimitador, sizeof(char), 1, arquivo);
-    fflush(arquivo);
     return true;
 
 }
@@ -166,7 +152,7 @@ bool tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     DADOS* dados = dadosCriar(0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "", '0');
     METADADOS* metadados = dadosCriarMetadados();
 
-    int tamanhoRegistroDados = 0;
+    uint32_t tamanhoRegistroDados = 0;
     uint64_t tamanhoRegistroCabecalho = 0;
     uint32_t novoNroRegArq = 0;
     uint32_t novoNroRegRem = 0;
@@ -228,9 +214,7 @@ bool tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
 
         novoNroRegArq++;
         
-        if (tamanhoRegistroDados == 0) {
-            tamanhoRegistroDados = dadosMetadadosObterTamanhoRegistro(dados, metadados);
-        }
+        tamanhoRegistroDados += dadosMetadadosObterTamanhoRegistro(dados, metadados);
 
         if (dadosObterRemovido(dados) == '1') {
             novoNroRegRem = (int32_t)(novoNroRegRem + 1);
@@ -240,14 +224,15 @@ bool tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
         // printf("=====\n");
     }
 
+    tamanhoRegistroCabecalho = cabecalhoObterTamanhoRegistro(cabecalho);
+    uint64_t novoProxByteOffset = (uint64_t)(tamanhoRegistroDados + tamanhoRegistroCabecalho);
+
     fseek(tabela->arquivoBinario, 0, SEEK_SET);
 
+    cabecalhoAtualizarStatus(cabecalho, '1');
+    cabecalhoAtualizarProxByteOffset(cabecalho, novoProxByteOffset);
     cabecalhoAtualizarNroRegArq(cabecalho, novoNroRegArq);
     cabecalhoAtualizarNroRegRem(cabecalho, novoNroRegRem);
-    cabecalhoAtualizarStatus(cabecalho, '1');
-
-    tamanhoRegistroCabecalho = cabecalhoObterTamanhoRegistro(cabecalho);
-    cabecalhoAtualizarProxByteOffset(cabecalho, (uint64_t)(tamanhoRegistroCabecalho + tamanhoRegistroDados));
 
     tabelaAtualizarCabecalho(tabela, cabecalho);
 

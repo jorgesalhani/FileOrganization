@@ -241,12 +241,12 @@ bool dadosDeletar(DADOS** dados) {
     return true;
 }
 
-int dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados) {
+uint64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados) {
   if (!metadadosExiste(metadados)) return -1;
   return metadados->tamanhoLugarCrime;
 }
 
-int dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados) {
+uint64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados) {
   if (!metadadosExiste(metadados)) return -1;
   return metadados->tamanhoDescricaoCrime;
 }
@@ -259,7 +259,7 @@ bool dadosMetadadosDeletar(METADADOS** metadados) {
   return true;
 }
 
-int dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
+uint64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
   if (!dadosExiste(dados) || !metadadosExiste(metadados)) return -1;
   metadados->tamanhoRegistro = 0;
   metadados->tamanhoRegistro += 
@@ -270,7 +270,7 @@ int dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
   metadados->tamanhoRegistro += 
     metadados->tamanhoLugarCrime + metadados->tamanhoDescricaoCrime;
 
-  metadados->tamanhoRegistro += sizeof(char) * (NUMERO_CAMPOS - 1);
+  metadados->tamanhoRegistro += sizeof(char) * (NUMERO_CAMPOS_VARIAVEIS);
   
   return metadados->tamanhoRegistro;
 }
