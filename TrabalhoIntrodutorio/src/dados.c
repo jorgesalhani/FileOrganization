@@ -64,9 +64,9 @@ bool dadosExiste(DADOS* dados) {
 }
 
 DADOS* dadosCriar(
-    char removido, uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], 
+    uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], 
     uint32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
-    char* lugarCrime, char* descricaoCrime) {
+    char* lugarCrime, char* descricaoCrime, char removido) {
     
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
     

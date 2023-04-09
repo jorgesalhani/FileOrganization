@@ -20,4 +20,4 @@ clean:
 	rm *.o
 
 run:
-	valgrind ./exec 1 crimes.csv crimes.bin
+	valgrind ./exec

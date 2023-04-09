@@ -48,10 +48,11 @@ void erroModo() {
 
 void binarioCria(char* entrada, char *saida) {
   FILE *crimesDados = fopen(entrada, "r");
+  if (crimesDados == NULL) erroGenerico();
   char str[256];
 
   CABECALHO* cabecalho = cabecalhoCriar('0', 1, 2, 3);
-  DADOS* dados = dadosCriar('0', 0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "");
+  DADOS* dados = dadosCriar(0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "", '0');
 
   
   fgets(str, 256, crimesDados);
@@ -106,6 +107,7 @@ void binarioCria(char* entrada, char *saida) {
   }
   fclose(crimesDados);
   dadosDeletar(&dados);
+  cabecalhoDeletar(&cabecalho);
 }
 
 int main(void) {
@@ -126,7 +128,7 @@ int main(void) {
   
   
   
-  binarioCria("arquivos/antes/dados1.csv", "lol");
+  binarioCria("../arquivos/antes/dados1.csv", "lol");
   
   
   // CABECALHO* cabecalho = cabecalhoCriar(
