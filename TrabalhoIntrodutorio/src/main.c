@@ -45,7 +45,7 @@ void lerEntradasModo2(char* nomeArquivoEntrada) {
 
 int main(void) {
   int modo;
-  char nomeArquivoEntrada[50], nomeArquivoSaida[50];
+  char nomeArquivoEntrada[100], nomeArquivoSaida[100];
   scanf("%d", &modo);
 
   switch (modo)
