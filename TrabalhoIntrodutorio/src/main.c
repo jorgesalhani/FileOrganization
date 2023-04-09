@@ -155,6 +155,10 @@ int main(void) {
     binarioNaTela(tabelaObterNomeArquivo(tabela)); 
     tabelaDeletar(&tabela, true);
     break;
+
+  case 2:
+    lerBinario(nomeArquivoEntrada);
+    break;
   
   default: ;
     break;
