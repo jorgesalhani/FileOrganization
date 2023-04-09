@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tabela.h"
+#include "erros.h"
 
 /********************
  * ESTRUTURA DE DADOS
@@ -72,7 +73,8 @@ bool tabelaAtualizarCabecalho(TABELA* tabela, CABECALHO* cabecalho) {
     return true;
 }
 
-bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, char delimitadorCampos, char delimitadorRegistro) {
+bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, METADADOS* metadados, 
+                          char delimitadorCampos) {
     if (!delimitadorValido(delimitadorCampos)) return false;
     if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario) || 
         !dadosExiste(dados)) return false;
@@ -84,24 +86,25 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, char delimitadorCampos, 
     char* dataCrime = dadosObterDataCrime(dados);
     uint32_t numeroArtigo = dadosObterNumeroArtigo(dados);
     char* marcaCelular = dadosObterMarcaCelular(dados);
-    char* lugarCrime = dadosObterLugarCrime(dados);
-    char* descricaoCrime = dadosObterDescricaoCrime(dados);
-    char delimitador = delimitadorRegistro;
+    char delimitador = dadosObterDelimitadorRegistro(dados);
+
+    uint64_t tamanhoLugarCrime = dadosMetadadosObterTamanhoLugarCrime(metadados);
+    char lugarCrime[tamanhoLugarCrime];
+    for (uint64_t i = 0; i < tamanhoLugarCrime; i++) lugarCrime[i] = dadosObterLugarCrime(dados)[i];
+
+    uint64_t tamanhoDescricaoCrime = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
+    char descricaoCrime[tamanhoDescricaoCrime];
+    for (uint64_t i = 0; i < tamanhoDescricaoCrime; i++) descricaoCrime[i] = dadosObterDescricaoCrime(dados)[i];
 
     fwrite(&removido, sizeof(char), 1, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
     
     fwrite(&idCrime, sizeof(uint32_t), 1, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
     fwrite(dataCrime, sizeof(char), TAMANHO_DATA_CRIME, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
     fwrite(&numeroArtigo, sizeof(uint32_t), 1, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
     fwrite(marcaCelular, sizeof(char), TAMANHO_MARCA_CELULAR, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
     fwrite(lugarCrime, sizeof(lugarCrime), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
@@ -135,5 +138,110 @@ bool tabelaDeletar(TABELA** tabela, bool manterArquivo) {
     free(*tabela);
     *tabela = NULL;
     tabela = NULL;
+    return true;
+}
+
+bool tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
+    FILE *crimesDados = fopen(nomeEntrada, "r");
+    if (crimesDados == NULL) erroGenerico();
+
+    char str[256] = "";
+    TABELA* tabela = tabelaCriar(nomeSaida);
+
+    CABECALHO* cabecalho = cabecalhoCriar('0', 1, 2, 3);
+    DADOS* dados = dadosCriar(0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "", '0');
+    METADADOS* metadados = dadosCriarMetadados();
+
+    uint32_t tamanhoRegistroDados = 0;
+    uint64_t tamanhoRegistroCabecalho = 0;
+    uint32_t novoNroRegArq = 0;
+    uint32_t novoNroRegRem = 0;
+    
+
+    tabelaAtualizarCabecalho(tabela, cabecalho);
+    
+    fgets(str, 256, crimesDados);
+    while(fgets(str, 256, crimesDados)) {
+        if(str[0] == '\n')
+        continue;
+
+        int j = 0, k = 0;
+        char token[256] = "";
+        for(int i = 0; i < strlen(str); i++) {
+        if(str[i] == '\n' || str[i] == ',' || (i == strlen(str)-1 && feof(crimesDados))) {
+            // printf("%s\n", str);
+            
+            if(i == strlen(str)-1 && feof(crimesDados)) {
+            token[j] = str[i];
+            }
+            
+            switch(k) {
+            case 0:
+                if(strcmp(token, "") == 0)
+                erroGenerico(); 
+                // printf("%d\n", atol(token));
+                dadosAtualizarIdCrime(dados, atoi(token));
+                break;
+            case 1:
+                dadosAtualizarDataCrime(dados, token);
+                break;
+            case 2:
+                if(strlen(token) == 0)
+                dadosAtualizarNumeroArtigo(dados, -1);
+                else
+                dadosAtualizarNumeroArtigo(dados, atoi(token));
+                break;
+            case 3:
+                dadosAtualizarLugarCrime(dados, token, metadados);
+                break;
+            case 4:
+                dadosAtualizarDescricaoCrime(dados, token, metadados);
+                break;
+            case 5:
+                dadosAtualizarMarcaCelular(dados, token);
+            }
+            k++;
+            memset(token, 0, strlen(token));
+            j = 0;
+            continue;
+        }
+        token[j] = str[i];
+        //printf("%c\n", token[j]);
+        j++;
+        }
+    
+        tabelaAtualizarDados(tabela, dados, metadados, '|');
+
+        novoNroRegArq++;
+        
+        tamanhoRegistroDados += dadosMetadadosObterTamanhoRegistro(dados, metadados);
+
+        if (dadosObterRemovido(dados) == '1') {
+            novoNroRegRem = (int32_t)(novoNroRegRem + 1);
+        }
+
+        // dadosImprimir(dados);
+        // printf("=====\n");
+    }
+
+    tamanhoRegistroCabecalho = cabecalhoObterTamanhoRegistro(cabecalho);
+    uint64_t novoProxByteOffset = (uint64_t)(tamanhoRegistroDados + tamanhoRegistroCabecalho);
+
+    fseek(tabela->arquivoBinario, 0, SEEK_SET);
+
+    cabecalhoAtualizarStatus(cabecalho, '1');
+    cabecalhoAtualizarProxByteOffset(cabecalho, novoProxByteOffset);
+    cabecalhoAtualizarNroRegArq(cabecalho, novoNroRegArq);
+    cabecalhoAtualizarNroRegRem(cabecalho, novoNroRegRem);
+
+    tabelaAtualizarCabecalho(tabela, cabecalho);
+
+    fclose(crimesDados);
+
+    dadosMetadadosDeletar(&metadados);
+    dadosDeletar(&dados);
+    cabecalhoDeletar(&cabecalho);
+    tabelaDeletar(&tabela, true);
+
     return true;
 }

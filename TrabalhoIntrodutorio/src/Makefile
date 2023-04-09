@@ -1,5 +1,5 @@
-all: cabecalho.o dados.o tabela.o funcoesFornecidas.o main.o
-	gcc -g cabecalho.o dados.o tabela.o funcoesFornecidas.o main.o -o exec -std=c99 -Wall; make clean
+all: cabecalho.o dados.o tabela.o funcoesFornecidas.o erros.o main.o
+	gcc -g cabecalho.o dados.o tabela.o funcoesFornecidas.o erros.o main.o -o exec -std=c99 -Wall; make clean
 
 cabecalho.o:
 	gcc -g -c cabecalho.c -o cabecalho.o
@@ -12,6 +12,9 @@ tabela.o:
 
 funcoesFornecidas.o:
 	gcc -g -c funcoesFornecidas.c -o funcoesFornecidas.o
+
+erros.o:
+	gcc -g -c erros.c -o erros.o
 
 main.o:
 	gcc -g -c main.c -o main.o

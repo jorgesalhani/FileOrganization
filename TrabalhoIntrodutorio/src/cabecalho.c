@@ -111,6 +111,11 @@ uint32_t cabecalhoObterNroRegRem(CABECALHO* cabecalho) {
     return cabecalho->nroRegRem;
 }
 
+uint64_t cabecalhoObterTamanhoRegistro(CABECALHO* cabecalho) {
+    if (!cabecalhoExiste(cabecalho)) return -1;
+    return sizeof(cabecalho->status) + sizeof(cabecalho->proxByteOffset) +
+           sizeof(cabecalho->nroRegArq) + sizeof(cabecalho->nroRegRem); 
+} 
 
 
 bool cabecalhoDeletar(CABECALHO** cabecalho) {

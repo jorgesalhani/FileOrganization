@@ -26,10 +26,9 @@
      * @param TABELA* tabela. Ponteiro para o TAD tabela criado
      * @param DADOS* dados. Ponteiro para o TAD dados criado e atualizado
      * @param char delimitadorCampos. Delimitador de cada campo do registro de dados. Padrao: "|"
-     * @param char delimitadorRegistro. Delimitador de cada registro. Padrao: "#"
      * @return bool. true: caso bem-sucedido. false: caso contrario
     */
-    bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, char delimitadorCampos, char delimitadorRegistro);
+    bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, METADADOS* metadados, char delimitadorCampos);
 
     /**
      * @brief Obter nome do arquivo aberto e armazenado no TAD tabela
@@ -52,5 +51,7 @@
      * @return bool. true: caso bem-sucedido. false: caso contrario
     */
     bool tabelaDeletar(TABELA** tabela, bool manterArquivo);
+
+    bool tabelaCriarBinario(char* nomeEntrada, char* nomeSaida);
 
 #endif
