@@ -143,7 +143,10 @@ bool tabelaDeletar(TABELA** tabela, bool manterArquivo) {
 
 TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     FILE *crimesDados = fopen(nomeEntrada, "r");
-    if (crimesDados == NULL) erroGenerico();
+    if (crimesDados == NULL) {
+        erroGenerico();
+        return NULL;
+    }
 
     char str[256] = "";
     TABELA* tabela = tabelaCriar(nomeSaida);
@@ -177,8 +180,10 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
             
             switch(k) {
             case 0:
-                if(strcmp(token, "") == 0)
-                erroGenerico(); 
+                if(strcmp(token, "") == 0) {
+                    erroGenerico(); 
+                    return NULL;
+                }
                 // printf("%d\n", atol(token));
                 dadosAtualizarIdCrime(dados, atoi(token));
                 break;

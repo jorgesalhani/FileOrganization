@@ -46,21 +46,32 @@ void lerBinario(char* entrada) {
   FILE *binarioDados = fopen(entrada, "rb");
   if(binarioDados == NULL) {
     erroGenerico();
+    return;
   }
   char lixo[256];
   char charAux = '0';
+  char statusAux = '0';
   char removidoAux;
   uint32_t nroRegArq; 
   int idAux, numArtAux, i = 0;
   char dataAux[TAMANHO_DATA_CRIME+1], marcaAux[TAMANHO_MARCA_CELULAR+1];
   char descricaoAux[64], lugarAux[64], numArtAuxPrint[5]; 
   
-  fread(lixo, sizeof(char), 9, binarioDados);
+  fread(&statusAux, sizeof(char), 1, binarioDados);
+  fread(lixo, sizeof(char), 8, binarioDados);
   fread(&nroRegArq, sizeof(uint32_t), 1, binarioDados);
   fread(lixo, sizeof(char), 4, binarioDados);
 
+  if (statusAux == '0') {
+    fclose(binarioDados);
+    erroGenerico();
+    return;
+  }
+  
   if(nroRegArq == 0) {
+    fclose(binarioDados);
     erroSemRegistros();
+    return;
   }
 
   while(nroRegArq--) {
@@ -94,6 +105,7 @@ void lerBinario(char* entrada) {
         }
       }
     }
+    i=0;
     
     while(1) {
       fread(&lugarAux[i], sizeof(char), 1, binarioDados);
@@ -134,22 +146,28 @@ void lerBinario(char* entrada) {
   fclose(binarioDados);
 }
 
-void lerEntradas(int* modo, char* nomeArquivoEntrada, char* nomeArquivoSaida) {
-  scanf("%d", modo);
+void lerEntradasModo1(char* nomeArquivoEntrada, char* nomeArquivoSaida) {
   scanf("%s", nomeArquivoEntrada);
   scanf("%s", nomeArquivoSaida);
+}
+
+void lerEntradasModo2(char* nomeArquivoEntrada) {
+  scanf("%s", nomeArquivoEntrada);
 }
 
 int main(void) {
   int modo;
   char nomeArquivoEntrada[50], nomeArquivoSaida[50];
-  lerEntradas(&modo, nomeArquivoEntrada, nomeArquivoSaida);
+  scanf("%d", &modo);
 
   switch (modo)
   {
   case 1: ;
+    lerEntradasModo1(nomeArquivoEntrada, nomeArquivoSaida);
     TABELA* tabela = tabelaCriarBinario(nomeArquivoEntrada, nomeArquivoSaida);
-    if (!tabelaExiste(tabela)) erroGenerico();
+    if (!tabelaExiste(tabela)) {
+      return 0;
+    }
 
     tabelaFecharArquivo(tabela);
     binarioNaTela(tabelaObterNomeArquivo(tabela)); 
@@ -157,10 +175,12 @@ int main(void) {
     break;
 
   case 2:
+    lerEntradasModo2(nomeArquivoEntrada);
     lerBinario(nomeArquivoEntrada);
     break;
   
   default: ;
+    erroModo();
     break;
   }
 
