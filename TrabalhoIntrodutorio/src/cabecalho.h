@@ -90,6 +90,13 @@
      * @return uint32_t nroRegRem
     */
     uint32_t cabecalhoObterNroRegRem(CABECALHO* cabecalho);
+
+    /**
+     * @brief Obter tamanho do registro de cabecalho
+     * @param CABECALHO* Ponteiro para o TAD cabecalho
+     * @return uint64_t tamanho
+    */
+    uint64_t cabecalhoObterTamanhoRegistro(CABECALHO* cabecalho);
     
     /**
      * @brief Libera memoria alocada para o TAD cabecalho

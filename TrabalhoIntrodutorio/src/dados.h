@@ -2,11 +2,13 @@
     #define DADOS_H
     #define TAMANHO_DATA_CRIME 10
     #define TAMANHO_MARCA_CELULAR 12
+    #define NUMERO_CAMPOS 8
 
     #include <stdint.h>
     #include <stdlib.h>
     #include <stdbool.h>
 
+    typedef struct metadados_ METADADOS;
     typedef struct dados_ DADOS;
 
     /**
@@ -22,6 +24,8 @@
     */
     DADOS* dadosCriar(uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], uint32_t numeroArtigo, 
                       char marcaCelular[TAMANHO_MARCA_CELULAR], char* lugarCrime, char* descricaoCrime, char removido);
+
+    METADADOS* dadosCriarMetadados();
 
     /**
      * @brief Imprime oconteudo dos dados
@@ -74,7 +78,7 @@
      * @param char* novoLugarCrime. Novo valor para o campo lugarCrime
      * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
     */
-    bool dadosAtualizarLugarCrime(DADOS* dados, char* novoLugarCrime);
+    bool dadosAtualizarLugarCrime(DADOS* dados, char* novoLugarCrime, METADADOS* metadados);
     
     /**
      * @brief Atualiza campo descricaoCrime
@@ -82,7 +86,7 @@
      * @param char* novoDescricaoCrime. Novo valor para o campo descricaoCrime
      * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
     */
-    bool dadosAtualizarDescricaoCrime(DADOS* dados, char* novoDescricaoCrime);
+    bool dadosAtualizarDescricaoCrime(DADOS* dados, char* novoDescricaoCrime, METADADOS* metadados);
     
     /**
      * @brief Atualiza campo removido
@@ -142,10 +146,23 @@
     char dadosObterRemovido(DADOS* dados);
 
     /**
+     * @brief Obter campo delimitador de registro
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return char delimitador
+    */
+    char dadosObterDelimitadorRegistro(DADOS* dados);
+
+    /**
      * @brief Libera memoria alocada para o TAD dados
      * @param DADOS** endereco do ponteiro do TAD dados
      * @return bool true: caso desalocacao bem-sucedida. false: caso contratio
     */
     bool dadosDeletar(DADOS** dados);
+
+    int dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados);
+    int dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados); 
+
+    bool dadosMetadadosDeletar(METADADOS** metadados);
+    int dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados);
 
 #endif
