@@ -60,6 +60,7 @@ void lerBinario(char* entrada) {
   fread(lixo, sizeof(char), 4, binarioDados);
 
   if(nroRegArq == 0) {
+    fclose(binarioDados);
     erroSemRegistros();
   }
 
@@ -134,20 +135,24 @@ void lerBinario(char* entrada) {
   fclose(binarioDados);
 }
 
-void lerEntradas(int* modo, char* nomeArquivoEntrada, char* nomeArquivoSaida) {
-  scanf("%d", modo);
+void lerEntradasModo1(char* nomeArquivoEntrada, char* nomeArquivoSaida) {
   scanf("%s", nomeArquivoEntrada);
   scanf("%s", nomeArquivoSaida);
+}
+
+void lerEntradasModo2(char* nomeArquivoEntrada) {
+  scanf("%s", nomeArquivoEntrada);
 }
 
 int main(void) {
   int modo;
   char nomeArquivoEntrada[50], nomeArquivoSaida[50];
-  lerEntradas(&modo, nomeArquivoEntrada, nomeArquivoSaida);
+  scanf("%d", &modo);
 
   switch (modo)
   {
   case 1: ;
+    lerEntradasModo1(nomeArquivoEntrada, nomeArquivoSaida);
     TABELA* tabela = tabelaCriarBinario(nomeArquivoEntrada, nomeArquivoSaida);
     if (!tabelaExiste(tabela)) erroGenerico();
 
@@ -157,6 +162,7 @@ int main(void) {
     break;
 
   case 2:
+    lerEntradasModo2(nomeArquivoEntrada);
     lerBinario(nomeArquivoEntrada);
     break;
   
