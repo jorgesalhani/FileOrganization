@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "cabecalho.h"
 #include "dados.h"
 #include "funcoesFornecidas.h"
@@ -40,62 +41,112 @@ void erroSemRegistros() {
   exit(1);
 }
 
-void binarioCria() {
-  FILE *crimesDados = fopen("arquivos/antes/dados1.csv", "r");
-  char lixo[100];
+void erroModo() {
+  printf("Modo inexistente");
+  exit(1);
+}
+
+void binarioCria(char* entrada, char *saida) {
+  FILE *crimesDados = fopen(entrada, "r");
   char str[256];
 
-  //DADOS* dados = dadosCriar(0, 0, "", 0, "", "", "");
+  CABECALHO* cabecalho = cabecalhoCriar('0', 1, 2, 3);
+  DADOS* dados = dadosCriar('0', 0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "");
+
   
   fgets(str, 256, crimesDados);
   while(fgets(str, 256, crimesDados)) {
-    int j = 0;
-    char strAux[256];
+    if(str[0] == '\n')
+      continue;
+    int j = 0, k = 0;
+    char token[256];
     for(int i = 0; i < strlen(str); i++) {
       if(str[i] == '\n' || str[i] == ',' || (i == strlen(str)-1 && feof(crimesDados))) {
         
         if(i == strlen(str)-1 && feof(crimesDados)) {
-          strAux[j] = str[i];
+          token[j] = str[i];
         }
         
-        printf("%s\n", strAux);
-        memset(strAux,0,strlen(strAux));
+        switch(k) {
+          case 0:
+            if(strcmp(token, "") == 0)
+              erroGenerico(); 
+            dadosAtualizarIdCrime(dados, atoi(token));
+            break;
+          case 1:
+            dadosAtualizarDataCrime(dados, token);
+            break;
+          case 2:
+            if(strcmp(token, "") == 0)
+              dadosAtualizarNumeroArtigo(dados, -1);
+            else
+              dadosAtualizarNumeroArtigo(dados, atoi(token));
+            break;
+          case 3:
+            dadosAtualizarLugarCrime(dados, token);
+            break;
+          case 4:
+            dadosAtualizarDescricaoCrime(dados, token);
+            break;
+          case 5:
+            dadosAtualizarMarcaCelular(dados, token);
+        }
+        k++;
+        memset(token,0,strlen(token));
         j = 0;
         continue;
       }
-      strAux[j] = str[i];
-      //printf("%c\n", strAux[j]);
+      token[j] = str[i];
+      //printf("%c\n", token[j]);
       j++;
     }
-     printf("=====\n");
+    
+    dadosImprimir(dados);
+    printf("=====\n");
   }
-
   fclose(crimesDados);
+  dadosDeletar(&dados);
 }
 
 int main(void) {
+  // char entrada[64], saida[64];
+  // int modo;
+  // scanf("%d %s %s", &modo, entrada, saida);
 
-  //binarioCria();
+  // switch(modo) {
+  //   case 1:
+  //     binarioCria(entrada, saida);
+  //     binarioNaTela(saida);
+  //     break;
+  //   default:
+  //     erroModo();
+  // }
   
   
-  CABECALHO* cabecalho = cabecalhoCriar(
-      '0', 1, 2, 3
-  );
+  
+  
+  
+  binarioCria("arquivos/antes/dados1.csv", "lol");
+  
+  
+  // CABECALHO* cabecalho = cabecalhoCriar(
+  //     '0', 1, 2, 3
+  // );
 
-  DADOS* dados = dadosCriar(
-      '0', 2, "01/02/2082", 1, "celularA", "Lugar Crime", "Descricao Crime"
-  );
+  // DADOS* dados = dadosCriar(
+  //     '0', 2, "01/02/2082", 1, "celularA", "Lugar Crime", "Descricao Crime"
+  // );
 
 
-  TABELA* tabela = tabelaCriar("out.bin");
-  tabelaAtualizarCabecalho(tabela, cabecalho);
-  tabelaAtualizarDados(tabela, dados, '|');
-  tabelaDeletar(&tabela, true);
+  // TABELA* tabela = tabelaCriar("out.bin");
+  // tabelaAtualizarCabecalho(tabela, cabecalho);
+  // tabelaAtualizarDados(tabela, dados, '|');
+  // tabelaDeletar(&tabela, true);
 
-  cabecalhoDeletar(&cabecalho);
-  dadosDeletar(&dados);
+  // cabecalhoDeletar(&cabecalho);
+  // dadosDeletar(&dados);
 
-  binarioNaTela("out.bin");
+  //binarioNaTela("out.bin");
 
 
     return 0;

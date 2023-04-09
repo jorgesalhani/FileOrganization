@@ -26,14 +26,8 @@ bool removidoValido(char removido) {
     return (removido != '0' && removido != '1') ? false : true;
 }
 
-int tamanhoString(char* str) {
-    int count; 
-    for (count = 0; str[count] != '\0'; ++count);
-    return count; 
-}
-
 bool stringFixaValida(char* entrada, size_t tamanho, char delimitador) {
-    return (tamanhoString(entrada) <= sizeof(char)*tamanho) ? true : false;
+    return (strlen(entrada) <= sizeof(char)*tamanho) ? true : false;
 }
 
 bool dadosEntrada4BytesValida(uint32_t entrada) {
@@ -50,8 +44,8 @@ bool dadosEntradasValidas(char removido, uint32_t idCrime, char* dataCrime, uint
 }
 
 void preencherCamposFixos(char* novoCampo, char* campoEntrada, int tamanho) {
-    for (int i = 0; i < tamanhoString(campoEntrada); i++) novoCampo[i] = campoEntrada[i];
-    for (int i = tamanhoString(campoEntrada); i < tamanho; i++) novoCampo[i] = '$';
+    for (int i = 0; i < strlen(campoEntrada); i++) novoCampo[i] = campoEntrada[i];
+    for (int i = strlen(campoEntrada); i < tamanho; i++) novoCampo[i] = '$';
 }
 
 bool deletarStringsFixas(char* stringFixa) {
@@ -70,8 +64,9 @@ bool dadosExiste(DADOS* dados) {
 }
 
 DADOS* dadosCriar(
-    uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], uint32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
-    char* lugarCrime, char* descricaoCrime, char removido) {
+    char removido, uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], 
+    uint32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
+    char* lugarCrime, char* descricaoCrime) {
     
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
     
@@ -86,21 +81,25 @@ DADOS* dadosCriar(
     strcpy(dados->dataCrime, dataCrime);
     dados->numeroArtigo = numeroArtigo;
     strcpy(dados->marcaCelular, marcaCelular);
-    dados->lugarCrime = lugarCrime;
-    dados->descricaoCrime = descricaoCrime;
+    
+    dados->lugarCrime = malloc(sizeof(char)*64);
+    strcpy(dados->lugarCrime, lugarCrime);
+  
+    dados->descricaoCrime = malloc(sizeof(char)*64);  
+    strcpy(dados->descricaoCrime, descricaoCrime);
 
     return dados;
 }
 
 void dadosImprimir(DADOS* dados) {
     if (!dadosExiste(dados)) return;
-
-
-    // printf(
-    //     "removido: %c\nidCrime: %d\ndataCrime: %s\nnumeroArtigo: %d\nmarcaCelular: %s\nlugarCrime: %s\ndescricaoCrime: %s\ndelimitadorDados: %c\n\n",
-    //     dados->removido, dados->idCrime, dataParaImpressao, dados->numeroArtigo, 
-    //     celularParaImpressao, dados->lugarCrime, dados->descricaoCrime, dados->delimitadorDados
-    // );
+    printf("Removido: %c\n", dadosObterRemovido(dados));
+    printf("Id: %d\n", dadosObterIdCrime(dados));
+    printf("Data: %s\n", dadosObterDataCrime(dados));
+    printf("Numero do Artigo: %d\n", dadosObterNumeroArtigo(dados));
+    printf("Marca do Celular: %s\n", dadosObterMarcaCelular(dados));
+    printf("Local do Crime: %s\n", dadosObterLugarCrime(dados));
+    printf("Descricao: %s\n", dadosObterDescricaoCrime(dados));
 
 }
 
@@ -118,7 +117,12 @@ bool dadosAtualizarIdCrime(DADOS* dados, uint32_t novoIdCrime) {
 
 bool dadosAtualizarDataCrime(DADOS* dados, char* novoDataCrime) {
   if (!dadosExiste(dados)) return false;
-  dados->dataCrime = novoDataCrime;
+  strcpy(dados->dataCrime, novoDataCrime);
+  if(strlen(novoDataCrime) == 0) {
+    for(int i = 0; i < TAMANHO_DATA_CRIME; i++) {
+      dados->dataCrime[i] = '$';
+    }
+  } 
   return true;
 }
 
@@ -130,19 +134,30 @@ bool dadosAtualizarNumeroArtigo(DADOS* dados, uint32_t novoNumeroArtigo) {
 
 bool dadosAtualizarMarcaCelular(DADOS* dados, char* novoMarcaCelular) {
   if (!dadosExiste(dados)) return false;
-  dados->marcaCelular = novoMarcaCelular;
+  strcpy(dados->marcaCelular, novoMarcaCelular);
+  int tam = strlen(novoMarcaCelular);
+  for(int i = tam; i < TAMANHO_MARCA_CELULAR; i++) {
+    dados->marcaCelular[i] = '$';
+  }
   return true;
 }
 
 bool dadosAtualizarLugarCrime(DADOS* dados, char* novoLugarCrime) {
   if (!dadosExiste(dados)) return false;
-  dados->lugarCrime = novoLugarCrime;
+  
+  dados->lugarCrime = realloc(
+    dados->lugarCrime, sizeof(char)*strlen(novoLugarCrime)+1
+  );
+  strcpy(dados->lugarCrime, novoLugarCrime);
   return true;
 }
 
 bool dadosAtualizarDescricaoCrime(DADOS* dados, char* novoDescricaoCrime) {
   if (!dadosExiste(dados)) return false;
-  dados->descricaoCrime = novoDescricaoCrime;
+  dados->descricaoCrime = realloc(
+    dados->descricaoCrime, sizeof(char)*strlen(novoDescricaoCrime)+1
+  );
+  strcpy(dados->descricaoCrime, novoDescricaoCrime);
   return true;
 }
 
@@ -183,6 +198,8 @@ char* dadosObterDescricaoCrime(DADOS* dados) {
 
 bool dadosDeletar(DADOS** dados) {
     if (dados == NULL || !dadosExiste(*dados)) return false;
+    free((*dados)->lugarCrime);  
+    free((*dados)->descricaoCrime);
     free(*dados);
     *dados = NULL;
     dados = NULL;
