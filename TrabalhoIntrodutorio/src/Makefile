@@ -20,4 +20,4 @@ clean:
 	rm *.o
 
 run:
-	valgrind ./exec < ../casosTeste/in/1.in
+	valgrind ./exec
