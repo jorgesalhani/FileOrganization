@@ -41,11 +41,12 @@ void erroSemRegistros() {
 }
 
 void binarioCria() {
-  FILE *crimesDados = fopen("arquivos/antes/dados1.csv", "r");
+  FILE *crimesDados = fopen("../arquivos/antes/dados1.csv", "r");
+  if (crimesDados == NULL) erroGenerico();
   char lixo[100];
   char str[256];
 
-  //DADOS* dados = dadosCriar(0, 0, "", 0, "", "", "");
+  // DADOS* dados = dadosCriar(0, 0, "", 0, "", "", "");
   
   fgets(str, 256, crimesDados);
   while(fgets(str, 256, crimesDados)) {
@@ -70,12 +71,32 @@ void binarioCria() {
      printf("=====\n");
   }
 
+void funcionalidadeCriarTabela() {
+
+}
+
+void funcionalidadeSelect() {
+
+}
   fclose(crimesDados);
 }
 
-int main(void) {
+void funcionalidadeCriarTabela() {
 
-  //binarioCria();
+}
+
+void funcionalidadeSelect() {
+
+}
+
+int main(int argc, char* argv[]) {
+
+  // if (argc < 2) erroGenerico();
+  // if (atoi(argv[1]) == 1) funcionalidadeCriarTabela();
+  // if (atoi(argv[1]) == 2) funcionalidadeSelect();
+
+
+  // // binarioCria();
   
   
   CABECALHO* cabecalho = cabecalhoCriar(
@@ -83,13 +104,14 @@ int main(void) {
   );
 
   DADOS* dados = dadosCriar(
-      '0', 2, "01/02/2082", 1, "celularA", "Lugar Crime", "Descricao Crime"
+      // 2, "01/02/2082", 1, "celularABBB", "Lugar Crime", "Descricao Crime", '0'
+      445, "15/12/2018", 155, "SAMSUNG$$$$", "SAO PAULO", "FURTO (ART. 155) - OUTROS", '0'
   );
 
 
   TABELA* tabela = tabelaCriar("out.bin");
   tabelaAtualizarCabecalho(tabela, cabecalho);
-  tabelaAtualizarDados(tabela, dados, '|');
+  tabelaAtualizarDados(tabela, dados, '|', '#');
   tabelaDeletar(&tabela, true);
 
   cabecalhoDeletar(&cabecalho);

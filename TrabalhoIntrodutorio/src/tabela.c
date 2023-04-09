@@ -90,27 +90,26 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, char delimitadorCampos, 
 
     fwrite(&removido, sizeof(char), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
-
+    
     fwrite(&idCrime, sizeof(uint32_t), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
-    fwrite(&dataCrime, sizeof(char), TAMANHO_DATA_CRIME, arquivo);
+    fwrite(dataCrime, sizeof(char), TAMANHO_DATA_CRIME, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
     fwrite(&numeroArtigo, sizeof(uint32_t), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
-    fwrite(&marcaCelular, sizeof(char), TAMANHO_MARCA_CELULAR, arquivo);
+    fwrite(marcaCelular, sizeof(char), TAMANHO_MARCA_CELULAR, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
-    fwrite(&lugarCrime, sizeof(lugarCrime), 1, arquivo);
+    fwrite(lugarCrime, sizeof(lugarCrime), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
 
-    fwrite(&descricaoCrime, sizeof(descricaoCrime), 1, arquivo);
-    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
+    fwrite(descricaoCrime, sizeof(descricaoCrime), 1, arquivo);
+    fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);    
     
     fwrite(&delimitador, sizeof(char), 1, arquivo);
-
     return true;
 
 }

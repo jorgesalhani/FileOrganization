@@ -118,7 +118,7 @@ bool dadosAtualizarIdCrime(DADOS* dados, uint32_t novoIdCrime) {
 
 bool dadosAtualizarDataCrime(DADOS* dados, char* novoDataCrime) {
   if (!dadosExiste(dados)) return false;
-  dados->dataCrime = novoDataCrime;
+  strcpy(dados->dataCrime,novoDataCrime);
   return true;
 }
 
@@ -130,7 +130,7 @@ bool dadosAtualizarNumeroArtigo(DADOS* dados, uint32_t novoNumeroArtigo) {
 
 bool dadosAtualizarMarcaCelular(DADOS* dados, char* novoMarcaCelular) {
   if (!dadosExiste(dados)) return false;
-  dados->marcaCelular = novoMarcaCelular;
+  strcpy(dados->marcaCelular, novoMarcaCelular);
   return true;
 }
 

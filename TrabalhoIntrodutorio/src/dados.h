@@ -12,16 +12,16 @@
     /**
      * @brief Alocacao de memoria para armazenar dados de ocorrencia criminal
      * @param uint32_t idCrime. Codigo identificador do crime
-     * @param char* dataCrime. Data de ocorrencia do crime. Formato char[10] DD/MM/AAAA
+     * @param char[TAMANHO_DATA_CRIME] dataCrime. Data de ocorrencia do crime. Formato char[10] DD/MM/AAAA
      * @param uint32_t numeroArtigo. Numero do artigo no codigo penal relacionado ao crime
-     * @param char* marcaCelular. Marca do celular furtado/roubado. Formato char[12]
+     * @param char[TAMANHO_MARCA_CELULAR] marcaCelular. Marca do celular furtado/roubado. Formato char[12]
      * @param char* lugarCrime. Lugar no qual o crime ocorreu
      * @param char* descricaoCrime. Descricao detalhada do crime
      * @param char removido. Indica se o registro esta logicamente removido. Assume valores '0' ou '1'
      * @return DADO* Ponteiro para o TAD dados
     */
-    DADOS* dadosCriar(uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, char* marcaCelular, 
-                      char* lugarCrime, char* descricaoCrime, char removido);
+    DADOS* dadosCriar(uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], uint32_t numeroArtigo, 
+                      char marcaCelular[TAMANHO_MARCA_CELULAR], char* lugarCrime, char* descricaoCrime, char removido);
 
     /**
      * @brief Imprime oconteudo dos dados
