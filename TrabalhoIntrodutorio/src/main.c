@@ -30,9 +30,33 @@
 #include "dados.h"
 #include "funcoesFornecidas.h"
 #include "tabela.h"
+#include "erros.h"
+
+void lerEntradas(int* modo, char* nomeArquivoEntrada, char* nomeArquivoSaida) {
+  scanf("%d", modo);
+  scanf("%s", nomeArquivoEntrada);
+  scanf("%s", nomeArquivoSaida);
+}
 
 int main(void) {
-  tabelaCriarBinario("../arquivos/antes/dados2.csv", "lol");
+  int modo;
+  char nomeArquivoEntrada[50], nomeArquivoSaida[50];
+  lerEntradas(&modo, nomeArquivoEntrada, nomeArquivoSaida);
+
+  switch (modo)
+  {
+  case 1: ;
+    TABELA* tabela = tabelaCriarBinario(nomeArquivoEntrada, nomeArquivoSaida);
+    if (!tabelaExiste(tabela)) erroGenerico();
+
+    binarioNaTela(tabelaObterNomeArquivo(tabela)); 
+    binarioNaTela("../arquivos/depois/binario1.bin");
+    tabelaDeletar(&tabela, true);
+    break;
+  
+  default: ;
+    break;
+  }
 
   return 0;
 }

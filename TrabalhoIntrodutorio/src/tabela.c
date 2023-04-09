@@ -141,7 +141,7 @@ bool tabelaDeletar(TABELA** tabela, bool manterArquivo) {
     return true;
 }
 
-bool tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
+TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     FILE *crimesDados = fopen(nomeEntrada, "r");
     if (crimesDados == NULL) erroGenerico();
 
@@ -241,7 +241,6 @@ bool tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     dadosMetadadosDeletar(&metadados);
     dadosDeletar(&dados);
     cabecalhoDeletar(&cabecalho);
-    tabelaDeletar(&tabela, true);
 
-    return true;
+    return tabela;
 }
