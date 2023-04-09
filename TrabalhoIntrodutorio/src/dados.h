@@ -154,15 +154,38 @@
 
     /**
      * @brief Libera memoria alocada para o TAD dados
-     * @param DADOS** endereco do ponteiro do TAD dados
+     * @param DADOS** Endereco do ponteiro do TAD dados
      * @return bool true: caso desalocacao bem-sucedida. false: caso contratio
     */
     bool dadosDeletar(DADOS** dados);
 
+    /**
+     * @brief Obter tamanho do campo variavel lugarCrime para um dado registro
+     * @param METADADOS* Ponteiro para TAD metadados
+     * @return uint64_t tamanho do campo lugarCrime
+    */
     uint64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados);
+
+    /**
+     * @brief Obter tamanho do campo variavel descricaoCrime para um dado registro
+     * @param METADADOS* Ponteiro para TAD metadados
+     * @return uint64_t tamanho do campo descricaoCrime
+    */
     uint64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados); 
 
-    bool dadosMetadadosDeletar(METADADOS** metadados);
+    /**
+     * @brief Obter tamanho do campo variavel tamanhoRegistro para um dado registro
+     * @param DADOS* Ponteiro para TAD dados
+     * @param METADADOS* Ponteiro para TAD metadados
+     * @return uint64_t tamanho do campo tamanhoRegistro
+    */
     uint64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados);
+
+    /**
+     * @brief Desalocar memoria da TAD metadados
+     * @param METADADOS** Endereco do ponteiro da TAD metadados
+     * @return bool true: caso desalocacao bem-sucedida. false: caso contratio
+    */
+    bool dadosMetadadosDeletar(METADADOS** metadados);
 
 #endif
