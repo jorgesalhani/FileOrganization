@@ -52,9 +52,26 @@
     */
     bool tabelaDeletar(TABELA** tabela, bool manterArquivo);
 
+    /**
+     * @brief Verificar se alocacao de memoria para TAD tabela foi bem sucedido
+     * @param TABELA* tabela. Ponteiro para o TAD tabela criado
+     * @return bool. true: caso bem-sucedido. false: caso contrario
+    */
     bool tabelaExiste(TABELA* tabela);
 
+    /**
+     * @brief Funcionalidade 1. Implementacao de funcao analoga ao CREATE TABLE (SQL)
+     * @param char* nomeEntrada. Nome do arquivo de entrada. Formato esperado: <nomeEntrada>.csv
+     * @param char* nomeSaida. Nome do arquivo de said. Formato esperado: <nomeSaida>.bin
+     * @return TABELA*. Ponteiro para o TAD tabela criado
+    */
     TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida);
+
+    /**
+     * @brief Funcionalidade 2. Implementacao de funcao analoga ao SELECT (SQL)
+     * @param char* entrada. Nome do arquivo de entrada. Formato esperado: <entrada>.bin
+    */
+    void lerBinario(char* entrada);
     
 
 #endif
