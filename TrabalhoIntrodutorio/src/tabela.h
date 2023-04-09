@@ -52,6 +52,9 @@
     */
     bool tabelaDeletar(TABELA** tabela, bool manterArquivo);
 
-    bool tabelaCriarBinario(char* nomeEntrada, char* nomeSaida);
+    bool tabelaExiste(TABELA* tabela);
+
+    TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida);
+    
 
 #endif
