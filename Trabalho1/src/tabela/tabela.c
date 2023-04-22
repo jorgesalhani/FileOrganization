@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tabela.h"
-#include "erros.h"
+#include "../utilitarios/erros.h"
 
 /********************
  * ESTRUTURA DE DADOS

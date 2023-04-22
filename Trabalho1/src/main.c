@@ -15,10 +15,17 @@
  *        arquivo binario com os mesmos
  * 
  * @details A aplicacao usa as TADs
+ *          TI: Trabalho Introdutorio
+ *          =========================
  *          DADOS: leitura e armazenamento de dados presentes no arquivo .csv
  *          CABECALHO: leitura e armazenamento de metadados do arquivo .csv
  *          TABELA: escrita e atualizacao do arquivo de saida .bin
  *          FUNCOESFORNECIDAS: manipulacao e tratamento de entrada e saida
+ * 
+ *          T1: Trabalho 1
+ *          ==============
+ *          DADOSINDICE: leitura e armazenamento de dados de indices sobre campos
+ *          CABECALHOINDICE: Leitura e armazenamento de metadados dos indices
  * 
 */
 
@@ -26,11 +33,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include "cabecalho.h"
-#include "dados.h"
-#include "funcoesFornecidas.h"
-#include "tabela.h"
-#include "erros.h"
+#include "tabela/tabela.h"
+#include "utilitarios/funcoesFornecidas.h"
+#include "indice/indice.h"
 
 #define STR_VAZIA "NULO"
 
@@ -43,9 +48,18 @@ void lerEntradasModo2(char* nomeArquivoEntrada) {
   scanf("%s", nomeArquivoEntrada);
 }
 
+void lerEntradasModo3(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice) {
+  scanf("%s", nomeArquivoEntrada);
+  scanf("%s", campoIndexado);
+  scanf("%s", tipoDado);
+  scanf("%s", nomeArquivoIndice);
+}
+
 int main(void) {
   int modo;
-  char nomeArquivoEntrada[100], nomeArquivoSaida[100];
+  char nomeArquivoEntrada[100], nomeArquivoSaida[100], nomeArquivoIndice[100];
+  char campoIndexado[50], tipoDado[20];
+
   scanf("%d", &modo);
 
   switch (modo)
@@ -53,9 +67,7 @@ int main(void) {
   case 1: ;
     lerEntradasModo1(nomeArquivoEntrada, nomeArquivoSaida);
     TABELA* tabela = tabelaCriarBinario(nomeArquivoEntrada, nomeArquivoSaida);
-    if (!tabelaExiste(tabela)) {
-      return 0;
-    }
+    if (!tabelaExiste(tabela)) return 0;
 
     tabelaFecharArquivo(tabela);
     binarioNaTela(tabelaObterNomeArquivo(tabela)); 
@@ -65,6 +77,17 @@ int main(void) {
   case 2:
     lerEntradasModo2(nomeArquivoEntrada);
     lerBinario(nomeArquivoEntrada);
+    break;
+
+  case 3:
+    lerEntradasModo3(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
+    // lerBinario(nomeArquivoEntrada);
+    // TABELA* tabela = tabelaCriarBinarioIndice(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
+    // if (!tabelaExiste(tabela)) return 0;
+    
+    // tabelaFecharArquivo(tabela);
+    // binarioNaTela(tabelaObterNomeArquivo(tabela));
+    // tabelaDeletar(&tabela, true);
     break;
   
   default: ;
