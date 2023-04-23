@@ -3,6 +3,7 @@
 
     #include "dadosIndice.h"
     #include "cabecalhoIndice.h"
+    #include "../tabela/tabela.h"
     
     typedef struct indice_ INDICE;
 
@@ -13,5 +14,7 @@
     char* indiceObterNomeArquivo(INDICE* indice);
     bool indiceFecharArquivo(INDICE* indice);
     bool indiceDeletar(INDICE** indice, bool manterArquivo);
+
+    INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice);
     
 #endif

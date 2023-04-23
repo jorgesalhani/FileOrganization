@@ -18,32 +18,14 @@ struct dados_indice_ {
  * *******************
 */
 
-bool tipoDadoValido(char status) {
-    return (status != '0' && status != '1') ? false : true;
+bool tipoDadoValido(char* tipoDado) {
+    return (tipoDado != "string" && tipoDado != "inteiro") ? false : true;
 }
 
-bool chaveBuscaStringValida(char chaveBuscaString[TAMANHO_CHAVE_BUSCA]) {
-    return strlen(chaveBuscaString) <= TAMANHO_CHAVE_BUSCA ? true : false;
-}
-
-bool chaveBuscaInteiroValida(uint32_t chaveBuscaInteiro) {
-    return chaveBuscaInteiro != -1 ? true : false;
-}
-
-bool dadosEntrada4BytesValida(uint32_t entrada) {
-    return (sizeof(entrada) <= sizeof(uint32_t)) ? true : false;
-}
-
-bool dadosEntrada8BytesValida(uint64_t entrada) {
-    return (sizeof(entrada) <= sizeof(uint64_t)) ? true : false;
-}
-
-bool dadosEntradasValidas(
-    char* tipoDado, uint32_t chaveBuscaInteiro, char chaveBuscaString[TAMANHO_CHAVE_BUSCA], uint64_t byteOffset
+bool dadosIndiceEntradasValidas(
+    char* tipoDado, char chaveBuscaString[TAMANHO_CHAVE_BUSCA], uint64_t byteOffset
 ) {
-    if (!tipoDadoValido(tipoDado) || !dadosEntrada4BytesValida(chaveBuscaInteiro) ||
-        !dadosEntrada8BytesValida(byteOffset)
-    ) return false;
+    if (!tipoDadoValido(tipoDado) || !chaveBuscaStringValida(chaveBuscaString)) return false;
     return true;
 }
 
@@ -51,6 +33,14 @@ bool dadosEntradasValidas(
  * FUNCOES PRINCIPAIS
  * ******************
 */
+
+bool chaveBuscaStringValida(char chaveBuscaString[TAMANHO_CHAVE_BUSCA]) {
+    return strlen(chaveBuscaString) <= TAMANHO_CHAVE_BUSCA ? true : false;
+}
+
+bool chaveBuscaInteiroValida(uint32_t chaveBuscaInteiro) {
+    return chaveBuscaInteiro >= 0 ? true : false;
+}
 
 DADOS_INDICE* dadosIndiceCriar(
     char* tipoDado, uint32_t chaveBuscaInteiro, char chaveBuscaString[TAMANHO_CHAVE_BUSCA], uint64_t byteOffset
@@ -61,7 +51,7 @@ DADOS_INDICE* dadosIndiceCriar(
     } else {
         chaveBuscaString = "$$$$$$$$$$$$";
     }
-    if (!dadosEntradasValidas(tipoDado, chaveBuscaInteiro, chaveBuscaString, byteOffset)) return NULL;
+    if (!dadosIndiceEntradasValidas(tipoDado, chaveBuscaString, byteOffset)) return NULL;
 
     DADOS_INDICE* dadosIndice = (DADOS_INDICE*) malloc(sizeof(DADOS_INDICE));
     if (!dadosIndiceExiste(dadosIndice)) return NULL;
@@ -91,7 +81,6 @@ uint64_t dadosIndiceObterByteOffset(DADOS_INDICE* dadosIndice) {
     if (!dadosIndiceExiste(dadosIndice)) return -1;
     return dadosIndice->byteOffset;
 }
-
 bool dadosIndiceAtualizarChaveBuscaString(DADOS_INDICE* dadosIndice, char novaChaveBuscaString[TAMANHO_CHAVE_BUSCA]) {
     if (!dadosIndiceExiste(dadosIndice) || !chaveBuscaStringValida(novaChaveBuscaString)) return false;
     strcpy(dadosIndice->chaveBuscaString, novaChaveBuscaString);
@@ -99,13 +88,13 @@ bool dadosIndiceAtualizarChaveBuscaString(DADOS_INDICE* dadosIndice, char novaCh
 }
 
 bool dadosIndiceAtualizarChaveBuscaInteiro(DADOS_INDICE* dadosIndice, uint32_t novaChaveBuscaInteiro) {
-    if (!dadosIndiceExiste(dadosIndice) || !dadosEntrada4BytesValida(novaChaveBuscaInteiro)) return false;
+    if (!dadosIndiceExiste(dadosIndice)) return false;
     dadosIndice->chaveBuscaInteiro = novaChaveBuscaInteiro;
     return true;
 }
 
 bool dadosIndiceAtualizarByteOffset(DADOS_INDICE* dadosIndice, uint64_t novoByteOffset) {
-    if (!dadosIndiceExiste(dadosIndice) || !dadosEntrada8BytesValida(novoByteOffset)) return false;
+    if (!dadosIndiceExiste(dadosIndice)) return false;
     dadosIndice->byteOffset = novoByteOffset;
     return true;
 }

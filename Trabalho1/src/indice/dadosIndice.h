@@ -11,9 +11,11 @@
     bool dadosIndiceExiste(DADOS_INDICE* dadosIndice);
     uint32_t dadosIndiceObterChaveBuscaInteiro(DADOS_INDICE* dadosIndice);
     char* dadosIndiceObterChaveBuscaString(DADOS_INDICE* dadosIndice);
+    bool chaveBuscaStringValida(char chaveBuscaString[TAMANHO_CHAVE_BUSCA]);
     bool chaveBuscaInteiroValida(uint32_t chaveBuscaInteiro);
     uint64_t dadosIndiceObterByteOffset(DADOS_INDICE* dadosIndice);
-    bool dadosIndiceAtualizarChaveBusca(DADOS_INDICE* dadosIndice, uint32_t novaChaveBusca);
+    bool dadosIndiceAtualizarChaveBuscaString(DADOS_INDICE* dadosIndice, char novaChaveBuscaString[TAMANHO_CHAVE_BUSCA]);
+    bool dadosIndiceAtualizarChaveBuscaInteiro(DADOS_INDICE* dadosIndice, uint32_t novaChaveBuscaInteiro);
     bool dadosIndiceAtualizarByteOffset(DADOS_INDICE* dadosIndice, uint64_t novoByteOffset);
     bool dadosIndiceDeletar(DADOS_INDICE** dadosIndice);
 

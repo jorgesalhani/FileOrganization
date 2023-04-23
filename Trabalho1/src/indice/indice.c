@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include "indice.h"
 
 /********************
@@ -18,16 +19,12 @@ struct indice_ {
  * *******************
 */
 
-bool nomeValido(char* nome) {
+bool indiceNomeValido(char* nome) {
     return strlen(nome) > 0 ? true : false;
 }
 
-bool arquivoExiste(FILE* arquivo) {
+bool indiceArquivoExiste(FILE* arquivo) {
     return arquivo != NULL ? true : false;
-}
-
-bool indiceExiste(INDICE* indice) {
-    return indice != NULL ? true : false;
 }
 
 
@@ -37,12 +34,12 @@ bool indiceExiste(INDICE* indice) {
 */
 
 INDICE* indiceCriar(char* nomeArquivoIndice) {
-    if (!nomeValido(nomeArquivoIndice)) return NULL;
+    if (!indiceNomeValido(nomeArquivoIndice)) return NULL;
     
     INDICE* indice = (INDICE*) malloc(sizeof(INDICE));
     FILE* arquivoBinario = fopen(nomeArquivoIndice, "wb+");
 
-    if (!indiceExiste(indice) || !arquivoExiste(arquivoBinario)) return NULL;
+    if (!indiceExiste(indice) || !indiceArquivoExiste(arquivoBinario)) return NULL;
 
     indice->nome = nomeArquivoIndice;
     indice->arquivoBinario = arquivoBinario;
@@ -54,7 +51,7 @@ bool indiceExiste(INDICE* indice) {
 }
 
 bool indiceAtualizarCabecalho(INDICE* indice, CABECALHO_INDICE* cabecalhoIndice) {
-    if (!indiceExiste(indice) || !cabecalhoIndiceExiste(cabecalhoIndice) || !arquivoExiste(indice->arquivoBinario)) return false;
+    if (!indiceExiste(indice) || !cabecalhoIndiceExiste(cabecalhoIndice) || !indiceArquivoExiste(indice->arquivoBinario)) return false;
     
     FILE* arquivo = indice->arquivoBinario;
 
@@ -65,12 +62,13 @@ bool indiceAtualizarCabecalho(INDICE* indice, CABECALHO_INDICE* cabecalhoIndice)
 
 bool indiceAtualizarDados(INDICE* indice, DADOS_INDICE* dadosIndice) {
     if (!indiceExiste(indice) || !dadosIndiceExiste(dadosIndice)) return false;
-    if (!arquivoExiste(indice->arquivoBinario)) return false;
+    if (!indiceArquivoExiste(indice->arquivoBinario)) return false;
 
     FILE* arquivo = indice->arquivoBinario;
 
     uint64_t byteOffset = dadosIndiceObterByteOffset(dadosIndice);
-    char chaveBuscaString[TAMANHO_CHAVE_BUSCA] = dadosIndiceObterChaveBuscaString(dadosIndice);
+    char chaveBuscaString[TAMANHO_CHAVE_BUSCA]; 
+    strcpy(chaveBuscaString, dadosIndiceObterChaveBuscaString(dadosIndice));
     uint32_t chaveBusca = dadosIndiceObterChaveBuscaInteiro(dadosIndice);
 
     if (chaveBuscaInteiroValida(chaveBusca)) {
@@ -82,12 +80,12 @@ bool indiceAtualizarDados(INDICE* indice, DADOS_INDICE* dadosIndice) {
 }
 
 char* indiceObterNomeArquivo(INDICE* indice) {
-    if (!indiceExiste(indice) || !arquivoExiste(indice->arquivoBinario)) return "-1";
+    if (!indiceExiste(indice) || !indiceArquivoExiste(indice->arquivoBinario)) return "-1";
     return indice->nome;
 }
 
 bool indiceFecharArquivo(INDICE* indice) {
-    if (!indiceExiste(indice) || !arquivoExiste(indice->arquivoBinario)) return false;
+    if (!indiceExiste(indice) || !indiceArquivoExiste(indice->arquivoBinario)) return false;
     fclose(indice->arquivoBinario);
     indice->arquivoBinario = NULL;
     return true;
@@ -96,13 +94,20 @@ bool indiceFecharArquivo(INDICE* indice) {
 bool indiceDeletar(INDICE** indice, bool manterArquivo) {
     if (indice == NULL || !indiceExiste(*indice)) return false;
     
-    if (arquivoExiste((*indice)->arquivoBinario)) fclose((*indice)->arquivoBinario);
+    if (indiceArquivoExiste((*indice)->arquivoBinario)) fclose((*indice)->arquivoBinario);
     
     if (!manterArquivo) remove((*indice)->nome);
     free(*indice);
     *indice = NULL;
     indice = NULL;
     return true;
+}
+
+INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice) {
+    TABELA* tabela = tabelaCriar(nomeArquivoEntrada, "rb");
+
+    tabelaFecharArquivo(tabela);
+    tabelaDeletar(&tabela, true);
 }
 
 

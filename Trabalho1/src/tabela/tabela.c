@@ -35,15 +35,21 @@ bool delimitadorValido(char delimitadorCampos) {
     return delimitadorCampos == '|' ? true : false;
 }
 
+bool modoAbrirArquivoValido(char* modoAberturaArquivo) {
+  return (
+    strcmp(modoAberturaArquivo, "wb+") == 0 ||
+    strcmp(modoAberturaArquivo, "rb") == 0
+  ) ? true : false;
+}
 
 /********************
  * FUNCOES PRINCIPAIS
  * ******************
 */
     
-TABELA* tabelaCriar(char* nome) {
-    if (!nomeValido(nome)) return NULL;
-    FILE* arquivoBinario = fopen(nome, "wb+");
+TABELA* tabelaCriar(char* nome, char* modoAberturaArquivo) {
+    if (!nomeValido(nome) || !modoAbrirArquivoValido(modoAberturaArquivo)) return NULL;
+    FILE* arquivoBinario = fopen(nome, modoAberturaArquivo);
     if (!arquivoExiste(arquivoBinario)) return NULL;
 
     TABELA* tabela = (TABELA*) malloc(sizeof(TABELA));
@@ -149,11 +155,11 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     }
 
     char str[256] = "";
-    TABELA* tabela = tabelaCriar(nomeSaida);
+    TABELA* tabela = tabelaCriar(nomeSaida, "wb+");
 
     CABECALHO* cabecalho = cabecalhoCriar('0', 1, 2, 3);
     DADOS* dados = dadosCriar(0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "", '0');
-    METADADOS* metadados = dadosCriarMetadados();
+    METADADOS* metadados = dadosCriarMetadados(0, 0);
 
     uint32_t tamanhoRegistroDados = 0;
     uint64_t tamanhoRegistroCabecalho = 0;
@@ -250,28 +256,24 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     return tabela;
 }
 
-bool strVazia(char* str) {
-  if(strcmp(str, "") == 0 || str[0] == '$') {
-    strcpy(str, STR_VAZIA);
-    return true;
-  }
-  return false;
-}
-
-void lerBinario(char* entrada) {
-  FILE *binarioDados = fopen(entrada, "rb");
-  if(binarioDados == NULL) {
+TABELA* tabelaLerBinario(char* entrada) {
+  TABELA* tabela = tabelaCriar(entrada, "rb");
+  if(!tabelaExiste(tabela)) {
     erroGenerico();
-    return;
+    return tabela;
   }
+  
+  FILE *binarioDados = tabela->arquivoBinario;
   char lixo[256];
   char charAux = '0';
   char statusAux = '0';
-  char removidoAux;
-  uint32_t nroRegArq; 
-  int idAux, numArtAux, i = 0;
-  char dataAux[TAMANHO_DATA_CRIME+1], marcaAux[TAMANHO_MARCA_CELULAR+1];
-  char descricaoAux[64], lugarAux[64], numArtAuxPrint[5]; 
+  char removidoAux = '0';
+  uint32_t nroRegArq = 1; 
+  uint32_t idAux, numArtAux, i = 0;
+  char dataAux[TAMANHO_DATA_CRIME+1] = ""; 
+  char marcaAux[TAMANHO_MARCA_CELULAR+1] = "";
+  char descricaoAux[256] = "";
+  char lugarAux[256] = ""; 
   
   fread(&statusAux, sizeof(char), 1, binarioDados);
   fread(lixo, sizeof(char), 8, binarioDados);
@@ -279,16 +281,16 @@ void lerBinario(char* entrada) {
   fread(lixo, sizeof(char), 4, binarioDados);
 
   if (statusAux == '0') {
-    fclose(binarioDados);
     erroGenerico();
-    return;
+    return tabela;
   }
   
   if(nroRegArq == 0) {
-    fclose(binarioDados);
     erroSemRegistros();
-    return;
+    return tabela;
   }
+
+  CABECALHO* cabecalho = cabecalhoCriar(statusAux, 1, nroRegArq, 0);
 
   while(nroRegArq--) {
 
@@ -302,27 +304,12 @@ void lerBinario(char* entrada) {
       continue;
     }
 
-    
-    fread(&idAux, sizeof(int), 1, binarioDados);
-    
+    fread(&idAux, sizeof(uint32_t), 1, binarioDados);
     fread(dataAux, sizeof(char), TAMANHO_DATA_CRIME , binarioDados);
-    dataAux[TAMANHO_DATA_CRIME] = '\0';
-    strVazia(dataAux); 
-    
-    fread(&numArtAux, sizeof(int), 1, binarioDados);
-    
+    fread(&numArtAux, sizeof(uint32_t), 1, binarioDados);
     fread(marcaAux, sizeof(char), TAMANHO_MARCA_CELULAR, binarioDados);
-    marcaAux[TAMANHO_MARCA_CELULAR] = '\0';
-    if(!strVazia(marcaAux)) {
-      for(int j = 0; j < strlen(marcaAux); j++) {
-        if(marcaAux[j] == '$') {
-          marcaAux[j] = '\0';
-          break;
-        }
-      }
-    }
+
     i=0;
-    
     while(1) {
       fread(&lugarAux[i], sizeof(char), 1, binarioDados);
       if(lugarAux[i] == '|') {
@@ -331,10 +318,8 @@ void lerBinario(char* entrada) {
       }
       i++;
     }
-    strVazia(lugarAux);
-    
+
     i=0;
-    
     while(1) {
       fread(&descricaoAux[i], sizeof(char), 1, binarioDados);
       if(descricaoAux[i] == '|') {
@@ -343,21 +328,38 @@ void lerBinario(char* entrada) {
       }
       i++;
     }
-    strVazia(descricaoAux);
-
+    i=0;
     fread(&charAux, sizeof(char), 1, binarioDados);
-    
-    if(numArtAux == -1) {
-      printf("%d, %s, %s, %s, %s, %s\n", idAux, dataAux, STR_VAZIA, lugarAux, descricaoAux, marcaAux); 
-    } else {
-      printf("%d, %s, %d, %s, %s, %s\n", idAux, dataAux, numArtAux, lugarAux, descricaoAux, marcaAux); 
-    }
 
+    METADADOS* metadados = dadosCriarMetadados((int)strlen(descricaoAux), (int)(strlen(lugarAux)));
+    DADOS* dados = dadosCriar(idAux, dataAux, numArtAux, marcaAux, lugarAux, descricaoAux, removidoAux);  
+    uint64_t tamReg = dadosMetadadosObterTamanhoRegistro(dados, metadados);
+
+    dadosImprimir(dados, metadados);
+
+    dadosDeletar(&dados);
+    dadosMetadadosDeletar(&metadados);
+    
+    dataAux[TAMANHO_DATA_CRIME] = '\0';
+    marcaAux[TAMANHO_MARCA_CELULAR] = '\0';
+    
+    int tamanhoLugarAux = dadosMetadadosObterTamanhoLugarCrime(metadados);
+    char lugarAux[tamanhoLugarAux + 1];
+    strcpy(lugarAux, dadosObterLugarCrime(dados));
+    lugarAux[tamanhoLugarAux] = '\0';
+
+    int tamanhoDescricaoAux = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
+    char descricaoAux[tamanhoDescricaoAux + 1];
+    strcpy(descricaoAux, dadosObterDescricaoCrime(dados));
+    descricaoAux[tamanhoDescricaoAux] = '\0';
+    
     memset(dataAux,0,strlen(dataAux));
     memset(marcaAux,0,strlen(marcaAux));
     memset(lugarAux,0,strlen(lugarAux));
     memset(descricaoAux,0,strlen(descricaoAux));
     charAux = '\0';
   }
-  fclose(binarioDados);
+
+  cabecalhoDeletar(&cabecalho);
+  return tabela;
 }

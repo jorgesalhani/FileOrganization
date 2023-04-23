@@ -5,11 +5,10 @@
     #include <stdlib.h>
     #include <stdint.h>
 
-    typedef struct cacecalho_indice_ CABECALHO_INDICE;
+    typedef struct cabecalho_indice_ CABECALHO_INDICE;
 
     CABECALHO_INDICE* cabecalhoIndiceCriar(char status);
     bool cabecalhoIndiceExiste(CABECALHO_INDICE* cabecalhoIndice);
-    bool statusValido(char status);
     bool cabecalhoIndiceAtualizarStatus(CABECALHO_INDICE* cabecalhoIndice, char novoStatus);
     char cabecalhoIndiceObterStatus(CABECALHO_INDICE* cabecalhoIndice);
     bool cabecalhoIndiceDeletar(CABECALHO_INDICE** cabecalhoIndice);

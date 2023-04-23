@@ -37,8 +37,6 @@
 #include "utilitarios/funcoesFornecidas.h"
 #include "indice/indice.h"
 
-#define STR_VAZIA "NULO"
-
 void lerEntradasModo1(char* nomeArquivoEntrada, char* nomeArquivoSaida) {
   scanf("%s", nomeArquivoEntrada);
   scanf("%s", nomeArquivoSaida);
@@ -62,11 +60,13 @@ int main(void) {
 
   scanf("%d", &modo);
 
+  TABELA* tabela = NULL;
+
   switch (modo)
   {
   case 1: ;
     lerEntradasModo1(nomeArquivoEntrada, nomeArquivoSaida);
-    TABELA* tabela = tabelaCriarBinario(nomeArquivoEntrada, nomeArquivoSaida);
+    tabela = tabelaCriarBinario(nomeArquivoEntrada, nomeArquivoSaida);
     if (!tabelaExiste(tabela)) return 0;
 
     tabelaFecharArquivo(tabela);
@@ -76,11 +76,21 @@ int main(void) {
 
   case 2:
     lerEntradasModo2(nomeArquivoEntrada);
-    lerBinario(nomeArquivoEntrada);
+    tabela = tabelaLerBinario(nomeArquivoEntrada);
+    if (!tabelaExiste(tabela)) return 0;
+    
+    tabelaFecharArquivo(tabela);
+    tabelaDeletar(&tabela, true);
     break;
 
   case 3:
     lerEntradasModo3(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
+    INDICE* indice = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
+    if (!indiceExiste(indice)) return 0;
+
+    indiceFecharArquivo(indice);
+    binarioNaTela(indiceObterNomeArquivo(indice)); 
+    indiceDeletar(&indice, true);
     // lerBinario(nomeArquivoEntrada);
     // TABELA* tabela = tabelaCriarBinarioIndice(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
     // if (!tabelaExiste(tabela)) return 0;
