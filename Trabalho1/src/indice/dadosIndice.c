@@ -1,15 +1,17 @@
-#include <stdlib.h>
 #include "dadosIndice.h"
-#include <string.h>
 
 /*******************
  * ESTRUTURA DE DADO
  * *****************
 */
 
-struct dados_indice_ {
-    uint32_t chaveBuscaInteiro;
-    char chaveBuscaString[TAMANHO_CHAVE_BUSCA];
+struct dados_indice_inteiro_ {
+    uint32_t chaveBusca;
+    uint64_t byteOffset;
+};
+
+struct dados_indice_string_ {
+    char chaveBusca[TAMANHO_CHAVE_BUSCA];
     uint64_t byteOffset;
 };
 
@@ -18,91 +20,101 @@ struct dados_indice_ {
  * *******************
 */
 
-bool tipoDadoValido(char* tipoDado) {
-    return (tipoDado != "string" && tipoDado != "inteiro") ? false : true;
-}
-
-bool dadosIndiceEntradasValidas(
-    char* tipoDado, char chaveBuscaString[TAMANHO_CHAVE_BUSCA], uint64_t byteOffset
-) {
-    if (!tipoDadoValido(tipoDado) || !chaveBuscaStringValida(chaveBuscaString)) return false;
-    return true;
-}
-
 /********************
  * FUNCOES PRINCIPAIS
  * ******************
 */
 
-bool chaveBuscaStringValida(char chaveBuscaString[TAMANHO_CHAVE_BUSCA]) {
-    return strlen(chaveBuscaString) <= TAMANHO_CHAVE_BUSCA ? true : false;
+bool tipoDadoStringValido(char* tipoDado) {
+    return strcmp(tipoDado, "string") == 0 ? true : false;
 }
 
-bool chaveBuscaInteiroValida(uint32_t chaveBuscaInteiro) {
-    return chaveBuscaInteiro >= 0 ? true : false;
+bool tipoDadoInteiroValido(char* tipoDado) {
+    return strcmp(tipoDado, "inteiro") == 0 ? true : false;
 }
 
-DADOS_INDICE* dadosIndiceCriar(
-    char* tipoDado, uint32_t chaveBuscaInteiro, char chaveBuscaString[TAMANHO_CHAVE_BUSCA], uint64_t byteOffset
-) {
-    if (!tipoDadoValido(tipoDado)) return NULL;
-    if (strcmp(tipoDado, "string") == 0) {
-        chaveBuscaInteiro = -1;
-    } else {
-        chaveBuscaString = "$$$$$$$$$$$$";
-    }
-    if (!dadosIndiceEntradasValidas(tipoDado, chaveBuscaString, byteOffset)) return NULL;
+DADOS_INDICE_INTEIRO* dadosIndiceInteiroCriar(char* tipoDado, uint32_t chaveBuscaInteiro, uint64_t byteOffset) {
+    if (!tipoDadoInteiroValido(tipoDado)) return NULL;
+    DADOS_INDICE_INTEIRO* dadosIndice = (DADOS_INDICE_INTEIRO*) malloc(sizeof(DADOS_INDICE_INTEIRO));
+    if (!dadosIndiceInteiroExiste(dadosIndice)) return NULL;
 
-    DADOS_INDICE* dadosIndice = (DADOS_INDICE*) malloc(sizeof(DADOS_INDICE));
-    if (!dadosIndiceExiste(dadosIndice)) return NULL;
-    
-    dadosIndice->chaveBuscaInteiro = chaveBuscaInteiro;
-    strcpy(dadosIndice->chaveBuscaString, chaveBuscaString);
+    dadosIndice->chaveBusca = chaveBuscaInteiro;
     dadosIndice->byteOffset = byteOffset;
-    
     return dadosIndice;
 }
 
-bool dadosIndiceExiste(DADOS_INDICE* dadosIndice) {
-    return dadosIndice != NULL ? true : false;
+DADOS_INDICE_STRING* dadosIndiceStringCriar(char* tipoDado, char chaveBuscaString[TAMANHO_CHAVE_BUSCA], uint64_t byteOffset) {
+    if (!tipoDadoInteiroValido(tipoDado)) return NULL;
+    DADOS_INDICE_STRING* dadosIndice = (DADOS_INDICE_STRING*) malloc(sizeof(DADOS_INDICE_STRING));
+    if (!dadosIndiceStringExiste(dadosIndice)) return NULL;
+
+    strcpy(dadosIndice->chaveBusca, chaveBuscaString);
+    dadosIndice->byteOffset = byteOffset;
+    return dadosIndice;
 }
 
-uint32_t dadosIndiceObterChaveBuscaInteiro(DADOS_INDICE* dadosIndice) {
-    if (!dadosIndiceExiste(dadosIndice)) return -1;
-    return dadosIndice->chaveBuscaInteiro;
+bool dadosIndiceInteiroExiste(DADOS_INDICE_INTEIRO* dadosIndiceInteiro) {
+    return dadosIndiceInteiro != NULL ? true : false;
 }
 
-char* dadosIndiceObterChaveBuscaString(DADOS_INDICE* dadosIndice) {
-    if (!dadosIndiceExiste(dadosIndice)) return "$";
-    return dadosIndice->chaveBuscaString;
+bool dadosIndiceStringExiste(DADOS_INDICE_STRING* dadosIndiceString) {
+    return dadosIndiceString != NULL ? true : false;
 }
 
-uint64_t dadosIndiceObterByteOffset(DADOS_INDICE* dadosIndice) {
-    if (!dadosIndiceExiste(dadosIndice)) return -1;
-    return dadosIndice->byteOffset;
+uint32_t dadosIndiceObterChaveBuscaInteiro(DADOS_INDICE_INTEIRO* dadosIndiceInteiro) {
+    if (!dadosIndiceInteiroExiste(dadosIndiceInteiro)) return -1;
+    return dadosIndiceInteiro->chaveBusca;
 }
-bool dadosIndiceAtualizarChaveBuscaString(DADOS_INDICE* dadosIndice, char novaChaveBuscaString[TAMANHO_CHAVE_BUSCA]) {
-    if (!dadosIndiceExiste(dadosIndice) || !chaveBuscaStringValida(novaChaveBuscaString)) return false;
-    strcpy(dadosIndice->chaveBuscaString, novaChaveBuscaString);
+char* dadosIndiceObterChaveBuscaString(DADOS_INDICE_STRING* dadosIndiceString) {
+    if (!dadosIndiceStringExiste(dadosIndiceString)) return "$";
+    return dadosIndiceString->chaveBusca;
+}
+
+uint64_t dadosIndiceInteiroObterByteOffset(DADOS_INDICE_INTEIRO* dadosIndiceInteiro) {
+    if (!dadosIndiceInteiroExiste(dadosIndiceInteiro)) return -1;
+    return dadosIndiceInteiro->byteOffset;
+}
+uint64_t dadosIndiceStringObterByteOffset(DADOS_INDICE_STRING* dadosIndiceString) {
+    if (!dadosIndiceStringExiste(dadosIndiceString)) return -1;
+    return dadosIndiceString->byteOffset;
+}
+
+bool dadosIndiceInteiroAtualizarChaveBusca(DADOS_INDICE_INTEIRO* dadosIndice, uint32_t novaChaveBuscaInteiro) {
+    if (!dadosIndiceInteiroExiste(dadosIndice)) return false;
+    dadosIndice->chaveBusca = novaChaveBuscaInteiro;
     return true;
 }
 
-bool dadosIndiceAtualizarChaveBuscaInteiro(DADOS_INDICE* dadosIndice, uint32_t novaChaveBuscaInteiro) {
-    if (!dadosIndiceExiste(dadosIndice)) return false;
-    dadosIndice->chaveBuscaInteiro = novaChaveBuscaInteiro;
+bool dadosIndiceStringAtualizarChaveBusca(DADOS_INDICE_STRING* dadosIndice, char novaChaveBuscaString[TAMANHO_CHAVE_BUSCA]) {
+    if (!dadosIndiceStringExiste(dadosIndice)) return false;
+    strcpy(dadosIndice->chaveBusca, novaChaveBuscaString);
     return true;
 }
 
-bool dadosIndiceAtualizarByteOffset(DADOS_INDICE* dadosIndice, uint64_t novoByteOffset) {
-    if (!dadosIndiceExiste(dadosIndice)) return false;
+bool dadosIndiceInteiroAtualizarByteOffset(DADOS_INDICE_INTEIRO* dadosIndice, uint64_t novoByteOffset) {
+    if (!dadosIndiceInteiroExiste(dadosIndice)) return false;
     dadosIndice->byteOffset = novoByteOffset;
     return true;
 }
 
-bool dadosIndiceDeletar(DADOS_INDICE** dadosIndice) {
-    if (dadosIndice == NULL || !dadosIndiceExiste(*dadosIndice)) return false;
-    free(*dadosIndice);
-    *dadosIndice = NULL;
-    dadosIndice = NULL;
+bool dadosIndiceStringAtualizarByteOffset(DADOS_INDICE_STRING* dadosIndice, uint64_t novoByteOffset) {
+    if (!dadosIndiceStringExiste(dadosIndice)) return false;
+    dadosIndice->byteOffset = novoByteOffset;
+    return true;
+}
+
+bool dadosIndiceInteiroDeletar(DADOS_INDICE_INTEIRO** dadosIndiceInteiro) {
+    if (dadosIndiceInteiro == NULL || !dadosIndiceInteiroExiste(*dadosIndiceInteiro)) return false;
+    free(*dadosIndiceInteiro);
+    *dadosIndiceInteiro = NULL;
+    dadosIndiceInteiro = NULL;
+    return true;
+}
+
+bool dadosIndiceStringDeletar(DADOS_INDICE_STRING** dadosIndiceString) {
+    if (dadosIndiceString == NULL || !dadosIndiceStringExiste(*dadosIndiceString)) return false;
+    free(*dadosIndiceString);
+    *dadosIndiceString = NULL;
+    dadosIndiceString = NULL;
     return true;
 }

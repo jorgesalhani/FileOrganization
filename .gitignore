@@ -4,3 +4,6 @@
 *exec
 *.bin
 *.csv
+maintest.c
+test.h
+test.c

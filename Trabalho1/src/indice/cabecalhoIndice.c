@@ -16,7 +16,7 @@ struct cabecalho_indice_ {
 */
 
 bool cabecalhoIndiceStatusValido(char status) {
-
+    return status == '0' || status == '1' ? true : false;
 }
 
 /********************
