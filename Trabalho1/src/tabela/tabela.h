@@ -74,6 +74,14 @@
      * @return TABELA*. Ponteiro para o TAD tabela criado
     */
     TABELA* tabelaLerImprimirBinario(char* entrada);
+
+    CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela);
+    
+    DADOS* tabelaLerArmazenarDado(TABELA* tabela);
+
+    METADADOS* tabelaLerArmazenarMetadado(DADOS* dados);
+
+    bool modoAbrirArquivoValido(char* modoAberturaArquivo);
     
 
 #endif

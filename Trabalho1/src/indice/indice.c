@@ -33,11 +33,11 @@ bool indiceArquivoExiste(FILE* arquivo) {
  * ******************
 */
 
-INDICE* indiceCriar(char* nomeArquivoIndice) {
+INDICE* indiceCriar(char* nomeArquivoIndice, char* modoAberturaArquivo) {
     if (!indiceNomeValido(nomeArquivoIndice)) return NULL;
-    
+    if (!modoAbrirArquivoValido(modoAberturaArquivo)) return NULL;
     INDICE* indice = (INDICE*) malloc(sizeof(INDICE));
-    FILE* arquivoBinario = fopen(nomeArquivoIndice, "wb+");
+    FILE* arquivoBinario = fopen(nomeArquivoIndice, modoAberturaArquivo);
 
     if (!indiceExiste(indice) || !indiceArquivoExiste(arquivoBinario)) return NULL;
 
@@ -104,10 +104,46 @@ bool indiceDeletar(INDICE** indice, bool manterArquivo) {
 }
 
 INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice) {
-    TABELA* tabela = tabelaCriar(nomeArquivoEntrada, "rb");
+    INDICE* indice = indiceCriar(nomeArquivoIndice, "wb+");
+    if (!indiceExiste(indice)) {
+        erroGenerico();
+        return indice;
+    }
 
+    TABELA* tabela = tabelaCriar(nomeArquivoEntrada, "rb");
+    if(!tabelaExiste(tabela)) {
+        tabelaFecharArquivo(tabela);
+        tabelaDeletar(&tabela, true);
+        erroGenerico();
+        return indice;
+    }
+
+    CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
+    if (!cabecalhoExiste(cabecalho)) {
+        tabelaFecharArquivo(tabela);
+        tabelaDeletar(&tabela, true);
+        return indice;
+    }
+
+    uint32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
+
+    while(nroRegArq--) {
+
+        DADOS* dados = tabelaLerArmazenarDado(tabela);
+        if (!dadosExiste(dados)) continue;
+
+        METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
+        
+        
+
+        dadosDeletar(&dados);
+        dadosMetadadosDeletar(&metadados);
+    }
+
+    cabecalhoDeletar(&cabecalho);
     tabelaFecharArquivo(tabela);
     tabelaDeletar(&tabela, true);
+    return indice;
 }
 
 

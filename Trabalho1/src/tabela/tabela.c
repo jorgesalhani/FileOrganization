@@ -35,13 +35,6 @@ bool delimitadorValido(char delimitadorCampos) {
     return delimitadorCampos == '|' ? true : false;
 }
 
-bool modoAbrirArquivoValido(char* modoAberturaArquivo) {
-  return (
-    strcmp(modoAberturaArquivo, "wb+") == 0 ||
-    strcmp(modoAberturaArquivo, "rb") == 0
-  ) ? true : false;
-}
-
 CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela) {
   if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario)) return NULL;
 
@@ -150,6 +143,13 @@ METADADOS* tabelaLerArmazenarMetadado(DADOS* dados) {
  * FUNCOES PRINCIPAIS
  * ******************
 */
+
+bool modoAbrirArquivoValido(char* modoAberturaArquivo) {
+  return (
+    strcmp(modoAberturaArquivo, "wb+") == 0 ||
+    strcmp(modoAberturaArquivo, "rb") == 0
+  ) ? true : false;
+}
     
 TABELA* tabelaCriar(char* nome, char* modoAberturaArquivo) {
     if (!nomeValido(nome) || !modoAbrirArquivoValido(modoAberturaArquivo)) return NULL;
@@ -366,9 +366,7 @@ TABELA* tabelaLerImprimirBinario(char* entrada) {
     erroGenerico();
     return tabela;
   }
-  
-  FILE *binarioDados = tabela->arquivoBinario;
-  
+    
   CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
   if (!cabecalhoExiste(cabecalho)) return tabela;
 

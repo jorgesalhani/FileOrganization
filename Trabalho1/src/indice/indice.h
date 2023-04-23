@@ -3,11 +3,12 @@
 
     #include "dadosIndice.h"
     #include "cabecalhoIndice.h"
+    #include "../utilitarios/funcoesFornecidas.h"
     #include "../tabela/tabela.h"
     
     typedef struct indice_ INDICE;
 
-    INDICE* indiceCriar(char* nomeArquivoIndice);
+    INDICE* indiceCriar(char* nomeArquivoIndice, char* modoAberturaArquivo);
     bool indiceExiste(INDICE* indice);
     bool indiceAtualizarCabecalho(INDICE* indice, CABECALHO_INDICE* cabecalhoIndice);
     bool indiceAtualizarDados(INDICE* indice, DADOS_INDICE* dadosIndice);
