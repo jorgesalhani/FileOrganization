@@ -73,7 +73,7 @@
      * @param char* entrada. Nome do arquivo de entrada. Formato esperado: <entrada>.bin
      * @return TABELA*. Ponteiro para o TAD tabela criado
     */
-    TABELA* tabelaLerBinario(char* entrada);
+    TABELA* tabelaLerImprimirBinario(char* entrada);
     
 
 #endif

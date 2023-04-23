@@ -76,7 +76,7 @@ int main(void) {
 
   case 2:
     lerEntradasModo2(nomeArquivoEntrada);
-    tabela = tabelaLerBinario(nomeArquivoEntrada);
+    tabela = tabelaLerImprimirBinario(nomeArquivoEntrada);
     if (!tabelaExiste(tabela)) return 0;
     
     tabelaFecharArquivo(tabela);

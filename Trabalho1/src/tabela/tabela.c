@@ -360,7 +360,7 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     return tabela;
 }
 
-TABELA* tabelaLerBinario(char* entrada) {
+TABELA* tabelaLerImprimirBinario(char* entrada) {
   TABELA* tabela = tabelaCriar(entrada, "rb");
   if(!tabelaExiste(tabela)) {
     erroGenerico();
@@ -372,7 +372,6 @@ TABELA* tabelaLerBinario(char* entrada) {
   CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
   if (!cabecalhoExiste(cabecalho)) return tabela;
 
-  uint32_t idAux, numArtAux, i = 0;
   uint32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
 
   while(nroRegArq--) {
