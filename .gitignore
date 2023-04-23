@@ -3,3 +3,4 @@
 !.gitignore
 *exec
 *.bin
+*.csv

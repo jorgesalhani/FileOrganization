@@ -264,21 +264,17 @@ TABELA* tabelaLerBinario(char* entrada) {
   }
   
   FILE *binarioDados = tabela->arquivoBinario;
-  char lixo[256];
-  char charAux = '0';
+  
   char statusAux = '0';
-  char removidoAux = '0';
+  uint32_t nroRegRem = 0;
   uint32_t nroRegArq = 1; 
+  uint64_t proxByteOffset = 0;
   uint32_t idAux, numArtAux, i = 0;
-  char dataAux[TAMANHO_DATA_CRIME+1] = ""; 
-  char marcaAux[TAMANHO_MARCA_CELULAR+1] = "";
-  char descricaoAux[256] = "";
-  char lugarAux[256] = ""; 
   
   fread(&statusAux, sizeof(char), 1, binarioDados);
-  fread(lixo, sizeof(char), 8, binarioDados);
+  fread(&proxByteOffset, sizeof(uint64_t), 1, binarioDados);
   fread(&nroRegArq, sizeof(uint32_t), 1, binarioDados);
-  fread(lixo, sizeof(char), 4, binarioDados);
+  fread(&nroRegRem, sizeof(uint32_t), 1, binarioDados);
 
   if (statusAux == '0') {
     erroGenerico();
@@ -290,7 +286,15 @@ TABELA* tabelaLerBinario(char* entrada) {
     return tabela;
   }
 
-  CABECALHO* cabecalho = cabecalhoCriar(statusAux, 1, nroRegArq, 0);
+  CABECALHO* cabecalho = cabecalhoCriar(statusAux, proxByteOffset, nroRegArq, nroRegRem);
+
+  char lixo[256];
+  char charAux = '0';
+  char removidoAux = '0';
+  char dataAux[TAMANHO_DATA_CRIME+1] = ""; 
+  char marcaAux[TAMANHO_MARCA_CELULAR+1] = "";
+  char descricaoAux[256] = "";
+  char lugarAux[256] = ""; 
 
   while(nroRegArq--) {
 
