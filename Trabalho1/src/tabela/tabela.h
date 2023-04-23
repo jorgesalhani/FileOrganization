@@ -9,9 +9,10 @@
     /**
      * @brief Alocacao de memoria para armazenar e manipular arquivo binario
      * @param char* nome. Nome do arquivo a ser criado. Formato de saidoa: <nome>.bin
+     * @param char* modoAberturaArquivo. Modo de abertura do arquivo. Padrao esperado: "wb+" ou "rb+"
      * @return TABELA* Ponteiro para o TAD tabela
     */
-    TABELA* tabelaCriar(char* nome);
+    TABELA* tabelaCriar(char* nome, char* modoAberturaArquivo);
 
     /**
      * @brief Atualizar cabecalho do arquivo binario presente no TAD tabela
@@ -70,8 +71,17 @@
     /**
      * @brief Funcionalidade 2. Implementacao de funcao analoga ao SELECT (SQL)
      * @param char* entrada. Nome do arquivo de entrada. Formato esperado: <entrada>.bin
+     * @return TABELA*. Ponteiro para o TAD tabela criado
     */
-    void lerBinario(char* entrada);
+    TABELA* tabelaLerImprimirBinario(char* entrada);
+
+    CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela);
+    
+    DADOS* tabelaLerArmazenarDado(TABELA* tabela);
+
+    METADADOS* tabelaLerArmazenarMetadado(DADOS* dados);
+
+    bool modoAbrirArquivoValido(char* modoAberturaArquivo);
     
 
 #endif

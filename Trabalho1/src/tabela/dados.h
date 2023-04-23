@@ -3,6 +3,8 @@
     #define TAMANHO_DATA_CRIME 10
     #define TAMANHO_MARCA_CELULAR 12
     #define NUMERO_CAMPOS_VARIAVEIS 2
+    #define STR_VAZIA "NULO"
+
 
     #include <stdint.h>
     #include <stdlib.h>
@@ -25,13 +27,13 @@
     DADOS* dadosCriar(uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], uint32_t numeroArtigo, 
                       char marcaCelular[TAMANHO_MARCA_CELULAR], char* lugarCrime, char* descricaoCrime, char removido);
 
-    METADADOS* dadosCriarMetadados();
+    METADADOS* dadosCriarMetadados(int tamanhoDescricaoCrime, int tamanhoLugarCrime);
 
     /**
      * @brief Imprime oconteudo dos dados
      * @param DADOS* dados. Ponteiro para o TAD dados
     */
-    void dadosImprimir(DADOS* dados);
+    void dadosImprimir(DADOS* dados, METADADOS* metadados);
 
     /**
      * @brief Verifica existencia do TAD dados criado
@@ -187,5 +189,21 @@
      * @return bool true: caso desalocacao bem-sucedida. false: caso contratio
     */
     bool dadosMetadadosDeletar(METADADOS** metadados);
+
+    bool metadadosExiste(METADADOS* metadados);
+
+    bool removidoValido(char removido);
+
+    bool dadosAtualizarRegistro(
+        DADOS* dados, METADADOS* metadados,
+        char removido, uint32_t novoIdCrime, 
+        char* novoDataCrime, uint32_t novoNumeroArtigo, 
+        char* novoMarcaCelular, char* novoLugarCrime, 
+        char* novoDescricaoCrime
+    );
+
+    bool campoIndexadoValido(char* campoIndexado);
+
+    DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado);
 
 #endif
