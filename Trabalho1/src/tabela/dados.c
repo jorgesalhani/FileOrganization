@@ -29,10 +29,6 @@ struct dados_ {
  * *******************
 */
 
-bool removidoValido(char removido) {
-    return (removido != '0' && removido != '1') ? false : true;
-}
-
 bool stringFixaValida(char* entrada, size_t tamanho, char delimitador) {
     return (strlen(entrada) <= sizeof(char)*tamanho) ? true : false;
 }
@@ -61,10 +57,6 @@ bool deletarStringsFixas(char* stringFixa) {
     stringFixa = NULL;
 }
 
-bool metadadosExiste(METADADOS* metadados) {
-  return metadados != NULL ? true : false;
-}
-
 bool strVazia(char* str) {
   if(strcmp(str, "") == 0 || str[0] == '$') {
     strcpy(str, STR_VAZIA);
@@ -77,6 +69,14 @@ bool strVazia(char* str) {
  * FUNCOES PRINCIPAIS
  * ******************
 */
+
+bool metadadosExiste(METADADOS* metadados) {
+  return metadados != NULL ? true : false;
+}
+
+bool removidoValido(char removido) {
+    return (removido != '0' && removido != '1') ? false : true;
+}
 
 bool dadosExiste(DADOS* dados) {
     return dados != NULL ? true : false;

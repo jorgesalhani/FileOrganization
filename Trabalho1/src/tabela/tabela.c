@@ -46,6 +46,7 @@ CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela) {
   if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario)) return NULL;
 
   FILE* binarioDados = tabela->arquivoBinario;
+
   char statusAux = '0';
   uint32_t nroRegRem = 0;
   uint32_t nroRegArq = 1; 
@@ -70,6 +71,79 @@ CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela) {
   CABECALHO* cabecalho = cabecalhoCriar(statusAux, proxByteOffset, nroRegArq, nroRegRem);
   if (!cabecalhoExiste(cabecalho)) return NULL;
   return cabecalho;
+}
+
+bool verificarSeRemovido(TABELA* tabela, char removido) {
+  FILE* binarioDados = tabela->arquivoBinario;
+
+  char lixo[256];
+  char charAux = '0';
+  if(removido == '1') {
+    fread(lixo, sizeof(char), 30, binarioDados);
+    while(charAux != '#') {
+      fread(&charAux, sizeof(char), 1, binarioDados);
+    }
+    charAux = '\0';
+    return true;
+  }
+  return false;
+}
+
+DADOS* tabelaLerArmazenarDado(TABELA* tabela) {
+  if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario)) return NULL;
+
+  FILE* binarioDados = tabela->arquivoBinario;
+
+  char removidoAux = '0';
+  fread(&removidoAux, sizeof(char), 1, binarioDados);
+  if (!removidoValido(removidoAux)) return NULL;
+  bool registroRemovido = verificarSeRemovido(tabela, removidoAux);
+  if (registroRemovido) return NULL;
+
+  uint32_t idAux, numArtAux;
+  char charAux = '0';
+  char dataAux[TAMANHO_DATA_CRIME+1] = ""; 
+  char marcaAux[TAMANHO_MARCA_CELULAR+1] = "";
+  char descricaoAux[256] = "";
+  char lugarAux[256] = ""; 
+
+  fread(&idAux, sizeof(uint32_t), 1, binarioDados);
+  fread(dataAux, sizeof(char), TAMANHO_DATA_CRIME , binarioDados);
+  fread(&numArtAux, sizeof(uint32_t), 1, binarioDados);
+  fread(marcaAux, sizeof(char), TAMANHO_MARCA_CELULAR, binarioDados);
+
+  int lugarAuxIndice = 0;
+  while(1) {
+    fread(&lugarAux[lugarAuxIndice], sizeof(char), 1, binarioDados);
+    if(lugarAux[lugarAuxIndice] == '|') {
+      lugarAux[lugarAuxIndice] = '\0';
+      break;
+    }
+    lugarAuxIndice++;
+  }
+
+  int descricaoAuxIndice = 0;
+  while(1) {
+    fread(&descricaoAux[descricaoAuxIndice], sizeof(char), 1, binarioDados);
+    if(descricaoAux[descricaoAuxIndice] == '|') {
+      descricaoAux[descricaoAuxIndice] = '\0';
+      break;
+    }
+    descricaoAuxIndice++;
+  }
+  fread(&charAux, sizeof(char), 1, binarioDados);
+
+  DADOS* dados = dadosCriar(idAux, dataAux, numArtAux, marcaAux, lugarAux, descricaoAux, removidoAux);
+  return dados;
+}
+
+METADADOS* tabelaLerArmazenarMetadado(DADOS* dados) {
+  if (!dadosExiste(dados)) return NULL;
+  char* descricaoCrime = dadosObterDescricaoCrime(dados);
+  char* lugarCrime = dadosObterLugarCrime(dados);
+  METADADOS* metadados = dadosCriarMetadados((int)strlen(descricaoCrime), (int)(strlen(lugarCrime)));
+  if (!metadadosExiste(metadados)) return NULL;
+  return metadados;
 }
 
 /********************
@@ -301,80 +375,17 @@ TABELA* tabelaLerBinario(char* entrada) {
   uint32_t idAux, numArtAux, i = 0;
   uint32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
 
-  char lixo[256];
-  char charAux = '0';
-  char removidoAux = '0';
-  char dataAux[TAMANHO_DATA_CRIME+1] = ""; 
-  char marcaAux[TAMANHO_MARCA_CELULAR+1] = "";
-  char descricaoAux[256] = "";
-  char lugarAux[256] = ""; 
-
   while(nroRegArq--) {
 
-    fread(&removidoAux, sizeof(char), 1, binarioDados);
-    if(removidoAux == '1') {
-      fread(lixo, sizeof(char), 30, binarioDados);
-      while(charAux != '#') {
-        fread(&charAux, sizeof(char), 1, binarioDados);
-      }
-      charAux = '\0';
-      continue;
-    }
+    DADOS* dados = tabelaLerArmazenarDado(tabela);
+    if (!dadosExiste(dados)) continue;
 
-    fread(&idAux, sizeof(uint32_t), 1, binarioDados);
-    fread(dataAux, sizeof(char), TAMANHO_DATA_CRIME , binarioDados);
-    fread(&numArtAux, sizeof(uint32_t), 1, binarioDados);
-    fread(marcaAux, sizeof(char), TAMANHO_MARCA_CELULAR, binarioDados);
-
-    i=0;
-    while(1) {
-      fread(&lugarAux[i], sizeof(char), 1, binarioDados);
-      if(lugarAux[i] == '|') {
-        lugarAux[i] = '\0';
-        break;
-      }
-      i++;
-    }
-
-    i=0;
-    while(1) {
-      fread(&descricaoAux[i], sizeof(char), 1, binarioDados);
-      if(descricaoAux[i] == '|') {
-        descricaoAux[i] = '\0';
-        break;
-      }
-      i++;
-    }
-    i=0;
-    fread(&charAux, sizeof(char), 1, binarioDados);
-
-    METADADOS* metadados = dadosCriarMetadados((int)strlen(descricaoAux), (int)(strlen(lugarAux)));
-    DADOS* dados = dadosCriar(idAux, dataAux, numArtAux, marcaAux, lugarAux, descricaoAux, removidoAux);  
-    uint64_t tamReg = dadosMetadadosObterTamanhoRegistro(dados, metadados);
-
+    METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
+    
     dadosImprimir(dados, metadados);
 
     dadosDeletar(&dados);
     dadosMetadadosDeletar(&metadados);
-    
-    dataAux[TAMANHO_DATA_CRIME] = '\0';
-    marcaAux[TAMANHO_MARCA_CELULAR] = '\0';
-    
-    int tamanhoLugarAux = dadosMetadadosObterTamanhoLugarCrime(metadados);
-    char lugarAux[tamanhoLugarAux + 1];
-    strcpy(lugarAux, dadosObterLugarCrime(dados));
-    lugarAux[tamanhoLugarAux] = '\0';
-
-    int tamanhoDescricaoAux = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
-    char descricaoAux[tamanhoDescricaoAux + 1];
-    strcpy(descricaoAux, dadosObterDescricaoCrime(dados));
-    descricaoAux[tamanhoDescricaoAux] = '\0';
-    
-    memset(dataAux,0,strlen(dataAux));
-    memset(marcaAux,0,strlen(marcaAux));
-    memset(lugarAux,0,strlen(lugarAux));
-    memset(descricaoAux,0,strlen(descricaoAux));
-    charAux = '\0';
   }
 
   cabecalhoDeletar(&cabecalho);

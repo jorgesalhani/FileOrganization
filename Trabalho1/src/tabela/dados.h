@@ -190,6 +190,10 @@
     */
     bool dadosMetadadosDeletar(METADADOS** metadados);
 
+    bool metadadosExiste(METADADOS* metadados);
+
+    bool removidoValido(char removido);
+
     bool dadosAtualizarRegistro(
         DADOS* dados, METADADOS* metadados,
         char removido, uint32_t novoIdCrime, 
