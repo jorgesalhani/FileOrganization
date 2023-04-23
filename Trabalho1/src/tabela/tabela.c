@@ -42,6 +42,36 @@ bool modoAbrirArquivoValido(char* modoAberturaArquivo) {
   ) ? true : false;
 }
 
+CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela) {
+  if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario)) return NULL;
+
+  FILE* binarioDados = tabela->arquivoBinario;
+  char statusAux = '0';
+  uint32_t nroRegRem = 0;
+  uint32_t nroRegArq = 1; 
+  uint64_t proxByteOffset = 0;
+  uint32_t idAux, numArtAux, i = 0;
+  
+  fread(&statusAux, sizeof(char), 1, binarioDados);
+  fread(&proxByteOffset, sizeof(uint64_t), 1, binarioDados);
+  fread(&nroRegArq, sizeof(uint32_t), 1, binarioDados);
+  fread(&nroRegRem, sizeof(uint32_t), 1, binarioDados);
+
+  if (statusAux == '0') {
+    erroGenerico();
+    return NULL;
+  }
+  
+  if(nroRegArq == 0) {
+    erroSemRegistros();
+    return NULL;
+  }
+
+  CABECALHO* cabecalho = cabecalhoCriar(statusAux, proxByteOffset, nroRegArq, nroRegRem);
+  if (!cabecalhoExiste(cabecalho)) return NULL;
+  return cabecalho;
+}
+
 /********************
  * FUNCOES PRINCIPAIS
  * ******************
@@ -265,28 +295,11 @@ TABELA* tabelaLerBinario(char* entrada) {
   
   FILE *binarioDados = tabela->arquivoBinario;
   
-  char statusAux = '0';
-  uint32_t nroRegRem = 0;
-  uint32_t nroRegArq = 1; 
-  uint64_t proxByteOffset = 0;
+  CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
+  if (!cabecalhoExiste(cabecalho)) return tabela;
+
   uint32_t idAux, numArtAux, i = 0;
-  
-  fread(&statusAux, sizeof(char), 1, binarioDados);
-  fread(&proxByteOffset, sizeof(uint64_t), 1, binarioDados);
-  fread(&nroRegArq, sizeof(uint32_t), 1, binarioDados);
-  fread(&nroRegRem, sizeof(uint32_t), 1, binarioDados);
-
-  if (statusAux == '0') {
-    erroGenerico();
-    return tabela;
-  }
-  
-  if(nroRegArq == 0) {
-    erroSemRegistros();
-    return tabela;
-  }
-
-  CABECALHO* cabecalho = cabecalhoCriar(statusAux, proxByteOffset, nroRegArq, nroRegRem);
+  uint32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
 
   char lixo[256];
   char charAux = '0';
