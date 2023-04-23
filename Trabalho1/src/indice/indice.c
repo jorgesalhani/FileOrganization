@@ -122,6 +122,11 @@ bool liberarMemoriaCasoErro(TABELA** tabela, CABECALHO** cabecalho) {
 
 INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice) {
 
+    if (!campoIndexadoValido(campoIndexado)) {
+        erroGenerico();
+        return NULL;
+    }
+
     TABELA* tabela = tabelaCriar(nomeArquivoEntrada, "rb");
     if(!tabelaExiste(tabela)) {
         liberarMemoriaCasoErro(&tabela, NULL);
@@ -159,16 +164,23 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
 
     CABECALHO_INDICE* cabecalhoIndice = cabecalhoIndiceCriar('0');
     indiceAtualizarCabecalho(indice, cabecalhoIndice);
+
+    uint64_t byteOffset = 0;
     
     while(nroRegArq--) {
 
         DADOS* dados = tabelaLerArmazenarDado(tabela);
+        METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
+        byteOffset += dadosMetadadosObterTamanhoRegistro(dados, metadados);
         if (!dadosExiste(dados)) continue;
 
-        METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
+        // DADOS* dadosFiltrado = dadosFiltrarPorCampo(dados, campoIndexado);
+
         if (tipoDadoStringValido(tipoDado)) {
+            dadosIndiceStringAtualizarByteOffset(dadosIndiceString, byteOffset);
             indiceStringAtualizarDados(indice, dadosIndiceString);
         } else {
+            dadosIndiceInteiroAtualizarByteOffset(dadosIndiceInteiro, byteOffset);
             indiceInteiroAtualizarDados(indice, dadosIndiceInteiro);
         }
 
@@ -178,6 +190,11 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
 
     if (dadosIndiceStringExiste(dadosIndiceString)) dadosIndiceStringDeletar(&dadosIndiceString);
     else dadosIndiceInteiroDeletar(&dadosIndiceInteiro);
+
+    fseek(indice->arquivoBinario, 0, SEEK_SET);
+
+    cabecalhoIndiceAtualizarStatus(cabecalhoIndice, '1');
+    indiceAtualizarCabecalho(indice, cabecalhoIndice);
 
     cabecalhoIndiceDeletar(&cabecalhoIndice);
 

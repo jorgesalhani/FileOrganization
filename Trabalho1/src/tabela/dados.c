@@ -24,6 +24,17 @@ struct dados_ {
     char delimitador;
 };
 
+enum camposIndexados { 
+  idCrime, dataCrime, numeroArtigo, marcaCelular, 
+  lugarCrime, descricaoCrime, removido, delimitador, 
+  ENUM_FIM
+};
+
+static const char *camposIndexados[ENUM_FIM] = {
+  "idCrime", "dataCrime", "numeroArtigo", "marcaCelular", 
+  "lugarCrime", "descricaoCrime", "removido", "delimitador"
+};
+
 /*********************
  * FUNCOES UTILITARIAS
  * *******************
@@ -336,12 +347,16 @@ bool dadosAtualizarRegistro(
   return true;
 }
 
-void dadosFormatarParaImprimir(
-  DADOS* dados, METADADOS* metadados,
-  char removido, uint32_t novoIdCrime, 
-  char* novoDataCrime, uint32_t novoNumeroArtigo, 
-  char* novoMarcaCelular, char* novoLugarCrime, 
-  char* novoDescricaoCrime
-) {
+bool campoIndexadoValido(char* campoIndexado) {
+  enum camposIndexados campo_i;
+  for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
+    if (strcmp(campoIndexado, camposIndexados[campo_i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado) {
 
 }

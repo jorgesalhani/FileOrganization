@@ -202,4 +202,8 @@
         char* novoDescricaoCrime
     );
 
+    bool campoIndexadoValido(char* campoIndexado);
+
+    DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado);
+
 #endif
