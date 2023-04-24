@@ -39,8 +39,8 @@ static const char* camposIndexadosNomes[ENUM_FIM] = {
  * 1 - char*: string (char*) sem tamanho pre-definido
  * 2 - char: 1 byte
 */
-static const char camposIndexadosTipos[ENUM_FIM] = {
-  '0', '1', '0', '1', '1', '1', '2', '2'
+static const int camposIndexadosTipos[ENUM_FIM] = {
+  0, 1, 0, 1, 1, 1, 2, 2
 };
 
 /*********************
@@ -369,10 +369,10 @@ int dadosObterNumeroCampoIndexado(char* campoIndexado) {
   enum camposIndexados campo_i;
   for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
     if (strcmp(campoIndexado, camposIndexadosNomes[campo_i]) == 0) {
-      break;
+      return camposIndexadosTipos[campo_i];
     }
   }
-  return campo_i;
+  return ENUM_FIM;
 }
 
 void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado) {

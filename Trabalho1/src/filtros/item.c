@@ -4,6 +4,7 @@
 
 struct item_ {
     int32_t chave;
+    void* valorCampo;
     DADOS* dados;
     METADADOS* metadados;
 };
@@ -12,17 +13,24 @@ bool itemExiste(ITEM* item) {
     return item != NULL ? true : false;
 }
 
-ITEM* itemCriar(int32_t chave, DADOS* dados, METADADOS* metadados) {
-    if (!dadosExiste(dados) || !metadadosExiste(metadados)) return NULL;
+ITEM* itemCriar(int32_t chave, void* valorCampo, DADOS* dados, METADADOS* metadados) {
+    if (!dadosExiste(dados) || !metadadosExiste(metadados) || valorCampo == NULL) return NULL;
     
     ITEM* item = (ITEM*) malloc(sizeof(ITEM));
     if (!itemExiste(item)) return NULL;
 
     item->chave = chave;
+    item->valorCampo = valorCampo;
     item->dados = dados;
     item->metadados = metadados;
 
     return item;
+}
+
+bool itemAtualizarValorCampo(ITEM* item, void* valorCampo) {
+    if (!itemExiste(item) || valorCampo == NULL) return false;
+    item->valorCampo = valorCampo;
+    return true;
 }
 
 int32_t itemObterChave(ITEM* item) {

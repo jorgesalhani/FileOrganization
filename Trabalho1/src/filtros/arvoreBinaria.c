@@ -55,10 +55,10 @@ NO* arvoreBinariaNoCriar(ITEM* item) {
 }
 
 bool arvoreBinariaAdicionarAux(NO* raiz, DADOS* dados, METADADOS* metadados, char* campoIndexado) {
-    int indiceCampoEscolhido = dadosObterNumeroCampoIndexado(campoIndexado);
+    char indiceCampoEscolhido = dadosObterNumeroCampoIndexado(campoIndexado);
     void* campoEscolhido = dadosObterCampoIndexado(dados, campoIndexado);
 
-    ITEM* item = itemCriar(0, dados, metadados);
+    ITEM* item = itemCriar(0, campoEscolhido, dados, metadados);
     if (!itemExiste(item)) return false;
     
     NO* no = arvoreBinariaNoCriar(item);
