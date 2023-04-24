@@ -185,7 +185,7 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
 
         // DADOS* dadosFiltrado = dadosFiltrarPorCampo(dados, campoIndexado);
         
-        if (i == 0) arvoreBinariaAdicionar(arvoreBinaria, dados, metadados);
+        arvoreBinariaAdicionar(arvoreBinaria, dados, metadados, campoIndexado);
 
         if (tipoDadoStringValido(tipoDado)) {
             dadosIndiceStringAtualizarByteOffset(dadosIndiceString, byteOffset);
@@ -195,11 +195,11 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
             indiceInteiroAtualizarDados(indice, dadosIndiceInteiro);
         }
 
-        if (i != 0) {
-            dadosDeletar(&dados);
-            dadosMetadadosDeletar(&metadados);
-        }
-        i++;
+        // if (i != 0) {
+        //     dadosDeletar(&dados);
+        //     dadosMetadadosDeletar(&metadados);
+        // }
+        // i++;
     }
 
     arvoreBinariaDeletar(&arvoreBinaria);
