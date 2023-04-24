@@ -1,5 +1,21 @@
-all: cabecalho.o dados.o tabela.o cabecalhoIndice.o dadosIndice.o indice.o funcoesFornecidas.o erros.o main.o
-	gcc -g cabecalho.o dados.o tabela.o cabecalhoIndice.o dadosIndice.o indice.o funcoesFornecidas.o erros.o main.o -o exec -std=c99 -Wall; make clean
+ARQS_O = \
+	cabecalho.o \
+	dados.o \
+	tabela.o \
+	cabecalhoIndice.o \
+	dadosIndice.o \
+	item.o \
+	arvoreBinaria.o \
+	indice.o \
+	funcoesFornecidas.o \
+	erros.o \
+	main.o
+
+BSH_COMPILAR_ALL = \
+	gcc -g $(ARQS_O) -o exec -std=c99 -Wall; make clean;
+
+all: $(ARQS_O)
+	$(BSH_COMPILAR_ALL)
 
 cabecalho.o:
 	gcc -g -c tabela/cabecalho.c -o cabecalho.o -lmd
@@ -15,6 +31,12 @@ cabecalhoIndice.o:
 
 dadosIndice.o:
 	gcc -g -c indice/dadosIndice.c -o dadosIndice.o -lmd
+
+item.o:
+	gcc -g -c filtros/item.c -o item.o -lmd
+
+arvoreBinaria.o:
+	gcc -g -c filtros/arvoreBinaria.c -o arvoreBinaria.o -lmd
 
 indice.o:
 	gcc -g -c indice/indice.c -o indice.o -lmd

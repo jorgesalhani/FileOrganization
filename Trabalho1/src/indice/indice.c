@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "indice.h"
+#include "../filtros/arvoreBinaria.h"
 
 /********************
  * ESTRUTURA DE DADOS
@@ -66,12 +67,12 @@ bool indiceInteiroAtualizarDados(INDICE* indice, DADOS_INDICE_INTEIRO* dadosIndi
 
     FILE* arquivo = indice->arquivoBinario;
 
-    uint64_t byteOffset = dadosIndiceInteiroObterByteOffset(dadosIndiceInteiro);
-    uint32_t chaveBusca = dadosIndiceObterChaveBuscaInteiro(dadosIndiceInteiro);
+    int64_t byteOffset = dadosIndiceInteiroObterByteOffset(dadosIndiceInteiro);
+    int32_t chaveBusca = dadosIndiceObterChaveBuscaInteiro(dadosIndiceInteiro);
 
-    fwrite(&chaveBusca, sizeof(uint32_t), 1, arquivo);
+    fwrite(&chaveBusca, sizeof(int32_t), 1, arquivo);
 
-    fwrite(&byteOffset, sizeof(uint64_t), 1, arquivo);
+    fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
 }
 
 bool indiceStringAtualizarDados(INDICE* indice, DADOS_INDICE_STRING* dadosIndiceString) {
@@ -80,13 +81,13 @@ bool indiceStringAtualizarDados(INDICE* indice, DADOS_INDICE_STRING* dadosIndice
 
     FILE* arquivo = indice->arquivoBinario;
 
-    uint64_t byteOffset = dadosIndiceStringObterByteOffset(dadosIndiceString);
+    int64_t byteOffset = dadosIndiceStringObterByteOffset(dadosIndiceString);
 
     char chaveBuscaString[TAMANHO_CHAVE_BUSCA]; 
     strcpy(chaveBuscaString, dadosIndiceObterChaveBuscaString(dadosIndiceString));
 
     fwrite(chaveBuscaString, sizeof(char), TAMANHO_CHAVE_BUSCA, arquivo);
-    fwrite(&byteOffset, sizeof(uint64_t), 1, arquivo);
+    fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
 }
 
 char* indiceObterNomeArquivo(INDICE* indice) {
@@ -122,7 +123,7 @@ bool liberarMemoriaCasoErro(TABELA** tabela, CABECALHO** cabecalho) {
 
 INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice) {
 
-    if (!campoIndexadoValido(campoIndexado)) {
+    if (!dadosCampoIndexadoValido(campoIndexado)) {
         erroGenerico();
         return NULL;
     }
@@ -160,13 +161,21 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
         return indice;
     }
 
-    uint32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
+    ARVORE_BINARIA* arvoreBinaria = arvoreBinariaCriar(campoIndexado);
+    if (!arvoreBinariaExiste(arvoreBinaria)) {
+        liberarMemoriaCasoErro(&tabela, &cabecalho);
+        erroGenerico();
+        return indice;
+    }
+
+    int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
 
     CABECALHO_INDICE* cabecalhoIndice = cabecalhoIndiceCriar('0');
     indiceAtualizarCabecalho(indice, cabecalhoIndice);
 
-    uint64_t byteOffset = 0;
-    
+    int64_t byteOffset = 0;
+
+    int i = 0;
     while(nroRegArq--) {
 
         DADOS* dados = tabelaLerArmazenarDado(tabela);
@@ -175,6 +184,9 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
         if (!dadosExiste(dados)) continue;
 
         // DADOS* dadosFiltrado = dadosFiltrarPorCampo(dados, campoIndexado);
+        
+        // if (i == 0) arvoreBinariaAdicionar(arvoreBinaria, dados, metadados);
+        i++;
 
         if (tipoDadoStringValido(tipoDado)) {
             dadosIndiceStringAtualizarByteOffset(dadosIndiceString, byteOffset);
@@ -187,6 +199,8 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
         dadosDeletar(&dados);
         dadosMetadadosDeletar(&metadados);
     }
+
+    arvoreBinariaDeletar(&arvoreBinaria);
 
     if (dadosIndiceStringExiste(dadosIndiceString)) dadosIndiceStringDeletar(&dadosIndiceString);
     else dadosIndiceInteiroDeletar(&dadosIndiceInteiro);
