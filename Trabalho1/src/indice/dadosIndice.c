@@ -44,7 +44,7 @@ DADOS_INDICE_INTEIRO* dadosIndiceInteiroCriar(char* tipoDado, uint32_t chaveBusc
 }
 
 DADOS_INDICE_STRING* dadosIndiceStringCriar(char* tipoDado, char chaveBuscaString[TAMANHO_CHAVE_BUSCA], uint64_t byteOffset) {
-    if (!tipoDadoInteiroValido(tipoDado)) return NULL;
+    if (!tipoDadoStringValido(tipoDado)) return NULL;
     DADOS_INDICE_STRING* dadosIndice = (DADOS_INDICE_STRING*) malloc(sizeof(DADOS_INDICE_STRING));
     if (!dadosIndiceStringExiste(dadosIndice)) return NULL;
 
