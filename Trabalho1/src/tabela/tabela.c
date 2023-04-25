@@ -41,15 +41,15 @@ CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela) {
   FILE* binarioDados = tabela->arquivoBinario;
 
   char statusAux = '0';
-  uint32_t nroRegRem = 0;
-  uint32_t nroRegArq = 1; 
-  uint64_t proxByteOffset = 0;
-  uint32_t idAux, numArtAux, i = 0;
+  int32_t nroRegRem = 0;
+  int32_t nroRegArq = 1; 
+  int64_t proxByteOffset = 0;
+  int32_t idAux, numArtAux, i = 0;
   
   fread(&statusAux, sizeof(char), 1, binarioDados);
-  fread(&proxByteOffset, sizeof(uint64_t), 1, binarioDados);
-  fread(&nroRegArq, sizeof(uint32_t), 1, binarioDados);
-  fread(&nroRegRem, sizeof(uint32_t), 1, binarioDados);
+  fread(&proxByteOffset, sizeof(int64_t), 1, binarioDados);
+  fread(&nroRegArq, sizeof(int32_t), 1, binarioDados);
+  fread(&nroRegRem, sizeof(int32_t), 1, binarioDados);
 
   if (statusAux == '0') {
     erroGenerico();
@@ -93,16 +93,16 @@ DADOS* tabelaLerArmazenarDado(TABELA* tabela) {
   bool registroRemovido = verificarSeRemovido(tabela, removidoAux);
   if (registroRemovido) return NULL;
 
-  uint32_t idAux, numArtAux;
+  int32_t idAux, numArtAux;
   char charAux = '0';
   char dataAux[TAMANHO_DATA_CRIME+1] = ""; 
   char marcaAux[TAMANHO_MARCA_CELULAR+1] = "";
   char descricaoAux[256] = "";
   char lugarAux[256] = ""; 
 
-  fread(&idAux, sizeof(uint32_t), 1, binarioDados);
+  fread(&idAux, sizeof(int32_t), 1, binarioDados);
   fread(dataAux, sizeof(char), TAMANHO_DATA_CRIME , binarioDados);
-  fread(&numArtAux, sizeof(uint32_t), 1, binarioDados);
+  fread(&numArtAux, sizeof(int32_t), 1, binarioDados);
   fread(marcaAux, sizeof(char), TAMANHO_MARCA_CELULAR, binarioDados);
 
   int lugarAuxIndice = 0;
@@ -171,14 +171,14 @@ bool tabelaAtualizarCabecalho(TABELA* tabela, CABECALHO* cabecalho) {
     FILE* arquivo = tabela->arquivoBinario;
 
     char status = cabecalhoObterStatus(cabecalho);
-    uint64_t byteOffset = cabecalhoObterProxByteOffset(cabecalho);
-    uint32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
-    uint32_t nroRegRem = cabecalhoObterNroRegRem(cabecalho);
+    int64_t byteOffset = cabecalhoObterProxByteOffset(cabecalho);
+    int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
+    int32_t nroRegRem = cabecalhoObterNroRegRem(cabecalho);
 
     fwrite(&status, sizeof(char), 1, arquivo);
-    fwrite(&byteOffset, sizeof(uint64_t), 1, arquivo);
-    fwrite(&nroRegArq, sizeof(uint32_t), 1, arquivo);
-    fwrite(&nroRegRem, sizeof(uint32_t), 1, arquivo);
+    fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
+    fwrite(&nroRegArq, sizeof(int32_t), 1, arquivo);
+    fwrite(&nroRegRem, sizeof(int32_t), 1, arquivo);
 
     return true;
 }
@@ -192,27 +192,27 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, METADADOS* metadados,
     FILE* arquivo = tabela->arquivoBinario;
 
     char removido = dadosObterRemovido(dados);
-    uint32_t idCrime = dadosObterIdCrime(dados);
+    int32_t idCrime = dadosObterIdCrime(dados);
     char* dataCrime = dadosObterDataCrime(dados);
-    uint32_t numeroArtigo = dadosObterNumeroArtigo(dados);
+    int32_t numeroArtigo = dadosObterNumeroArtigo(dados);
     char* marcaCelular = dadosObterMarcaCelular(dados);
     char delimitador = dadosObterDelimitadorRegistro(dados);
 
-    uint64_t tamanhoLugarCrime = dadosMetadadosObterTamanhoLugarCrime(metadados);
+    int64_t tamanhoLugarCrime = dadosMetadadosObterTamanhoLugarCrime(metadados);
     char lugarCrime[tamanhoLugarCrime];
-    for (uint64_t i = 0; i < tamanhoLugarCrime; i++) lugarCrime[i] = dadosObterLugarCrime(dados)[i];
+    for (int64_t i = 0; i < tamanhoLugarCrime; i++) lugarCrime[i] = dadosObterLugarCrime(dados)[i];
 
-    uint64_t tamanhoDescricaoCrime = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
+    int64_t tamanhoDescricaoCrime = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
     char descricaoCrime[tamanhoDescricaoCrime];
-    for (uint64_t i = 0; i < tamanhoDescricaoCrime; i++) descricaoCrime[i] = dadosObterDescricaoCrime(dados)[i];
+    for (int64_t i = 0; i < tamanhoDescricaoCrime; i++) descricaoCrime[i] = dadosObterDescricaoCrime(dados)[i];
 
     fwrite(&removido, sizeof(char), 1, arquivo);
     
-    fwrite(&idCrime, sizeof(uint32_t), 1, arquivo);
+    fwrite(&idCrime, sizeof(int32_t), 1, arquivo);
 
     fwrite(dataCrime, sizeof(char), TAMANHO_DATA_CRIME, arquivo);
 
-    fwrite(&numeroArtigo, sizeof(uint32_t), 1, arquivo);
+    fwrite(&numeroArtigo, sizeof(int32_t), 1, arquivo);
 
     fwrite(marcaCelular, sizeof(char), TAMANHO_MARCA_CELULAR, arquivo);
 
@@ -265,10 +265,10 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     DADOS* dados = dadosCriar(0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "", '0');
     METADADOS* metadados = dadosCriarMetadados(0, 0);
 
-    uint32_t tamanhoRegistroDados = 0;
-    uint64_t tamanhoRegistroCabecalho = 0;
-    uint32_t novoNroRegArq = 0;
-    uint32_t novoNroRegRem = 0;
+    int32_t tamanhoRegistroDados = 0;
+    int64_t tamanhoRegistroCabecalho = 0;
+    int32_t novoNroRegArq = 0;
+    int32_t novoNroRegRem = 0;
     
 
     tabelaAtualizarCabecalho(tabela, cabecalho);
@@ -340,7 +340,7 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     }
 
     tamanhoRegistroCabecalho = cabecalhoObterTamanhoRegistro(cabecalho);
-    uint64_t novoProxByteOffset = (uint64_t)(tamanhoRegistroDados + tamanhoRegistroCabecalho);
+    int64_t novoProxByteOffset = (int64_t)(tamanhoRegistroDados + tamanhoRegistroCabecalho);
 
     fseek(tabela->arquivoBinario, 0, SEEK_SET);
 
@@ -370,7 +370,7 @@ TABELA* tabelaLerImprimirBinario(char* entrada) {
   CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
   if (!cabecalhoExiste(cabecalho)) return tabela;
 
-  uint32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
+  int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
 
   while(nroRegArq--) {
 

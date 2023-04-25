@@ -15,16 +15,16 @@
 
     /**
      * @brief Alocacao de memoria para armazenar dados de ocorrencia criminal
-     * @param uint32_t idCrime. Codigo identificador do crime
+     * @param int32_t idCrime. Codigo identificador do crime
      * @param char[TAMANHO_DATA_CRIME] dataCrime. Data de ocorrencia do crime. Formato char[10] DD/MM/AAAA
-     * @param uint32_t numeroArtigo. Numero do artigo no codigo penal relacionado ao crime
+     * @param int32_t numeroArtigo. Numero do artigo no codigo penal relacionado ao crime
      * @param char[TAMANHO_MARCA_CELULAR] marcaCelular. Marca do celular furtado/roubado. Formato char[12]
      * @param char* lugarCrime. Lugar no qual o crime ocorreu
      * @param char* descricaoCrime. Descricao detalhada do crime
      * @param char removido. Indica se o registro esta logicamente removido. Assume valores '0' ou '1'
      * @return DADO* Ponteiro para o TAD dados
     */
-    DADOS* dadosCriar(uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], uint32_t numeroArtigo, 
+    DADOS* dadosCriar(int32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], int32_t numeroArtigo, 
                       char marcaCelular[TAMANHO_MARCA_CELULAR], char* lugarCrime, char* descricaoCrime, char removido);
 
     METADADOS* dadosCriarMetadados(int tamanhoDescricaoCrime, int tamanhoLugarCrime);
@@ -45,10 +45,10 @@
     /**
      * @brief Atualiza campo idCrime
      * @param DADOS* dados. Ponteiro para o TAD dados
-     * @param uint32_t novoIdCrime. Novo valor para o campo idCrime
+     * @param int32_t novoIdCrime. Novo valor para o campo idCrime
      * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
     */
-    bool dadosAtualizarIdCrime(DADOS* dados, uint32_t novoIdCrime);
+    bool dadosAtualizarIdCrime(DADOS* dados, int32_t novoIdCrime);
     
     /**
      * @brief Atualiza campo dataCrime
@@ -61,10 +61,10 @@
     /**
      * @brief Atualiza campo numeroArtigo
      * @param DADOS* dados. Ponteiro para o TAD dados
-     * @param uint32_t novoNumeroArtigo. Novo valor para o campo numeroArtigo
+     * @param int32_t novoNumeroArtigo. Novo valor para o campo numeroArtigo
      * @return bool true: caso atualizacao bem-sucedida. false: caso contrario
     */
-    bool dadosAtualizarNumeroArtigo(DADOS* dados, uint32_t novoNumeroArtigo);
+    bool dadosAtualizarNumeroArtigo(DADOS* dados, int32_t novoNumeroArtigo);
     
     /**
      * @brief Atualiza campo marcaCelular
@@ -101,9 +101,9 @@
     /**
      * @brief Obter campo idCrime
      * @param DADOS* dados. Ponteiro para o TAD dados criado
-     * @return uint32_t idCrime
+     * @return int32_t idCrime
     */
-    uint32_t dadosObterIdCrime(DADOS* dados);
+    int32_t dadosObterIdCrime(DADOS* dados);
 
     /**
      * @brief Obter campo dataCrime
@@ -115,9 +115,9 @@
     /**
      * @brief Obter campo numeroArtigo
      * @param DADOS* dados. Ponteiro para o TAD dados criado
-     * @return uint32_t numeroArtigo
+     * @return int32_t numeroArtigo
     */
-    uint32_t dadosObterNumeroArtigo(DADOS* dados);
+    int32_t dadosObterNumeroArtigo(DADOS* dados);
     
     /**
      * @brief Obter campo marcaCelular
@@ -164,24 +164,24 @@
     /**
      * @brief Obter tamanho do campo variavel lugarCrime para um dado registro
      * @param METADADOS* Ponteiro para TAD metadados
-     * @return uint64_t tamanho do campo lugarCrime
+     * @return int64_t tamanho do campo lugarCrime
     */
-    uint64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados);
+    int64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados);
 
     /**
      * @brief Obter tamanho do campo variavel descricaoCrime para um dado registro
      * @param METADADOS* Ponteiro para TAD metadados
-     * @return uint64_t tamanho do campo descricaoCrime
+     * @return int64_t tamanho do campo descricaoCrime
     */
-    uint64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados); 
+    int64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados); 
 
     /**
      * @brief Obter tamanho do campo variavel tamanhoRegistro para um dado registro
      * @param DADOS* Ponteiro para TAD dados
      * @param METADADOS* Ponteiro para TAD metadados
-     * @return uint64_t tamanho do campo tamanhoRegistro
+     * @return int64_t tamanho do campo tamanhoRegistro
     */
-    uint64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados);
+    int64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados);
 
     /**
      * @brief Desalocar memoria da TAD metadados
@@ -196,13 +196,17 @@
 
     bool dadosAtualizarRegistro(
         DADOS* dados, METADADOS* metadados,
-        char removido, uint32_t novoIdCrime, 
-        char* novoDataCrime, uint32_t novoNumeroArtigo, 
+        char removido, int32_t novoIdCrime, 
+        char* novoDataCrime, int32_t novoNumeroArtigo, 
         char* novoMarcaCelular, char* novoLugarCrime, 
         char* novoDescricaoCrime
     );
 
-    bool campoIndexadoValido(char* campoIndexado);
+    bool dadosCampoIndexadoValido(char* campoIndexado);
+
+    int dadosObterNumeroCampoIndexado(char* campoIndexado);
+
+    void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado);
 
     DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado);
 

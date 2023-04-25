@@ -61,14 +61,14 @@ bool tabelaAtualizarCabecalho(TABELA* tabela, CABECALHO* cabecalho) {
     FILE* arquivo = tabela->arquivoBinario;
 
     char status = cabecalhoObterStatus(cabecalho);
-    uint64_t byteOffset = cabecalhoObterProxByteOffset(cabecalho);
-    uint32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
-    uint32_t nroRegRem = cabecalhoObterNroRegRem(cabecalho);
+    int64_t byteOffset = cabecalhoObterProxByteOffset(cabecalho);
+    int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
+    int32_t nroRegRem = cabecalhoObterNroRegRem(cabecalho);
 
     fwrite(&status, sizeof(char), 1, arquivo);
-    fwrite(&byteOffset, sizeof(uint64_t), 1, arquivo);
-    fwrite(&nroRegArq, sizeof(uint32_t), 1, arquivo);
-    fwrite(&nroRegRem, sizeof(uint32_t), 1, arquivo);
+    fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
+    fwrite(&nroRegArq, sizeof(int32_t), 1, arquivo);
+    fwrite(&nroRegRem, sizeof(int32_t), 1, arquivo);
 
     return true;
 }
@@ -82,27 +82,27 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, METADADOS* metadados,
     FILE* arquivo = tabela->arquivoBinario;
 
     char removido = dadosObterRemovido(dados);
-    uint32_t idCrime = dadosObterIdCrime(dados);
+    int32_t idCrime = dadosObterIdCrime(dados);
     char* dataCrime = dadosObterDataCrime(dados);
-    uint32_t numeroArtigo = dadosObterNumeroArtigo(dados);
+    int32_t numeroArtigo = dadosObterNumeroArtigo(dados);
     char* marcaCelular = dadosObterMarcaCelular(dados);
     char delimitador = dadosObterDelimitadorRegistro(dados);
 
-    uint64_t tamanhoLugarCrime = dadosMetadadosObterTamanhoLugarCrime(metadados);
+    int64_t tamanhoLugarCrime = dadosMetadadosObterTamanhoLugarCrime(metadados);
     char lugarCrime[tamanhoLugarCrime];
-    for (uint64_t i = 0; i < tamanhoLugarCrime; i++) lugarCrime[i] = dadosObterLugarCrime(dados)[i];
+    for (int64_t i = 0; i < tamanhoLugarCrime; i++) lugarCrime[i] = dadosObterLugarCrime(dados)[i];
 
-    uint64_t tamanhoDescricaoCrime = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
+    int64_t tamanhoDescricaoCrime = dadosMetadadosObterTamanhoDescricaoCrime(metadados);
     char descricaoCrime[tamanhoDescricaoCrime];
-    for (uint64_t i = 0; i < tamanhoDescricaoCrime; i++) descricaoCrime[i] = dadosObterDescricaoCrime(dados)[i];
+    for (int64_t i = 0; i < tamanhoDescricaoCrime; i++) descricaoCrime[i] = dadosObterDescricaoCrime(dados)[i];
 
     fwrite(&removido, sizeof(char), 1, arquivo);
     
-    fwrite(&idCrime, sizeof(uint32_t), 1, arquivo);
+    fwrite(&idCrime, sizeof(int32_t), 1, arquivo);
 
     fwrite(dataCrime, sizeof(char), TAMANHO_DATA_CRIME, arquivo);
 
-    fwrite(&numeroArtigo, sizeof(uint32_t), 1, arquivo);
+    fwrite(&numeroArtigo, sizeof(int32_t), 1, arquivo);
 
     fwrite(marcaCelular, sizeof(char), TAMANHO_MARCA_CELULAR, arquivo);
 
@@ -155,10 +155,10 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     DADOS* dados = dadosCriar(0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "", '0');
     METADADOS* metadados = dadosCriarMetadados();
 
-    uint32_t tamanhoRegistroDados = 0;
-    uint64_t tamanhoRegistroCabecalho = 0;
-    uint32_t novoNroRegArq = 0;
-    uint32_t novoNroRegRem = 0;
+    int32_t tamanhoRegistroDados = 0;
+    int64_t tamanhoRegistroCabecalho = 0;
+    int32_t novoNroRegArq = 0;
+    int32_t novoNroRegRem = 0;
     
 
     tabelaAtualizarCabecalho(tabela, cabecalho);
@@ -230,7 +230,7 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
     }
 
     tamanhoRegistroCabecalho = cabecalhoObterTamanhoRegistro(cabecalho);
-    uint64_t novoProxByteOffset = (uint64_t)(tamanhoRegistroDados + tamanhoRegistroCabecalho);
+    int64_t novoProxByteOffset = (int64_t)(tamanhoRegistroDados + tamanhoRegistroCabecalho);
 
     fseek(tabela->arquivoBinario, 0, SEEK_SET);
 
@@ -268,14 +268,14 @@ void lerBinario(char* entrada) {
   char charAux = '0';
   char statusAux = '0';
   char removidoAux;
-  uint32_t nroRegArq; 
+  int32_t nroRegArq; 
   int idAux, numArtAux, i = 0;
   char dataAux[TAMANHO_DATA_CRIME+1], marcaAux[TAMANHO_MARCA_CELULAR+1];
   char descricaoAux[64], lugarAux[64], numArtAuxPrint[5]; 
   
   fread(&statusAux, sizeof(char), 1, binarioDados);
   fread(lixo, sizeof(char), 8, binarioDados);
-  fread(&nroRegArq, sizeof(uint32_t), 1, binarioDados);
+  fread(&nroRegArq, sizeof(int32_t), 1, binarioDados);
   fread(lixo, sizeof(char), 4, binarioDados);
 
   if (statusAux == '0') {

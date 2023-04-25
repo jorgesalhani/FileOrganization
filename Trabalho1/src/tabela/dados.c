@@ -10,13 +10,13 @@
 struct metadados_ {
   int tamanhoLugarCrime;
   int tamanhoDescricaoCrime;
-  uint64_t tamanhoRegistro;
+  int64_t tamanhoRegistro;
 };
 
 struct dados_ {
-    uint32_t idCrime;
+    int32_t idCrime;
     char dataCrime[TAMANHO_DATA_CRIME];
-    uint32_t numeroArtigo; 
+    int32_t numeroArtigo; 
     char marcaCelular[TAMANHO_MARCA_CELULAR];
     char* lugarCrime;
     char* descricaoCrime;
@@ -27,12 +27,20 @@ struct dados_ {
 enum camposIndexados { 
   idCrime, dataCrime, numeroArtigo, marcaCelular, 
   lugarCrime, descricaoCrime, removido, delimitador, 
-  ENUM_FIM
-};
+  ENUM_FIM};
 
-static const char *camposIndexados[ENUM_FIM] = {
+static const char* camposIndexadosNomes[ENUM_FIM] = {
   "idCrime", "dataCrime", "numeroArtigo", "marcaCelular", 
-  "lugarCrime", "descricaoCrime", "removido", "delimitador"
+  "lugarCrime", "descricaoCrime", "removido", "delimitador"};
+
+/**
+ * Tipos de campos indexados
+ * 0 - int32_t: 4 bytes
+ * 1 - char*: string (char*) sem tamanho pre-definido
+ * 2 - char: 1 byte
+*/
+static const int camposIndexadosTipos[ENUM_FIM] = {
+  0, 1, 0, 1, 1, 1, 2, 2
 };
 
 /*********************
@@ -44,11 +52,11 @@ bool stringFixaValida(char* entrada, size_t tamanho, char delimitador) {
     return (strlen(entrada) <= sizeof(char)*tamanho) ? true : false;
 }
 
-bool dadosEntrada4BytesValida(uint32_t entrada) {
-    return (sizeof(entrada) <= sizeof(uint32_t)) ? true : false;
+bool dadosEntrada4BytesValida(int32_t entrada) {
+    return (sizeof(entrada) <= sizeof(int32_t)) ? true : false;
 }
 
-bool dadosEntradasValidas(char removido, uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, char* marcaCelular) {
+bool dadosEntradasValidas(char removido, int32_t idCrime, char* dataCrime, int32_t numeroArtigo, char* marcaCelular) {
     if (
         removidoValido(removido) && stringFixaValida(dataCrime, TAMANHO_DATA_CRIME, '$') && 
         stringFixaValida(marcaCelular, TAMANHO_MARCA_CELULAR, '$') && dadosEntrada4BytesValida(idCrime) &&
@@ -94,8 +102,8 @@ bool dadosExiste(DADOS* dados) {
 }
 
 DADOS* dadosCriar(
-    uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], 
-    uint32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
+    int32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], 
+    int32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
     char* lugarCrime, char* descricaoCrime, char removido) {
     
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
@@ -136,8 +144,8 @@ METADADOS* dadosCriarMetadados(int tamanhoDescricaoCrime, int tamanhoLugarCrime)
 
 void dadosImprimir(DADOS* dados, METADADOS* metadados) {
   if (!dadosExiste(dados)) return;
-  uint32_t idAux = dadosObterIdCrime(dados);
-  uint32_t numArtAux = dadosObterNumeroArtigo(dados);
+  int32_t idAux = dadosObterIdCrime(dados);
+  int32_t numArtAux = dadosObterNumeroArtigo(dados);
 
   char dataAux[TAMANHO_DATA_CRIME+5]; 
   strcpy(dataAux, dadosObterDataCrime(dados));
@@ -182,7 +190,7 @@ bool dadosAtualizarRemovido(DADOS* dados, char removido) {
   return true;
 }
 
-bool dadosAtualizarIdCrime(DADOS* dados, uint32_t novoIdCrime) {
+bool dadosAtualizarIdCrime(DADOS* dados, int32_t novoIdCrime) {
   if (!dadosExiste(dados)) return false;
   dados->idCrime = novoIdCrime;
   return true;
@@ -199,7 +207,7 @@ bool dadosAtualizarDataCrime(DADOS* dados, char* novoDataCrime) {
   return true;
 }
 
-bool dadosAtualizarNumeroArtigo(DADOS* dados, uint32_t novoNumeroArtigo) {
+bool dadosAtualizarNumeroArtigo(DADOS* dados, int32_t novoNumeroArtigo) {
   if (!dadosExiste(dados)) return false;
   dados->numeroArtigo = novoNumeroArtigo;
   return true;
@@ -250,7 +258,7 @@ char dadosObterRemovido(DADOS* dados) {
     return dados->removido;
 }
 
-uint32_t dadosObterIdCrime(DADOS* dados) {
+int32_t dadosObterIdCrime(DADOS* dados) {
     if (!dadosExiste(dados)) return -1;
     return dados->idCrime;
 }
@@ -260,7 +268,7 @@ char* dadosObterDataCrime(DADOS* dados) {
     return dados->dataCrime;
 }
 
-uint32_t dadosObterNumeroArtigo(DADOS* dados) {
+int32_t dadosObterNumeroArtigo(DADOS* dados) {
     if (!dadosExiste(dados)) return -1;
     return dados->numeroArtigo;
 }
@@ -295,12 +303,12 @@ bool dadosDeletar(DADOS** dados) {
     return true;
 }
 
-uint64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados) {
+int64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados) {
   if (!metadadosExiste(metadados)) return -1;
   return metadados->tamanhoLugarCrime;
 }
 
-uint64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados) {
+int64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados) {
   if (!metadadosExiste(metadados)) return -1;
   return metadados->tamanhoDescricaoCrime;
 }
@@ -313,7 +321,7 @@ bool dadosMetadadosDeletar(METADADOS** metadados) {
   return true;
 }
 
-uint64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
+int64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
   if (!dadosExiste(dados) || !metadadosExiste(metadados)) return -1;
   metadados->tamanhoRegistro = 0;
   metadados->tamanhoRegistro += 
@@ -331,8 +339,8 @@ uint64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) 
 
 bool dadosAtualizarRegistro(
   DADOS* dados, METADADOS* metadados,
-  char removido, uint32_t novoIdCrime, 
-  char* novoDataCrime, uint32_t novoNumeroArtigo, 
+  char removido, int32_t novoIdCrime, 
+  char* novoDataCrime, int32_t novoNumeroArtigo, 
   char* novoMarcaCelular, char* novoLugarCrime, 
   char* novoDescricaoCrime
 ) {
@@ -347,14 +355,41 @@ bool dadosAtualizarRegistro(
   return true;
 }
 
-bool campoIndexadoValido(char* campoIndexado) {
+bool dadosCampoIndexadoValido(char* campoIndexado) {
   enum camposIndexados campo_i;
   for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
-    if (strcmp(campoIndexado, camposIndexados[campo_i]) == 0) {
+    if (strcmp(campoIndexado, camposIndexadosNomes[campo_i]) == 0) {
       return true;
     }
   }
   return false;
+}
+
+int dadosObterNumeroCampoIndexado(char* campoIndexado) {
+  enum camposIndexados campo_i;
+  for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
+    if (strcmp(campoIndexado, camposIndexadosNomes[campo_i]) == 0) {
+      return camposIndexadosTipos[campo_i];
+    }
+  }
+  return ENUM_FIM;
+}
+
+void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado) {
+
+  void *dadosCamposEmRegistro[ENUM_FIM] = {
+    &(dados->idCrime), dados->dataCrime, &(dados->numeroArtigo), dados->marcaCelular, 
+    dados->lugarCrime, dados->descricaoCrime, &(dados->removido), &(dados->delimitador), 
+  };
+
+  enum camposIndexados campo_i;
+  for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
+    if (strcmp(campoIndexado, camposIndexadosNomes[campo_i]) == 0) {
+      return dadosCamposEmRegistro[campo_i];
+    }
+  }
+
+  return NULL;
 }
 
 DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado) {

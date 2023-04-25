@@ -10,13 +10,13 @@
 struct metadados_ {
   int tamanhoLugarCrime;
   int tamanhoDescricaoCrime;
-  uint64_t tamanhoRegistro;
+  int64_t tamanhoRegistro;
 };
 
 struct dados_ {
-    uint32_t idCrime;
+    int32_t idCrime;
     char dataCrime[TAMANHO_DATA_CRIME];
-    uint32_t numeroArtigo; 
+    int32_t numeroArtigo; 
     char marcaCelular[TAMANHO_MARCA_CELULAR];
     char* lugarCrime;
     char* descricaoCrime;
@@ -37,11 +37,11 @@ bool stringFixaValida(char* entrada, size_t tamanho, char delimitador) {
     return (strlen(entrada) <= sizeof(char)*tamanho) ? true : false;
 }
 
-bool dadosEntrada4BytesValida(uint32_t entrada) {
-    return (sizeof(entrada) <= sizeof(uint32_t)) ? true : false;
+bool dadosEntrada4BytesValida(int32_t entrada) {
+    return (sizeof(entrada) <= sizeof(int32_t)) ? true : false;
 }
 
-bool dadosEntradasValidas(char removido, uint32_t idCrime, char* dataCrime, uint32_t numeroArtigo, char* marcaCelular) {
+bool dadosEntradasValidas(char removido, int32_t idCrime, char* dataCrime, int32_t numeroArtigo, char* marcaCelular) {
     if (
         removidoValido(removido) && stringFixaValida(dataCrime, TAMANHO_DATA_CRIME, '$') && 
         stringFixaValida(marcaCelular, TAMANHO_MARCA_CELULAR, '$') && dadosEntrada4BytesValida(idCrime) &&
@@ -75,8 +75,8 @@ bool dadosExiste(DADOS* dados) {
 }
 
 DADOS* dadosCriar(
-    uint32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], 
-    uint32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
+    int32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], 
+    int32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
     char* lugarCrime, char* descricaoCrime, char removido) {
     
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
@@ -130,7 +130,7 @@ bool dadosAtualizarRemovido(DADOS* dados, char removido) {
   return true;
 }
 
-bool dadosAtualizarIdCrime(DADOS* dados, uint32_t novoIdCrime) {
+bool dadosAtualizarIdCrime(DADOS* dados, int32_t novoIdCrime) {
   if (!dadosExiste(dados)) return false;
   dados->idCrime = novoIdCrime;
   return true;
@@ -147,7 +147,7 @@ bool dadosAtualizarDataCrime(DADOS* dados, char* novoDataCrime) {
   return true;
 }
 
-bool dadosAtualizarNumeroArtigo(DADOS* dados, uint32_t novoNumeroArtigo) {
+bool dadosAtualizarNumeroArtigo(DADOS* dados, int32_t novoNumeroArtigo) {
   if (!dadosExiste(dados)) return false;
   dados->numeroArtigo = novoNumeroArtigo;
   return true;
@@ -196,7 +196,7 @@ char dadosObterRemovido(DADOS* dados) {
     return dados->removido;
 }
 
-uint32_t dadosObterIdCrime(DADOS* dados) {
+int32_t dadosObterIdCrime(DADOS* dados) {
     if (!dadosExiste(dados)) return -1;
     return dados->idCrime;
 }
@@ -206,7 +206,7 @@ char* dadosObterDataCrime(DADOS* dados) {
     return dados->dataCrime;
 }
 
-uint32_t dadosObterNumeroArtigo(DADOS* dados) {
+int32_t dadosObterNumeroArtigo(DADOS* dados) {
     if (!dadosExiste(dados)) return -1;
     return dados->numeroArtigo;
 }
@@ -241,12 +241,12 @@ bool dadosDeletar(DADOS** dados) {
     return true;
 }
 
-uint64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados) {
+int64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados) {
   if (!metadadosExiste(metadados)) return -1;
   return metadados->tamanhoLugarCrime;
 }
 
-uint64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados) {
+int64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados) {
   if (!metadadosExiste(metadados)) return -1;
   return metadados->tamanhoDescricaoCrime;
 }
@@ -259,7 +259,7 @@ bool dadosMetadadosDeletar(METADADOS** metadados) {
   return true;
 }
 
-uint64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
+int64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
   if (!dadosExiste(dados) || !metadadosExiste(metadados)) return -1;
   metadados->tamanhoRegistro = 0;
   metadados->tamanhoRegistro += 
