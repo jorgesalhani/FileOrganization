@@ -233,21 +233,21 @@ bool armazenarRegistroOrdemCrescente(
     return true;
 }
 
-ITEM* arvoreBinariaObterItemOrdenadoAux(
+bool arvoreBinariaArmazenarOrdemCrescenteAux(
     NO* no, INDICE* indice, ARVORE_BINARIA* arvoreBinaria, 
     char* tipoDado, uint64_t* byteOffset
 ) {
-    if (!arvoreBinariaNoExiste(no)) return NULL;
-    arvoreBinariaObterItemOrdenadoAux(no->esquerda, indice, arvoreBinaria, tipoDado, byteOffset);
-    arvoreBinariaObterItemOrdenadoAux(no->direita, indice, arvoreBinaria, tipoDado, byteOffset);
+    if (!arvoreBinariaNoExiste(no)) return false;
+    arvoreBinariaArmazenarOrdemCrescenteAux(no->esquerda, indice, arvoreBinaria, tipoDado, byteOffset);
     armazenarRegistroOrdemCrescente(no->item, indice, arvoreBinaria, tipoDado, byteOffset);
-    return no->item;
+    arvoreBinariaArmazenarOrdemCrescenteAux(no->direita, indice, arvoreBinaria, tipoDado, byteOffset);
+    return true;
 }
 
 bool indiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_BINARIA* arvoreBinaria, char* tipoDado) {
     if (!arvoreBinariaExiste(arvoreBinaria) || !indiceExiste(indice)) return false;
     uint64_t byteOffset = 0;
-    arvoreBinariaObterItemOrdenadoAux(arvoreBinaria->raiz, indice, arvoreBinaria, tipoDado, &byteOffset);
+    arvoreBinariaArmazenarOrdemCrescenteAux(arvoreBinaria->raiz, indice, arvoreBinaria, tipoDado, &byteOffset);
     return true;
 }
 
