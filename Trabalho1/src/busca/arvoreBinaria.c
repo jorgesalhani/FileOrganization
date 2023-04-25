@@ -75,33 +75,67 @@ char* arvoreBinariaObterCampoIndexado(ARVORE_BINARIA* arvoreBinaria) {
     return arvoreBinaria->campoIndexado;
 }
 
-bool arvoreBinariaOrdenarPorCampo(NO* raiz, NO* novoNo, char* campoIndexado, int indiceCampoEscolhido) {
-    if (!arvoreBinariaNoExiste(raiz) || !arvoreBinariaNoExiste(novoNo)) return false;
+bool arvoreBinariaOrdenarPorCampo(
+    ARVORE_BINARIA* arvoreBinaria, NO* raiz, NO* anterior, NO* novoNo, 
+    char* campoIndexado, int indiceCampoEscolhido
+) {
+    if (!arvoreBinariaNoExiste(raiz) || !arvoreBinariaNoExiste(novoNo) || !arvoreBinariaNoExiste(anterior)) return false;
 
     DADOS* dadosNoRaiz = itemObterDados(raiz->item);
     DADOS* dadosNo = itemObterDados(novoNo->item);
-
+    DADOS* dadosNoAnterior = itemObterDados(anterior->item);
 
     void* valorCampoEscolhidoRaiz = dadosObterCampoIndexado(dadosNoRaiz, campoIndexado);
     void* valorCampoEscolhido = dadosObterCampoIndexado(dadosNo, campoIndexado);
+    void* valorCampoEscolhidoAnterior = dadosObterCampoIndexado(dadosNoAnterior, campoIndexado);
 
     switch (indiceCampoEscolhido) {
         case 0:
             int32_t* campoIntRaiz = (int32_t*) valorCampoEscolhidoRaiz;
             int32_t* campoInt = (int32_t*) valorCampoEscolhido;
+            int32_t* campoIntAnterior = (int32_t*) valorCampoEscolhidoAnterior;
             if (*campoInt > *campoIntRaiz) {
                 if (!arvoreBinariaNoExiste(raiz->direita)) {
                     raiz->direita = novoNo;
                     return true;
                 } else {
-                    return arvoreBinariaOrdenarPorCampo(raiz->direita, novoNo, campoIndexado, indiceCampoEscolhido);
+                    return arvoreBinariaOrdenarPorCampo(arvoreBinaria, raiz->direita, raiz, novoNo, campoIndexado, indiceCampoEscolhido);
                 }
-            } else {
+            } else 
+            if (*campoInt < *campoIntRaiz) {
                 if (!arvoreBinariaNoExiste(raiz->esquerda)) {
                         raiz->esquerda = novoNo;
                         return true;
                 } else {
-                    return arvoreBinariaOrdenarPorCampo(raiz->esquerda, novoNo, campoIndexado, indiceCampoEscolhido);
+                    return arvoreBinariaOrdenarPorCampo(arvoreBinaria, raiz->esquerda, raiz, novoNo, campoIndexado, indiceCampoEscolhido);
+                }
+            } else {
+                int64_t novoByteOffset = itemObterByteOffset(novoNo->item);
+                int64_t byteOffset = itemObterByteOffset(raiz->item);
+                if (novoByteOffset <= byteOffset) {
+                    novoNo->esquerda = raiz->esquerda;
+                    raiz->esquerda = novoNo;
+
+                    if (raiz == anterior) {
+                        novoNo->esquerda = raiz->esquerda;
+                        raiz->esquerda = novoNo;
+                    }
+
+                    return true;
+                } else {
+                    novoNo->direita = raiz->direita;
+                    novoNo->esquerda = raiz;
+
+                    if (raiz == anterior) {
+                        raiz->direita = NULL;
+                        arvoreBinaria->raiz = novoNo;
+                        return true;
+                    }
+
+                    if (campoIntAnterior > campoIntRaiz) anterior->esquerda = novoNo;
+                    else anterior->direita = novoNo;
+                    raiz->direita = NULL;
+                    return true;
                 }
             }
             break;
@@ -109,19 +143,54 @@ bool arvoreBinariaOrdenarPorCampo(NO* raiz, NO* novoNo, char* campoIndexado, int
         case 1:
             char* campoStrRaiz = (char*) valorCampoEscolhidoRaiz;
             char* campoStr = (char*) valorCampoEscolhido;
+            char* campoStrAnterior = (char*) valorCampoEscolhidoAnterior;
             if (strcmp(campoStr, campoStrRaiz) > 0) {
                 if (!arvoreBinariaNoExiste(raiz->direita)) {
                     raiz->direita = novoNo;
                     return true;
                 } else {
-                    return arvoreBinariaOrdenarPorCampo(raiz->direita, novoNo, campoIndexado, indiceCampoEscolhido);
+                    return arvoreBinariaOrdenarPorCampo(arvoreBinaria, raiz->direita, raiz, novoNo, campoIndexado, indiceCampoEscolhido);
                 }
-            } else {
+            } else 
+            if (strcmp(campoStr, campoStrRaiz) < 0) {
                 if (!arvoreBinariaNoExiste(raiz->esquerda)) {
                         raiz->esquerda = novoNo;
                         return true;
                 } else {
-                    return arvoreBinariaOrdenarPorCampo(raiz->esquerda, novoNo, campoIndexado, indiceCampoEscolhido);
+                    return arvoreBinariaOrdenarPorCampo(arvoreBinaria, raiz->esquerda, raiz, novoNo, campoIndexado, indiceCampoEscolhido);
+                }
+            } else {
+                if (!arvoreBinariaNoExiste(raiz->esquerda)) {
+                    raiz->esquerda = novoNo;
+                        return true;
+                } else {
+                    int64_t novoByteOffset = itemObterByteOffset(novoNo->item);
+                    int64_t byteOffset = itemObterByteOffset(raiz->item);
+                    if (novoByteOffset <= byteOffset) {
+                        novoNo->esquerda = raiz->esquerda;
+                        raiz->esquerda = novoNo;
+
+                        if (raiz == anterior) {
+                            novoNo->esquerda = raiz->esquerda;
+                            raiz->esquerda = novoNo;
+                        }
+
+                        return true;
+                    } else {
+                        novoNo->direita = raiz->direita;
+                        novoNo->esquerda = raiz;
+
+                        if (raiz == anterior) {
+                            raiz->direita = NULL;
+                            arvoreBinaria->raiz = novoNo;
+                            return true;
+                        }
+
+                        if (strcmp(campoStrRaiz, campoStrAnterior) < 0) anterior->esquerda = novoNo;
+                        else anterior->direita = novoNo;
+                        raiz->direita = NULL;
+                        return true;
+                    }
                 }
             }
             break;
@@ -131,13 +200,13 @@ bool arvoreBinariaOrdenarPorCampo(NO* raiz, NO* novoNo, char* campoIndexado, int
     }
 }
 
-bool arvoreBinariaAdicionar(int32_t chave, ARVORE_BINARIA* arvoreBinaria, DADOS* dados, METADADOS* metadados, char* campoIndexado) {
+bool arvoreBinariaAdicionar(int32_t chave, int64_t byteOffset, ARVORE_BINARIA* arvoreBinaria, DADOS* dados, METADADOS* metadados, char* campoIndexado) {
     if (!arvoreBinariaExiste(arvoreBinaria) || !dadosExiste(dados) || !metadadosExiste(metadados)) return false;
 
     int indiceCampoEscolhido = dadosObterNumeroCampoIndexado(campoIndexado);
     void* valorCampoEscolhido = dadosObterCampoIndexado(dados, campoIndexado);
 
-    ITEM* item = itemCriar(chave, valorCampoEscolhido, dados, metadados);
+    ITEM* item = itemCriar(chave, byteOffset, valorCampoEscolhido, dados, metadados);
     if (!itemExiste(item)) return false;
     
     NO* novoNo = arvoreBinariaNoCriar(item);
@@ -148,7 +217,7 @@ bool arvoreBinariaAdicionar(int32_t chave, ARVORE_BINARIA* arvoreBinaria, DADOS*
         return true;
     }
 
-    arvoreBinariaOrdenarPorCampo(arvoreBinaria->raiz, novoNo, campoIndexado, indiceCampoEscolhido);
+    arvoreBinariaOrdenarPorCampo(arvoreBinaria, arvoreBinaria->raiz, arvoreBinaria->raiz, novoNo, campoIndexado, indiceCampoEscolhido);
 
     return true;
 }
@@ -171,15 +240,15 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
     if (!arvoreBinariaExiste(arvoreBinaria) || !tabelaExiste(tabela) || !cabecalhoExiste(cabecalho)) return false;
 
     int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
-    int64_t byteOffset = 0;
+    int64_t byteOffset = cabecalhoObterTamanhoRegistro(cabecalho);
     int32_t chave = 0;
     while(nroRegArq--) {
         DADOS* dados = tabelaLerArmazenarDado(tabela);
         METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
-        byteOffset += dadosMetadadosObterTamanhoRegistro(dados, metadados);
         if (!dadosExiste(dados)) continue;        
-        arvoreBinariaAdicionar(chave, arvoreBinaria, dados, metadados, arvoreBinaria->campoIndexado);
+        arvoreBinariaAdicionar(chave, byteOffset, arvoreBinaria, dados, metadados, arvoreBinaria->campoIndexado);
         chave++;
+        byteOffset += dadosMetadadosObterTamanhoRegistro(dados, metadados);
     }
 
     return true;
@@ -187,8 +256,7 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
 
 
 bool armazenarRegistroOrdemCrescente(
-    ITEM* item, INDICE* indice, ARVORE_BINARIA* arvoreBinaria, 
-    char* tipoDado, uint64_t* byteOffset
+    ITEM* item, INDICE* indice, ARVORE_BINARIA* arvoreBinaria, char* tipoDado
 ) {
     if (!indiceExiste(indice) || !arvoreBinariaExiste(arvoreBinaria)) return false;
 
@@ -203,13 +271,10 @@ bool armazenarRegistroOrdemCrescente(
 
     void* valorCampoEscolhido = dadosObterCampoIndexado(dados, campoIndexado);
 
-    uint64_t valorByteOffset = *byteOffset;
-    valorByteOffset += dadosMetadadosObterTamanhoRegistro(dados, metadados);
-    *byteOffset = valorByteOffset;
     switch (indiceCampoEscolhido) {
         case 0:
             int32_t* campoInt = (int32_t*) valorCampoEscolhido;
-            dadosIndiceInteiro = dadosIndiceInteiroCriar(tipoDado, *campoInt, valorByteOffset);
+            dadosIndiceInteiro = dadosIndiceInteiroCriar(tipoDado, *campoInt, itemObterByteOffset(item));
             
             if (*campoInt != -1) indiceInteiroAtualizarDados(indice, dadosIndiceInteiro);
             
@@ -219,7 +284,7 @@ bool armazenarRegistroOrdemCrescente(
             char* campoStr = (char*) valorCampoEscolhido;
             if (strlen(campoStr) == 0) break;
             char* campoTruncado = dadosIndiceTruncarString(campoStr);
-            dadosIndiceString = dadosIndiceStringCriar(tipoDado, campoTruncado, valorByteOffset);
+            dadosIndiceString = dadosIndiceStringCriar(tipoDado, campoTruncado, itemObterByteOffset(item));
 
             if (campoTruncado[0] != '$') indiceStringAtualizarDados(indice, dadosIndiceString);
 
@@ -233,21 +298,29 @@ bool armazenarRegistroOrdemCrescente(
     return true;
 }
 
+DADOS* noObterDados(NO* no) {
+    if (!arvoreBinariaNoExiste(no)) return NULL;
+    return itemObterDados(no->item);
+}
+
+METADADOS* noObterMetadados(NO* no) {
+    if (!arvoreBinariaNoExiste(no)) return NULL;
+    return itemObterMetadados(no->item);
+}
+
 bool arvoreBinariaArmazenarOrdemCrescenteAux(
-    NO* no, INDICE* indice, ARVORE_BINARIA* arvoreBinaria, 
-    char* tipoDado, uint64_t* byteOffset
+    NO* no, INDICE* indice, ARVORE_BINARIA* arvoreBinaria, char* tipoDado
 ) {
     if (!arvoreBinariaNoExiste(no)) return false;
-    arvoreBinariaArmazenarOrdemCrescenteAux(no->esquerda, indice, arvoreBinaria, tipoDado, byteOffset);
-    armazenarRegistroOrdemCrescente(no->item, indice, arvoreBinaria, tipoDado, byteOffset);
-    arvoreBinariaArmazenarOrdemCrescenteAux(no->direita, indice, arvoreBinaria, tipoDado, byteOffset);
+    arvoreBinariaArmazenarOrdemCrescenteAux(no->esquerda, indice, arvoreBinaria, tipoDado);
+    armazenarRegistroOrdemCrescente(no->item, indice, arvoreBinaria, tipoDado);
+    arvoreBinariaArmazenarOrdemCrescenteAux(no->direita, indice, arvoreBinaria, tipoDado);
     return true;
 }
 
 bool indiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_BINARIA* arvoreBinaria, char* tipoDado) {
     if (!arvoreBinariaExiste(arvoreBinaria) || !indiceExiste(indice)) return false;
-    uint64_t byteOffset = 0;
-    arvoreBinariaArmazenarOrdemCrescenteAux(arvoreBinaria->raiz, indice, arvoreBinaria, tipoDado, &byteOffset);
+    arvoreBinariaArmazenarOrdemCrescenteAux(arvoreBinaria->raiz, indice, arvoreBinaria, tipoDado);
     return true;
 }
 
