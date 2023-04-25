@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "indice.h"
-#include "../estrutura/arvoreBinaria.h"
+#include "../busca/arvoreBinaria.h"
 
 /********************
  * ESTRUTURA DE DADOS

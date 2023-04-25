@@ -36,7 +36,7 @@
 #include "tabela/tabela.h"
 #include "utilitarios/funcoesFornecidas.h"
 #include "indice/indice.h"
-#include "estrutura/arvoreBinaria.h"
+#include "busca/arvoreBinaria.h"
 
 void lerEntradasModo1(char* nomeArquivoEntrada, char* nomeArquivoSaida) {
   scanf("%s", nomeArquivoEntrada);

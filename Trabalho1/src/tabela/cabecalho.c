@@ -115,8 +115,7 @@ int64_t cabecalhoObterTamanhoRegistro(CABECALHO* cabecalho) {
     if (!cabecalhoExiste(cabecalho)) return -1;
     return sizeof(cabecalho->status) + sizeof(cabecalho->proxByteOffset) +
            sizeof(cabecalho->nroRegArq) + sizeof(cabecalho->nroRegRem); 
-} 
-
+}
 
 bool cabecalhoDeletar(CABECALHO** cabecalho) {
     if (cabecalho == NULL || !cabecalhoExiste(*cabecalho)) return false;

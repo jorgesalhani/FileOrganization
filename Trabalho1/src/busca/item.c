@@ -4,6 +4,7 @@
 
 struct item_ {
     int32_t chave;
+    int64_t byteOffset;
     void* valorCampo;
     DADOS* dados;
     METADADOS* metadados;
@@ -13,7 +14,7 @@ bool itemExiste(ITEM* item) {
     return item != NULL ? true : false;
 }
 
-ITEM* itemCriar(int32_t chave, void* valorCampo, DADOS* dados, METADADOS* metadados) {
+ITEM* itemCriar(int32_t chave, int64_t byteOffset, void* valorCampo, DADOS* dados, METADADOS* metadados) {
     if (!dadosExiste(dados) || !metadadosExiste(metadados) || valorCampo == NULL) return NULL;
     
     ITEM* item = (ITEM*) malloc(sizeof(ITEM));
@@ -23,6 +24,7 @@ ITEM* itemCriar(int32_t chave, void* valorCampo, DADOS* dados, METADADOS* metada
     item->valorCampo = valorCampo;
     item->dados = dados;
     item->metadados = metadados;
+    item->byteOffset = byteOffset;
 
     return item;
 }
@@ -36,6 +38,11 @@ bool itemAtualizarValorCampo(ITEM* item, void* valorCampo) {
 int32_t itemObterChave(ITEM* item) {
     if (!itemExiste(item)) return -1;
     return item->chave;
+}
+
+int64_t itemObterByteOffset(ITEM* item) {
+    if (!itemExiste(item)) return -1;
+    return item->byteOffset;
 }
 
 DADOS* itemObterDados(ITEM* item) {

@@ -33,10 +33,10 @@ dadosIndice.o:
 	gcc -g -c indice/dadosIndice.c -o dadosIndice.o -lmd
 
 item.o:
-	gcc -g -c estrutura/item.c -o item.o -lmd
+	gcc -g -c busca/item.c -o item.o -lmd
 
 arvoreBinaria.o:
-	gcc -g -c estrutura/arvoreBinaria.c -o arvoreBinaria.o -lmd
+	gcc -g -c busca/arvoreBinaria.c -o arvoreBinaria.o -lmd
 
 indice.o:
 	gcc -g -c indice/indice.c -o indice.o -lmd
