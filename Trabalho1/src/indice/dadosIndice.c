@@ -33,6 +33,34 @@ bool tipoDadoInteiroValido(char* tipoDado) {
     return strcmp(tipoDado, "inteiro") == 0 ? true : false;
 }
 
+char* dadosIndiceTruncarString(char* valor) {
+    int tamanhoString = strlen(valor);
+    if (tamanhoString == 0) return NULL;
+
+    char* valorTruncado = (char*) malloc(sizeof(char) * (TAMANHO_CHAVE_BUSCA + 1));
+
+    int valor_i = 0;
+    if (tamanhoString <= TAMANHO_CHAVE_BUSCA) {
+        while (valor_i < tamanhoString) {
+            valorTruncado[valor_i] = valor[valor_i];
+            valor_i++;
+        }
+
+        while (valor_i < TAMANHO_CHAVE_BUSCA) {
+            valorTruncado[valor_i] = '$';
+            valor_i++;
+        }
+    } else {
+        while (valor_i < TAMANHO_CHAVE_BUSCA) {
+            valorTruncado[valor_i] = valor[valor_i];
+            valor_i++;
+        }
+    }
+
+    valorTruncado[TAMANHO_CHAVE_BUSCA] = '\0';
+    return valorTruncado;
+}
+
 DADOS_INDICE_INTEIRO* dadosIndiceInteiroCriar(char* tipoDado, int32_t chaveBuscaInteiro, int64_t byteOffset) {
     if (!tipoDadoInteiroValido(tipoDado)) return NULL;
     DADOS_INDICE_INTEIRO* dadosIndice = (DADOS_INDICE_INTEIRO*) malloc(sizeof(DADOS_INDICE_INTEIRO));

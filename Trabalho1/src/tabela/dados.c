@@ -378,8 +378,8 @@ int dadosObterNumeroCampoIndexado(char* campoIndexado) {
 void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado) {
 
   void *dadosCamposEmRegistro[ENUM_FIM] = {
-    &(dados->idCrime), &(dados->dataCrime), &(dados->numeroArtigo), &(dados->marcaCelular), 
-    &(dados->lugarCrime), &(dados->descricaoCrime), &(dados->removido), &(dados->delimitador), 
+    &(dados->idCrime), dados->dataCrime, &(dados->numeroArtigo), dados->marcaCelular, 
+    dados->lugarCrime, dados->descricaoCrime, &(dados->removido), &(dados->delimitador), 
   };
 
   enum camposIndexados campo_i;

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "indice.h"
-#include "../filtros/arvoreBinaria.h"
+#include "../estrutura/arvoreBinaria.h"
 
 /********************
  * ESTRUTURA DE DADOS
@@ -83,8 +83,7 @@ bool indiceStringAtualizarDados(INDICE* indice, DADOS_INDICE_STRING* dadosIndice
 
     int64_t byteOffset = dadosIndiceStringObterByteOffset(dadosIndiceString);
 
-    char chaveBuscaString[TAMANHO_CHAVE_BUSCA]; 
-    strcpy(chaveBuscaString, dadosIndiceObterChaveBuscaString(dadosIndiceString));
+    char* chaveBuscaString = dadosIndiceObterChaveBuscaString(dadosIndiceString);
 
     fwrite(chaveBuscaString, sizeof(char), TAMANHO_CHAVE_BUSCA, arquivo);
     fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
@@ -114,10 +113,11 @@ bool indiceDeletar(INDICE** indice, bool manterArquivo) {
     return true;
 }
 
-bool liberarMemoriaCasoErro(TABELA** tabela, CABECALHO** cabecalho) {
+bool liberarMemoriaCasoErro(TABELA** tabela, CABECALHO** cabecalho, ARVORE_BINARIA** arvoreBinaria) {
     tabelaFecharArquivo(*tabela);
     tabelaDeletar(tabela, true);
     cabecalhoDeletar(cabecalho);
+    arvoreBinariaDeletar(arvoreBinaria);
     return true;
 }
 
@@ -130,82 +130,48 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
 
     TABELA* tabela = tabelaCriar(nomeArquivoEntrada, "rb");
     if(!tabelaExiste(tabela)) {
-        liberarMemoriaCasoErro(&tabela, NULL);
         erroGenerico();
         return NULL;
     }
 
     CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
     if (!cabecalhoExiste(cabecalho)) {
-        liberarMemoriaCasoErro(&tabela, NULL);
+        liberarMemoriaCasoErro(&tabela, NULL, NULL);
         return NULL;
-    }
-
-    DADOS_INDICE_INTEIRO* dadosIndiceInteiro = NULL;
-    DADOS_INDICE_STRING* dadosIndiceString = NULL;
-    
-    if (tipoDadoStringValido(tipoDado)) {
-        dadosIndiceString = dadosIndiceStringCriar(tipoDado, "$$$$$$$$$$$", 0);
-    } else if (tipoDadoInteiroValido(tipoDado)) {
-        dadosIndiceInteiro = dadosIndiceInteiroCriar(tipoDado, 0, 0);
-    } else {
-        liberarMemoriaCasoErro(&tabela, &cabecalho);
-        erroGenerico();
-        return NULL;
-    }
-
-    INDICE* indice = indiceCriar(nomeArquivoIndice, "wb+");
-    if (!indiceExiste(indice)) {
-        liberarMemoriaCasoErro(&tabela, &cabecalho);
-        erroGenerico();
-        return indice;
     }
 
     ARVORE_BINARIA* arvoreBinaria = arvoreBinariaCriar(campoIndexado);
     if (!arvoreBinariaExiste(arvoreBinaria)) {
-        liberarMemoriaCasoErro(&tabela, &cabecalho);
+        liberarMemoriaCasoErro(&tabela, &cabecalho, NULL);
+        erroGenerico();
+        return NULL;
+    }
+
+    arvoreBinariaArmazenarRegistrosOrdenados(arvoreBinaria, tabela, cabecalho);
+
+    INDICE* indice = indiceCriar(nomeArquivoIndice, "wb+");
+    if (!indiceExiste(indice)) {
+        liberarMemoriaCasoErro(&tabela, &cabecalho, &arvoreBinaria);
         erroGenerico();
         return indice;
     }
 
-    int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
-
     CABECALHO_INDICE* cabecalhoIndice = cabecalhoIndiceCriar('0');
+    if (!cabecalhoIndiceExiste(cabecalhoIndice)) {
+        liberarMemoriaCasoErro(&tabela, &cabecalho, &arvoreBinaria);
+        erroGenerico();
+        return indice;
+    }
+
     indiceAtualizarCabecalho(indice, cabecalhoIndice);
 
-    int64_t byteOffset = 0;
+    indiceArmazenarRegistrosOrdemCrescente(indice, arvoreBinaria, tipoDado);
 
-    int i = 0;
-    while(nroRegArq--) {
-
-        DADOS* dados = tabelaLerArmazenarDado(tabela);
-        METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
-        byteOffset += dadosMetadadosObterTamanhoRegistro(dados, metadados);
-        if (!dadosExiste(dados)) continue;
-
-        // DADOS* dadosFiltrado = dadosFiltrarPorCampo(dados, campoIndexado);
-        
-        arvoreBinariaAdicionar(arvoreBinaria, dados, metadados, campoIndexado);
-
-        if (tipoDadoStringValido(tipoDado)) {
-            dadosIndiceStringAtualizarByteOffset(dadosIndiceString, byteOffset);
-            indiceStringAtualizarDados(indice, dadosIndiceString);
-        } else {
-            dadosIndiceInteiroAtualizarByteOffset(dadosIndiceInteiro, byteOffset);
-            indiceInteiroAtualizarDados(indice, dadosIndiceInteiro);
-        }
-
-        // if (i != 0) {
-        //     dadosDeletar(&dados);
-        //     dadosMetadadosDeletar(&metadados);
-        // }
-        // i++;
-    }
 
     arvoreBinariaDeletar(&arvoreBinaria);
 
-    if (dadosIndiceStringExiste(dadosIndiceString)) dadosIndiceStringDeletar(&dadosIndiceString);
-    else dadosIndiceInteiroDeletar(&dadosIndiceInteiro);
+    // if (dadosIndiceStringExiste(dadosIndiceString)) dadosIndiceStringDeletar(&dadosIndiceString);
+    // else dadosIndiceInteiroDeletar(&dadosIndiceInteiro);
 
     fseek(indice->arquivoBinario, 0, SEEK_SET);
 

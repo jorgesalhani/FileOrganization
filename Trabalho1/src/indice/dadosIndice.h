@@ -34,4 +34,6 @@
     bool dadosIndiceInteiroDeletar(DADOS_INDICE_INTEIRO** dadosIndiceInteiro);
     bool dadosIndiceStringDeletar(DADOS_INDICE_STRING** dadosIndiceString);
 
+    char* dadosIndiceTruncarString(char* valor);
+
 #endif
