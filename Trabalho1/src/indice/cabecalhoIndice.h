@@ -12,5 +12,7 @@
     bool cabecalhoIndiceAtualizarStatus(CABECALHO_INDICE* cabecalhoIndice, char novoStatus);
     char cabecalhoIndiceObterStatus(CABECALHO_INDICE* cabecalhoIndice);
     bool cabecalhoIndiceDeletar(CABECALHO_INDICE** cabecalhoIndice);
-
+    bool cabecalhoIndiceAtualizarQtdReg(CABECALHO_INDICE* cabecalhoIndice, int32_t novoQtdReg);
+    int32_t cabecalhoIndiceObterQtdReg(CABECALHO_INDICE* cabecalhoIndice);
+    
 #endif

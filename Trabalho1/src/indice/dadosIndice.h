@@ -12,6 +12,9 @@
 
     DADOS_INDICE_INTEIRO* dadosIndiceInteiroCriar(char* tipoDado, int32_t chaveBuscaInteiro, int64_t byteOffset);
     DADOS_INDICE_STRING* dadosIndiceStringCriar(char* tipoDado, char chaveBuscaString[TAMANHO_CHAVE_BUSCA], int64_t byteOffset);
+
+    bool tipoDadoStringValido(char* tipoDado);
+    bool tipoDadoInteiroValido(char* tipoDado);
     
     bool dadosIndiceInteiroExiste(DADOS_INDICE_INTEIRO* dadosIndiceInteiro);
     bool dadosIndiceStringExiste(DADOS_INDICE_STRING* dadosIndiceString);

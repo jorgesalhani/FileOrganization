@@ -21,4 +21,8 @@
 
     INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice);
     
+    DADOS_INDICE_INTEIRO* indiceLerArmazenarDadosInteiro(INDICE* indice, char* tipoDado);
+    DADOS_INDICE_STRING* indiceLerArmazenarDadosString(INDICE* indice, char* tipoDado);
+    CABECALHO_INDICE* indiceLerArmazenarCabecalho(INDICE* indice);
+    
 #endif

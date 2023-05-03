@@ -3,6 +3,7 @@
 
     #include "cabecalho.h"
     #include "dados.h"
+    #include "../indice/indice.h"
 
     typedef struct tabela_ TABELA;
 
@@ -82,6 +83,11 @@
     METADADOS* tabelaLerArmazenarMetadado(DADOS* dados);
 
     bool modoAbrirArquivoValido(char* modoAberturaArquivo);
+
+    TABELA* tabelaLerImprimirBusca(
+        char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
+        char* nomeArquivoIndice, int numeroCamposBuscados
+    );
     
 
 #endif
