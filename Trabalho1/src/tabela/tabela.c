@@ -484,7 +484,7 @@ ARVORE_BINARIA* obterArvoreBinariaIndices(
   return arvoreBinaria;
 }
 
-bool tabelaLerImprimirBuscaCampo(TABELA* tabela, ARVORE_BINARIA** arvoreBinaria, char* campoIndexado, 
+int tabelaLerImprimirBuscaCampo(TABELA* tabela, ARVORE_BINARIA** arvoreBinaria, char* campoIndexado, 
   char* tipoDado, char* nomeArquivoIndice
 ) {
   int numeroParesCampoValor;
@@ -496,6 +496,7 @@ bool tabelaLerImprimirBuscaCampo(TABELA* tabela, ARVORE_BINARIA** arvoreBinaria,
   lerEntradasBuscaPorCampos(listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
 
   bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(listaCamposDeBusca, numeroParesCampoValor, campoIndexado);
+  int totalRegistros = 0;
   if (buscaIndexada) {
     if (!arvoreBinariaExiste(*arvoreBinaria)) {
       *arvoreBinaria = obterArvoreBinariaIndices(
@@ -504,9 +505,7 @@ bool tabelaLerImprimirBuscaCampo(TABELA* tabela, ARVORE_BINARIA** arvoreBinaria,
       );
     }
 
-    for (int i = 0; i < numeroParesCampoValor; i++) {
-      arvoreBinariaImprimirBusca(*arvoreBinaria, listaCamposDeBusca[i], listaValoresDeBusca[i]);
-    }
+    totalRegistros = arvoreBinariaImprimirBusca(*arvoreBinaria, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
   }
   else printf("SEQUENCIA\n");
 
@@ -520,6 +519,8 @@ bool tabelaLerImprimirBuscaCampo(TABELA* tabela, ARVORE_BINARIA** arvoreBinaria,
   listaCamposDeBusca = NULL;
   free(listaValoresDeBusca);
   listaValoresDeBusca = NULL;
+
+  return totalRegistros;
 }
 
 bool tabelaLerImprimirBuscaPorCampos(TABELA* tabela, char* campoIndexado, 
@@ -537,7 +538,10 @@ bool tabelaLerImprimirBuscaPorCampos(TABELA* tabela, char* campoIndexado,
 
     ARVORE_BINARIA* arvoreBinaria = NULL;
     for (int i = 0; i < numeroCamposBuscados; i++) {
-      tabelaLerImprimirBuscaCampo(tabela, &arvoreBinaria, campoIndexado, tipoDado, nomeArquivoIndice);
+      int totalRegistrosEncontrados = 0;
+      printf("Resposta para a busca %d\n", i+1);
+      totalRegistrosEncontrados = tabelaLerImprimirBuscaCampo(tabela, &arvoreBinaria, campoIndexado, tipoDado, nomeArquivoIndice);
+      if (totalRegistrosEncontrados <= 0) erroSemRegistros();
     }
 
     arvoreBinariaDeletar(&arvoreBinaria);

@@ -324,12 +324,19 @@ bool indiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_BINARIA* arvo
     return true;
 }
 
-bool arvoreBinariaImprimirBuscaAux(NO* raiz, char* campo, void* valor) {
-    if (!arvoreBinariaNoExiste(raiz) || campo == NULL || valor == NULL) return false;
+int arvoreBinariaImprimirBuscaAux(
+    NO* raiz, char* campoIndexado, char** listaCamposDeBusca, 
+    void** listaValoresDeBusca, int numeroParesCampoValor
+) {
+    if (!arvoreBinariaNoExiste(raiz) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return false;
 
-    int numeroCampo = dadosObterNumeroCampoIndexado(campo);
+    int numeroCampo = dadosObterNumeroCampoIndexado(campoIndexado);
+
     DADOS* dados = noObterDados(raiz);
     METADADOS* metadados = noObterMetadados(raiz);
+
+    void* valor = dadosObterCampoIndexado(dados, campoIndexado);
+    
     bool buscarEsquerda = true;
 
     int32_t* valorBuscaInt = NULL;
@@ -340,13 +347,13 @@ bool arvoreBinariaImprimirBuscaAux(NO* raiz, char* campo, void* valor) {
     switch (numeroCampo) {
         case 0:
             valorBuscaInt = (int32_t*) valor;
-            valorEncontradoInt = (int32_t*) dadosObterCampoIndexado(dados, campo);
+            valorEncontradoInt = (int32_t*) dadosObterCampoIndexado(dados, campoIndexado);
             if (*valorEncontradoInt > *valorBuscaInt) buscarEsquerda = false;
             break;
 
         case 1:
             valorBuscaStr = (char*) valor;
-            valorEncontradoStr = (char*) dadosObterCampoIndexado(dados, campo);
+            valorEncontradoStr = (char*) dadosObterCampoIndexado(dados, campoIndexado);
             if (strcmp(valorBuscaStr, valorEncontradoStr) > 0) buscarEsquerda = false;
             break;
 
@@ -354,30 +361,31 @@ bool arvoreBinariaImprimirBuscaAux(NO* raiz, char* campo, void* valor) {
             break;
     }
 
+    int totalRegistros = 0;
     if (buscarEsquerda) {
-        arvoreBinariaImprimirBuscaAux(raiz->esquerda, campo, valor);
+        arvoreBinariaImprimirBuscaAux(raiz->esquerda, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
     }
-    switch (numeroCampo) {
-        case 0:
-            valorBuscaInt = (int32_t*) valor;
-            valorEncontradoInt = (int32_t*) dadosObterCampoIndexado(dados, campo);
-            if (*valorEncontradoInt == *valorBuscaInt) dadosImprimir(dados, metadados);
-            break;
-        
-        case 1:
-            valorBuscaStr = (char*) valor;
-            valorEncontradoStr = (char*) dadosObterCampoIndexado(dados, campo);
-            if (strcmp(valorBuscaStr, valorEncontradoStr) == 0) dadosImprimir(dados, metadados);
+    
+    bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
+    if (correspondenciaCompleta) {
+        dadosImprimir(dados, metadados);
+        totalRegistros++;
+    }
 
-        default:
-            break;
-        }
-
-    arvoreBinariaImprimirBuscaAux(raiz->direita, campo, valor);
+    arvoreBinariaImprimirBuscaAux(raiz->direita, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
+    return totalRegistros;
 }
 
-bool arvoreBinariaImprimirBusca(ARVORE_BINARIA* arvoreBinaria, char* campo, void* valor) {
-    if (!arvoreBinariaExiste(arvoreBinaria) || campo == NULL || valor == NULL) return false;
+int arvoreBinariaImprimirBusca(
+    ARVORE_BINARIA* arvoreBinaria, char* campoIndexado, char** listaCamposDeBusca, 
+    void** listaValoresDeBusca, int numeroParesCampoValor) 
+{
+    if (!arvoreBinariaExiste(arvoreBinaria) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return -1;
 
-    arvoreBinariaImprimirBuscaAux(arvoreBinaria->raiz, campo, valor);
+    int totalRegistros = 0;
+    totalRegistros = arvoreBinariaImprimirBuscaAux(
+        arvoreBinaria->raiz, campoIndexado, listaCamposDeBusca, 
+        listaValoresDeBusca, numeroParesCampoValor
+    );
+    return totalRegistros;
 }

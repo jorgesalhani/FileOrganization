@@ -395,3 +395,40 @@ void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado) {
 DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado) {
 
 }
+
+bool dadosBuscaCorrespondenciaCompleta(
+  DADOS* dados, char** listaCamposDeBusca,
+  void** listaValoresDeBusca, int numeroParesCampoValor
+) {
+  for (int i = 0; i < numeroParesCampoValor; i++) {
+    char* campo = listaCamposDeBusca[i];
+    void* valor = listaValoresDeBusca[i];
+
+    int numeroCampo = dadosObterNumeroCampoIndexado(campo);
+    
+    int32_t* valorBuscaInt = NULL;
+    int32_t* valorEncontradoInt = NULL;
+    char* valorBuscaStr = NULL;
+    char* valorEncontradoStr = NULL;
+    
+    switch (numeroCampo) {
+      case 0:
+        valorBuscaInt = (int32_t*) valor;
+        valorEncontradoInt = (int32_t*) dadosObterCampoIndexado(dados, campo);
+        if (*valorBuscaInt != *valorEncontradoInt) return false;
+        break;
+
+      case 1:
+        valorBuscaStr = (char*) valor;
+        valorEncontradoStr = (char*) dadosObterCampoIndexado(dados, campo);
+        if (strcmp(valorBuscaStr, valorEncontradoStr) != 0) return false;
+        break;
+
+      default:
+       break;
+    }
+  }
+
+  return true;
+
+}
