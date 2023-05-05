@@ -5,8 +5,7 @@
 
     #include "dadosIndice.h"
     #include "cabecalhoIndice.h"
-    #include "../utilitarios/funcoesFornecidas.h"
-    #include "../tabela/tabela.h"
+    #include "../busca/arvoreBinaria.h"
     
     typedef struct indice_ INDICE;
 
@@ -18,13 +17,11 @@
     char* indiceObterNomeArquivo(INDICE* indice);
     bool indiceFecharArquivo(INDICE* indice);
     bool indiceDeletar(INDICE** indice, bool manterArquivo);
-
-    INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice);
-    
     DADOS_INDICE_INTEIRO* indiceLerArmazenarDadosInteiro(INDICE* indice, char* tipoDado);
     DADOS_INDICE_STRING* indiceLerArmazenarDadosString(INDICE* indice, char* tipoDado);
     CABECALHO_INDICE* indiceLerArmazenarCabecalho(INDICE* indice);
-
-    bool indiceResetLeituraArquivoBinario(INDICE* indice);
+    bool indiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_BINARIA* arvoreBinaria, char* tipoDado);
+    INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice);
+    bool indiceImprimirBuscaBinaria(ARVORE_BINARIA* arvoreBinaria, char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor);
     
 #endif

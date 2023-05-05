@@ -3,8 +3,8 @@
 
     #include "cabecalho.h"
     #include "dados.h"
-    #include "../indice/indice.h"
-
+    
+    
     typedef struct tabela_ TABELA;
 
     /**
@@ -85,11 +85,10 @@
     bool modoAbrirArquivoValido(char* modoAberturaArquivo);
 
     TABELA* tabelaLerImprimirBusca(
-        char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
-        char* nomeArquivoIndice, int numeroCamposBuscados
+        char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice, int numeroCamposBuscados
     );
 
-    bool tabelaResetLeituraArquivoBinario(TABELA* tabela);
+    bool tabelaImprimirBuscaSequencial(TABELA* tabela, char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor);
     
 
 #endif
