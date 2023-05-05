@@ -121,6 +121,12 @@ bool liberarMemoriaCasoErro(TABELA** tabela, CABECALHO** cabecalho, ARVORE_BINAR
     return true;
 }
 
+bool indiceResetLeituraArquivoBinario(INDICE* indice) {
+  if (!indiceExiste(indice) || !indiceArquivoExiste(indice->arquivoBinario)) return false;
+  fseek(indice->arquivoBinario, 0, SEEK_SET);
+  return true;
+}
+
 INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, char* nomeArquivoIndice) {
 
     if (!dadosCampoIndexadoValido(campoIndexado)) {
@@ -186,4 +192,63 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
     return indice;
 }
 
+DADOS_INDICE_INTEIRO* indiceLerArmazenarDadosInteiro(INDICE* indice, char* tipoDado) {
+    if (!indiceExiste(indice) || !tipoDadoInteiroValido(tipoDado)) return NULL;
+
+    FILE* arquivoIndice = indice->arquivoBinario;
+
+    int32_t chaveBuscaInteiro = 0;
+    int64_t byteOffset = 0;
+
+    DADOS_INDICE_INTEIRO* dadosIndiceInteiro = dadosIndiceInteiroCriar(tipoDado, chaveBuscaInteiro, byteOffset);
+    if (!dadosIndiceInteiroExiste(dadosIndiceInteiro)) return NULL;
+
+    fread(&chaveBuscaInteiro, sizeof(int32_t), 1, arquivoIndice);
+    fread(&byteOffset, sizeof(int64_t), 1, arquivoIndice);
+
+    dadosIndiceInteiroAtualizarByteOffset(dadosIndiceInteiro, byteOffset);
+    dadosIndiceInteiroAtualizarChaveBusca(dadosIndiceInteiro, chaveBuscaInteiro);
+
+    return dadosIndiceInteiro;
+}
+
+DADOS_INDICE_STRING* indiceLerArmazenarDadosString(INDICE* indice, char* tipoDado) {
+    if (!indiceExiste(indice) || !tipoDadoStringValido(tipoDado)) return NULL;
+
+    FILE* arquivoIndice = indice->arquivoBinario;
+
+    char chaveBuscaString[TAMANHO_CHAVE_BUSCA] = "";
+    int64_t byteOffset = 0;
+
+    DADOS_INDICE_STRING* dadosIndiceString = dadosIndiceStringCriar(tipoDado, chaveBuscaString, byteOffset);
+    if (!dadosIndiceStringExiste(dadosIndiceString)) return NULL;
+
+    fread(chaveBuscaString, sizeof(char), TAMANHO_CHAVE_BUSCA, arquivoIndice);
+    fread(&byteOffset, sizeof(int64_t), 1, arquivoIndice);
+
+    dadosIndiceStringAtualizarByteOffset(dadosIndiceString, byteOffset);
+    dadosIndiceStringAtualizarChaveBusca(dadosIndiceString, chaveBuscaString);
+
+    return dadosIndiceString;
+}
+
+CABECALHO_INDICE* indiceLerArmazenarCabecalho(INDICE* indice) {
+    if (!indiceExiste(indice)) return NULL;
+
+    FILE* arquivoIndice = indice->arquivoBinario;
+
+    CABECALHO_INDICE* cabecalhoIndice = cabecalhoIndiceCriar('0');
+    if (!cabecalhoIndiceExiste(cabecalhoIndice)) return NULL;
+
+    char status = '0';
+    int32_t qtdReg = 0;
+
+    fread(&status, sizeof(char), 1, arquivoIndice);
+    fread(&qtdReg, sizeof(int32_t), 1, arquivoIndice);
+
+    cabecalhoIndiceAtualizarStatus(cabecalhoIndice, status);
+    cabecalhoIndiceAtualizarQtdReg(cabecalhoIndice, qtdReg);
+
+    return cabecalhoIndice;
+}
 

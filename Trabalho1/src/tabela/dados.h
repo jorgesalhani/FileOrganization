@@ -210,4 +210,9 @@
 
     DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado);
 
+    bool dadosBuscaCorrespondenciaCompleta(
+        DADOS* dados, char** listaCamposDeBusca,
+        void** listaValoresDeBusca, int numeroParesCampoValor
+    );
+
 #endif

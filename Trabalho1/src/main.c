@@ -54,8 +54,18 @@ void lerEntradasModo3(char* nomeArquivoEntrada, char* campoIndexado, char* tipoD
   scanf("%s", nomeArquivoIndice);
 }
 
+void lerEntradasModo4(char* nomeArquivoEntrada, char* campoIndexado, 
+  char* tipoDado, char* nomeArquivoIndice, int* numeroCamposBuscados
+) {
+  scanf("%s", nomeArquivoEntrada);
+  scanf("%s", campoIndexado);
+  scanf("%s", tipoDado);
+  scanf("%s", nomeArquivoIndice);
+  scanf("%d", numeroCamposBuscados);
+}
+
 int main(void) {
-  int modo;
+  int modo, numeroCamposBuscados;
   char nomeArquivoEntrada[100], nomeArquivoSaida[100], nomeArquivoIndice[100];
   char campoIndexado[50], tipoDado[20];
 
@@ -92,15 +102,17 @@ int main(void) {
     indiceFecharArquivo(indice);
     binarioNaTela(indiceObterNomeArquivo(indice)); 
     indiceDeletar(&indice, true);
-    // lerBinario(nomeArquivoEntrada);
-    // TABELA* tabela = tabelaCriarBinarioIndice(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
-    // if (!tabelaExiste(tabela)) return 0;
-    
-    // tabelaFecharArquivo(tabela);
-    // binarioNaTela(tabelaObterNomeArquivo(tabela));
-    // tabelaDeletar(&tabela, true);
     break;
   
+  case 4:
+    lerEntradasModo4(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, &numeroCamposBuscados);
+    tabela = tabelaLerImprimirBusca(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
+    if (!tabelaExiste(tabela)) return 0;
+
+    tabelaFecharArquivo(tabela);
+    tabelaDeletar(&tabela, true);
+    break;
+
   default: ;
     erroModo();
     break;

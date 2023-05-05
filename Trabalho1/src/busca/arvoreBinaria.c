@@ -200,7 +200,7 @@ bool arvoreBinariaOrdenarPorCampo(
     }
 }
 
-bool arvoreBinariaAdicionar(int32_t chave, int64_t byteOffset, ARVORE_BINARIA* arvoreBinaria, DADOS* dados, METADADOS* metadados, char* campoIndexado) {
+bool arvoreBinariaAdicionar(ARVORE_BINARIA* arvoreBinaria, DADOS* dados, METADADOS* metadados, int32_t chave, int64_t byteOffset, char* campoIndexado) {
     if (!arvoreBinariaExiste(arvoreBinaria) || !dadosExiste(dados) || !metadadosExiste(metadados)) return false;
 
     int indiceCampoEscolhido = dadosObterNumeroCampoIndexado(campoIndexado);
@@ -246,7 +246,7 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
         DADOS* dados = tabelaLerArmazenarDado(tabela);
         METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
         if (!dadosExiste(dados)) continue;        
-        arvoreBinariaAdicionar(chave, byteOffset, arvoreBinaria, dados, metadados, arvoreBinaria->campoIndexado);
+        arvoreBinariaAdicionar(arvoreBinaria, dados, metadados, chave, byteOffset, arvoreBinaria->campoIndexado);
         chave++;
         byteOffset += dadosMetadadosObterTamanhoRegistro(dados, metadados);
     }
@@ -324,3 +324,69 @@ bool indiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_BINARIA* arvo
     return true;
 }
 
+bool arvoreBinariaImprimirBuscaAux(
+    NO* raiz, char* campoIndexado, char** listaCamposDeBusca, 
+    void** listaValoresDeBusca, int numeroParesCampoValor, int* totalRegistros
+) {
+    if (!arvoreBinariaNoExiste(raiz) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return false;
+
+    int numeroCampo = dadosObterNumeroCampoIndexado(campoIndexado);
+
+    DADOS* dados = noObterDados(raiz);
+    METADADOS* metadados = noObterMetadados(raiz);
+
+    void* valor = dadosObterCampoIndexado(dados, campoIndexado);
+    
+    bool buscarEsquerda = true;
+
+    int32_t* valorBuscaInt = NULL;
+    int32_t* valorEncontradoInt = NULL;
+    char* valorBuscaStr = NULL;
+    char* valorEncontradoStr = NULL;
+
+    switch (numeroCampo) {
+        case 0:
+            valorBuscaInt = (int32_t*) valor;
+            valorEncontradoInt = (int32_t*) dadosObterCampoIndexado(dados, campoIndexado);
+            if (*valorEncontradoInt > *valorBuscaInt) buscarEsquerda = false;
+            break;
+
+        case 1:
+            valorBuscaStr = (char*) valor;
+            valorEncontradoStr = (char*) dadosObterCampoIndexado(dados, campoIndexado);
+            if (strcmp(valorBuscaStr, valorEncontradoStr) > 0) buscarEsquerda = false;
+            break;
+
+        default:
+            break;
+    }
+
+    if (buscarEsquerda) {
+        arvoreBinariaImprimirBuscaAux(raiz->esquerda, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, totalRegistros);
+    }
+    
+    bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
+    if (correspondenciaCompleta) {
+        dadosImprimir(dados, metadados);
+        int contadorRegistrosEncontrados = *totalRegistros;
+        contadorRegistrosEncontrados++;
+        *totalRegistros = contadorRegistrosEncontrados;
+    }
+
+    arvoreBinariaImprimirBuscaAux(raiz->direita, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, totalRegistros);
+    return true;
+}
+
+int arvoreBinariaImprimirBusca(
+    ARVORE_BINARIA* arvoreBinaria, char* campoIndexado, char** listaCamposDeBusca, 
+    void** listaValoresDeBusca, int numeroParesCampoValor) 
+{
+    if (!arvoreBinariaExiste(arvoreBinaria) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return -1;
+
+    int totalRegistros = 0;
+    arvoreBinariaImprimirBuscaAux(
+        arvoreBinaria->raiz, campoIndexado, listaCamposDeBusca, 
+        listaValoresDeBusca, numeroParesCampoValor, &totalRegistros
+    );
+    return totalRegistros;
+}
