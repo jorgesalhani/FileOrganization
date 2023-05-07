@@ -518,10 +518,11 @@ bool tabelaResetLeituraArquivoBinario(TABELA* tabela) {
 }
 
 int tabelaLerImprimirBuscaCampo(TABELA* tabela, ARVORE_BINARIA** arvoreBinaria, char* campoIndexado, 
-  char* tipoDado, char* nomeArquivoIndice, int32_t nroRegArq
+  char* tipoDado, char* nomeArquivoIndice, int32_t nroRegArq, int numeroBuscaAtual
 ) {
   int numeroParesCampoValor;
   lerEntradaNumeroParCriterio(&numeroParesCampoValor);
+  printf("Resposta para a busca %d\n", numeroBuscaAtual);
 
   char** listaCamposDeBusca = (char**) malloc(sizeof(char*)*numeroParesCampoValor);
   void** listaValoresDeBusca = (void**) malloc(sizeof(void*)*numeroParesCampoValor);
@@ -578,9 +579,9 @@ bool tabelaLerImprimirBuscaPorCampos(TABELA* tabela, char* campoIndexado,
 
     ARVORE_BINARIA* arvoreBinaria = NULL;
     for (int i = 0; i < numeroCamposBuscados; i++) {
+      int numeroBuscaAtual = i+1;
       int totalRegistrosEncontrados = 0;
-      printf("Resposta para a busca %d\n", i+1);
-      totalRegistrosEncontrados = tabelaLerImprimirBuscaCampo(tabela, &arvoreBinaria, campoIndexado, tipoDado, nomeArquivoIndice, nroRegArq);
+      totalRegistrosEncontrados = tabelaLerImprimirBuscaCampo(tabela, &arvoreBinaria, campoIndexado, tipoDado, nomeArquivoIndice, nroRegArq, numeroBuscaAtual);
       if (totalRegistrosEncontrados <= 0) erroSemRegistros();
     }
 

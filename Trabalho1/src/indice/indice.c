@@ -57,7 +57,11 @@ bool indiceAtualizarCabecalho(INDICE* indice, CABECALHO_INDICE* cabecalhoIndice)
     FILE* arquivo = indice->arquivoBinario;
 
     char status = cabecalhoIndiceObterStatus(cabecalhoIndice);
+    int32_t qtdReg = cabecalhoIndiceObterQtdReg(cabecalhoIndice);
+    
     fwrite(&status, sizeof(char), 1, arquivo);
+    fwrite(&qtdReg, sizeof(int32_t), 1, arquivo);
+
     return true;
 }
 
@@ -71,7 +75,6 @@ bool indiceInteiroAtualizarDados(INDICE* indice, DADOS_INDICE_INTEIRO* dadosIndi
     int32_t chaveBusca = dadosIndiceObterChaveBuscaInteiro(dadosIndiceInteiro);
 
     fwrite(&chaveBusca, sizeof(int32_t), 1, arquivo);
-
     fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
 }
 
@@ -153,7 +156,7 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
         return NULL;
     }
 
-    arvoreBinariaArmazenarRegistrosOrdenados(arvoreBinaria, tabela, cabecalho);
+    arvoreBinariaArmazenarRegistrosOrdenados(arvoreBinaria, tabela, cabecalho, tipoDado);
 
     INDICE* indice = indiceCriar(nomeArquivoIndice, "wb+");
     if (!indiceExiste(indice)) {
@@ -174,6 +177,7 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
     indiceArmazenarRegistrosOrdemCrescente(indice, arvoreBinaria, tipoDado);
 
 
+    int32_t qtdRegExistentes = arvoreBinariaObterQtdReg(arvoreBinaria);
     arvoreBinariaDeletar(&arvoreBinaria);
 
     // if (dadosIndiceStringExiste(dadosIndiceString)) dadosIndiceStringDeletar(&dadosIndiceString);
@@ -182,6 +186,8 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
     fseek(indice->arquivoBinario, 0, SEEK_SET);
 
     cabecalhoIndiceAtualizarStatus(cabecalhoIndice, '1');
+    cabecalhoIndiceAtualizarQtdReg(cabecalhoIndice, qtdRegExistentes);
+    
     indiceAtualizarCabecalho(indice, cabecalhoIndice);
 
     cabecalhoIndiceDeletar(&cabecalhoIndice);

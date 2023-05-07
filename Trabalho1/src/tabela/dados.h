@@ -9,6 +9,7 @@
     #include <stdint.h>
     #include <stdlib.h>
     #include <stdbool.h>
+    #include "../indice/dadosIndice.h"
 
     typedef struct metadados_ METADADOS;
     typedef struct dados_ DADOS;
@@ -214,5 +215,7 @@
         DADOS* dados, char** listaCamposDeBusca,
         void** listaValoresDeBusca, int numeroParesCampoValor
     );
+
+    bool dadosValorIndexadoValido(DADOS* dados, char* campoIndexado, char* tipoDado);
 
 #endif

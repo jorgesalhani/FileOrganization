@@ -392,6 +392,22 @@ void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado) {
   return NULL;
 }
 
+bool dadosValorIndexadoValido(DADOS* dados, char* campoIndexado, char* tipoDado) {
+  if (!dadosExiste(dados) || (!tipoDadoInteiroValido(tipoDado) && !tipoDadoStringValido(tipoDado))) return false;
+  
+  if (strcmp(tipoDado, "inteiro") == 0) {
+    int32_t* valorInt = (int32_t*) dadosObterCampoIndexado(dados, campoIndexado);
+    if (valorInt == NULL) return false;
+    if (*valorInt != -1) return true;
+  } else {
+    char* valorStr = (char*) dadosObterCampoIndexado(dados, campoIndexado);
+    if (valorStr == NULL) return false;
+    if (strlen(valorStr) != 0 && valorStr[0] != '$') return true;
+  }
+
+  return false;
+}
+
 DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado) {
 
 }

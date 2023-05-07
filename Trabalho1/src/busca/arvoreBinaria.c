@@ -13,6 +13,7 @@ struct no_ {
 
 struct arvore_binaria_ {
     char* campoIndexado;
+    int32_t qtdReg;
     NO* raiz;
 };
 
@@ -68,6 +69,11 @@ ARVORE_BINARIA* arvoreBinariaCriar(char* campoIndexado) {
 
 ITEM* arvoreBinariaObterItem(ARVORE_BINARIA* arvoreBinaria, int32_t chave) {
 
+}
+
+int32_t arvoreBinariaObterQtdReg(ARVORE_BINARIA* arvoreBinaria) {
+    if (!arvoreBinariaExiste(arvoreBinaria)) return -1;
+    return arvoreBinaria->qtdReg;
 }
 
 char* arvoreBinariaObterCampoIndexado(ARVORE_BINARIA* arvoreBinaria) {
@@ -236,8 +242,10 @@ bool arvoreBinariaDeletar(ARVORE_BINARIA** arvoreBinaria) {
     return true;
 }
 
-bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TABELA* tabela, CABECALHO* cabecalho) {
+bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TABELA* tabela, CABECALHO* cabecalho, char* tipoDado) {
     if (!arvoreBinariaExiste(arvoreBinaria) || !tabelaExiste(tabela) || !cabecalhoExiste(cabecalho)) return false;
+
+    char* campoIndexado = arvoreBinariaObterCampoIndexado(arvoreBinaria);
 
     int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
     int64_t byteOffset = cabecalhoObterTamanhoRegistro(cabecalho);
@@ -245,11 +253,20 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
     while(nroRegArq--) {
         DADOS* dados = tabelaLerArmazenarDado(tabela);
         METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
-        if (!dadosExiste(dados)) continue;        
-        arvoreBinariaAdicionar(arvoreBinaria, dados, metadados, chave, byteOffset, arvoreBinaria->campoIndexado);
-        chave++;
-        byteOffset += dadosMetadadosObterTamanhoRegistro(dados, metadados);
+        if (!dadosExiste(dados) || !metadadosExiste(metadados)) continue;
+
+        int64_t proxByteOffset = dadosMetadadosObterTamanhoRegistro(dados, metadados);
+        if (!dadosValorIndexadoValido(dados, campoIndexado, tipoDado)) {
+            dadosDeletar(&dados);
+            dadosMetadadosDeletar(&metadados);
+        } else {
+            arvoreBinariaAdicionar(arvoreBinaria, dados, metadados, chave, byteOffset, arvoreBinaria->campoIndexado);
+            chave++;
+        }
+        byteOffset += proxByteOffset;
     }
+
+    arvoreBinaria->qtdReg = chave;
 
     return true;
 }
