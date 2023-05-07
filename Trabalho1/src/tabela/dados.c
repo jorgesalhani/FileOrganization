@@ -147,11 +147,11 @@ void dadosImprimir(DADOS* dados, METADADOS* metadados) {
   int32_t idAux = dadosObterIdCrime(dados);
   int32_t numArtAux = dadosObterNumeroArtigo(dados);
 
-  char dataAux[TAMANHO_DATA_CRIME+5]; 
+  char dataAux[TAMANHO_DATA_CRIME+5] = ""; 
   strcpy(dataAux, dadosObterDataCrime(dados));
   dataAux[TAMANHO_DATA_CRIME] = '\0';
 
-  char marcaAux[TAMANHO_MARCA_CELULAR+5];
+  char marcaAux[TAMANHO_MARCA_CELULAR+5] = "";
   strcpy(marcaAux, dadosObterMarcaCelular(dados));
   marcaAux[TAMANHO_MARCA_CELULAR] = '\0';
   if(!strVazia(marcaAux)) {

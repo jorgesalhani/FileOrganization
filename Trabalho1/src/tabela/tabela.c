@@ -497,11 +497,12 @@ int tabelaBuscaImprimir(TABELA* tabela, char* campoIndexado, char** listaCamposD
     if (!dadosExiste(dados)) continue;
 
     METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
+    if (!metadadosExiste(metadados)) continue;
     
     bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
     if (correspondenciaCompleta) {
-        dadosImprimir(dados, metadados);
-        totalRegistrosEncontrados++;
+      dadosImprimir(dados, metadados);
+      totalRegistrosEncontrados++;
     }
 
     dadosDeletar(&dados);
