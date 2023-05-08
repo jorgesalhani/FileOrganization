@@ -147,11 +147,11 @@ void dadosImprimir(DADOS* dados, METADADOS* metadados) {
   int32_t idAux = dadosObterIdCrime(dados);
   int32_t numArtAux = dadosObterNumeroArtigo(dados);
 
-  char dataAux[TAMANHO_DATA_CRIME+5]; 
+  char dataAux[TAMANHO_DATA_CRIME+5] = ""; 
   strcpy(dataAux, dadosObterDataCrime(dados));
   dataAux[TAMANHO_DATA_CRIME] = '\0';
 
-  char marcaAux[TAMANHO_MARCA_CELULAR+5];
+  char marcaAux[TAMANHO_MARCA_CELULAR+5] = "";
   strcpy(marcaAux, dadosObterMarcaCelular(dados));
   marcaAux[TAMANHO_MARCA_CELULAR] = '\0';
   if(!strVazia(marcaAux)) {
@@ -392,8 +392,20 @@ void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado) {
   return NULL;
 }
 
-DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado) {
+bool dadosValorIndexadoValido(DADOS* dados, char* campoIndexado, char* tipoDado) {
+  if (!dadosExiste(dados) || (!tipoDadoInteiroValido(tipoDado) && !tipoDadoStringValido(tipoDado))) return false;
+  
+  if (strcmp(tipoDado, "inteiro") == 0) {
+    int32_t* valorInt = (int32_t*) dadosObterCampoIndexado(dados, campoIndexado);
+    if (valorInt == NULL) return false;
+    if (*valorInt != -1) return true;
+  } else {
+    char* valorStr = (char*) dadosObterCampoIndexado(dados, campoIndexado);
+    if (valorStr == NULL) return false;
+    if (strlen(valorStr) != 0 && valorStr[0] != '$') return true;
+  }
 
+  return false;
 }
 
 bool dadosBuscaCorrespondenciaCompleta(

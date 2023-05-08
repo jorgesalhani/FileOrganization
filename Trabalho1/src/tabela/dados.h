@@ -9,6 +9,7 @@
     #include <stdint.h>
     #include <stdlib.h>
     #include <stdbool.h>
+    #include "../indice/dadosIndice.h"
 
     typedef struct metadados_ METADADOS;
     typedef struct dados_ DADOS;
@@ -27,6 +28,12 @@
     DADOS* dadosCriar(int32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], int32_t numeroArtigo, 
                       char marcaCelular[TAMANHO_MARCA_CELULAR], char* lugarCrime, char* descricaoCrime, char removido);
 
+    /**
+     * @brief Alocacao de memoria para armazenar metadados sobre um registro de dados
+     * @param int tamanhoDescricaoCrime. Tamanho da string 'descricaoCrime', originalmente campo de tamanho variado no registro de dados
+     * @param int tamanhoLugarCrime. Tamanho da string 'lugarCrime', originalmente campo de tamanho variado no registro de dados
+     * @return METADADOS*. Ponteiro para o TAD metadados criado
+    */
     METADADOS* dadosCriarMetadados(int tamanhoDescricaoCrime, int tamanhoLugarCrime);
 
     /**
@@ -190,10 +197,33 @@
     */
     bool dadosMetadadosDeletar(METADADOS** metadados);
 
+    /**
+     * @brief Verificar se TAD metadados existe
+     * @param METADADOS* metadados. Ponteiro para o TAD metadados criado
+     * @return bool true: caso ponteiro nao-nulo. false: caso contratio
+    */
     bool metadadosExiste(METADADOS* metadados);
 
+    /**
+     * @brief Verificar validade do campo 'removido' 
+     * @param char removido. Char que representa caso registro removido ou nao. Valores esperados: '0' ou '1'
+     * @return bool true: caso campo valido. false: caso contrario
+    */
     bool removidoValido(char removido);
 
+    /**
+     * @brief Atualizar registro de dados com novos valores informados
+     * @param DADOS* dados. Ponteiro para o TAD dados criado.
+     * @param METADADOS* metadados. Ponteiro para o TAD metadados criado.
+     * @param char removido. Identificador de remocao logica de campo
+     * @param int32_t novoIdCrime. Novo valor 'idCrime'
+     * @param char* novoDataCrime. Novo valor 'dataCrime'
+     * @param int32_t novoNumeroArtigo. Novo valor 'numeroArtigo'
+     * @param char* novoMarcaCelular. Novo valor 'marcaCelular'
+     * @param char* novoLugarCrime. Novo valor 'lugarCrime'
+     * @param char* novoDescricaoCrime. Novo valor 'descricaoCrime'
+     * @return bool. true: caso registro de dados atualizado com sucesso. false: caso contrario
+    */
     bool dadosAtualizarRegistro(
         DADOS* dados, METADADOS* metadados,
         char removido, int32_t novoIdCrime, 
@@ -202,17 +232,48 @@
         char* novoDescricaoCrime
     );
 
+    /**
+     * @brief Verificar validade do valor informado 'campoIndexado' 
+     * @param char* campoIndexado. Nome do campo utilizado como chave de busca para a criacao do indice linear correspondente
+     * @return bool. true: caso valido. false: caso contrario
+    */
     bool dadosCampoIndexadoValido(char* campoIndexado);
 
+    /**
+     * @brief Obter numero relativo ao campo indexado. Forma de associar um inteiro com a lista de possibilidades. Sao Elas:
+     *        {idCrime, dataCrime, numeroArtigo, marcaCelular, lugarCrime, descricaoCrime, removido, delimitador}
+     * @param char* campoIndexado. Nome do campo utilizado como chave de busca para a criacao do indice linear correspondente
+     * @return int. Valor relativo a posicao do id na lista de campos indexados possiveis
+    */
     int dadosObterNumeroCampoIndexado(char* campoIndexado);
 
+    /**
+     * @brief Obter valor do registro de dados relativo ao campo indexado de desejo
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @param char* campoIndexado. Nome do campo utilizado como chave de busca para a criacao do indice linear correspondente
+     * @return void*. Ponteiro opaco para o valor do campo do registro de dados. 
+    */
     void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado);
 
-    DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado);
-
+    /**
+     * @brief Verificar se um registro de dados corresponde aos valores desejados como campos de busca
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @param char** listaCamposDeBusca. Lista contendo os campos de busca desejados. Exemplo: {'idCrime', 'marcaCelular'}
+     * @param void** listaValoresDeBusca. Lista contendo os valores de busca desejados. Exemplo: {1182, 'MOTOROLA'}
+     * @param int numeroParesCampoValor. Numero de pares 'campo: valor' desejados. Ou tambem, numero de elementos das listas 'listaCamposDeBusca' e 'listaValoresDeBusca'
+     * @return bool. true: caso dado de registro corresponde aos campos buscados. false: caso contrario
+    */
     bool dadosBuscaCorrespondenciaCompleta(
         DADOS* dados, char** listaCamposDeBusca,
         void** listaValoresDeBusca, int numeroParesCampoValor
     );
+
+    /**
+     * @brief Verificar validade do valor relativo ao campoIndexado para um dado registro de dados 
+     * @param char* campoIndexado Nome do campo utilizado como chave de busca para a criacao do indice linear correspondente
+     * @param char* tipoDado. Tipo de dado do atributo utilizado como chave. Valor esperado: "string" ou "inteiro"
+     * @return bool. true: caso registro contenha valores nao nulos para o campo desejado. false: caso contrario
+    */
+    bool dadosValorIndexadoValido(DADOS* dados, char* campoIndexado, char* tipoDado);
 
 #endif
