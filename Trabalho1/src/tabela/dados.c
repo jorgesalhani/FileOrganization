@@ -408,10 +408,6 @@ bool dadosValorIndexadoValido(DADOS* dados, char* campoIndexado, char* tipoDado)
   return false;
 }
 
-DADOS* dadosFiltrarPorCampo(DADOS* dados, char* campoIndexado) {
-
-}
-
 bool dadosBuscaCorrespondenciaCompleta(
   DADOS* dados, char** listaCamposDeBusca,
   void** listaValoresDeBusca, int numeroParesCampoValor

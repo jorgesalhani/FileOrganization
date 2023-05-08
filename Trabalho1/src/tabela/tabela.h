@@ -76,19 +76,53 @@
     */
     TABELA* tabelaLerImprimirBinario(char* entrada);
 
+    /**
+     * @brief Ler e armazenar registro de cabecalho do arquivo binario de dados (ex: binario1.bin)
+     * @param TABELA* tabela. Ponteiro para o TAD tabela criado
+     * @return CABECALHO*. Ponteiro para o TAD cabecalho criado
+    */
     CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela);
     
+    /**
+     * @brief Ler e armazenar proximo registro de dados encontrado no arquivo binario de dados (ex: binario1.bin)
+     * @param TABELA* tabela. Ponteiro para o TAD tabela criado
+     * @return DADOS*. Ponteiro para o TAD dados criado
+    */
     DADOS* tabelaLerArmazenarDado(TABELA* tabela);
 
+    /**
+     * @brief Armazenar metadados (ex: tamanho de campos de tamanho variavel) correspondentes ao conjunto de dados informado
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
+     * @return METADADOS*. Ponteiro para o TAD metadados criado
+    */
     METADADOS* tabelaLerArmazenarMetadado(DADOS* dados);
 
+    /**
+     * @brief Verificar validade do modo de abertura do arquivo.
+     * @param char* modoAberturaArquivo. Modo de abertura escolhido. Formato esperado: "rb", "wb+"
+     * @return bool. true: caso valido. false: caso contrario
+    */
     bool modoAbrirArquivoValido(char* modoAberturaArquivo);
 
+    /**
+     * @brief Funcionalidade 4. Implementacao de funcao analoga ao SELECT * FROM _ (SQL)
+     * @param char* nomeArquivoEntrada. Nome do arquivo binario de dados de entrada. Formato esperado: <nomeArquivoEntrada>.bin
+     * @param char* campoIndexado. Nome do campo indexado de busca. Para que a busca seja otimizada, a funcionalidade 2. deve ser chamada anteriormente com este mesmo campoIndexado.
+     * @param char* tipoDado. Tipo de dado do atributo utilizado como chave de busca. Formatos esperados: string ou inteiro
+     * @param char* nomeArquivoIndice. Nome do arquivo binario de indice criado sobre o campo campoIndexado. Formato esperado: <nomeArquivoIndice>.bin
+     * @param int numeroCamposBuscados. Quantidade de buscas que devem ser realizadas. Cada busca deve ser especificada em linhas separadas
+     * @return TABELA* tabela. Ponteiro para o TAD tabela criado
+    */
     TABELA* tabelaLerImprimirBusca(
         char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
         char* nomeArquivoIndice, int numeroCamposBuscados
     );
 
+    /**
+     * @brief Reposicionar ponteiro de leitura para o comeco do arquivo binario de dados (SEEK_SET)
+     * @param TABELA* tabela. Ponteiro par o TAD tabela criado
+     * @return bool. true: caso bem-sucedido. false: caso contrario
+    */
     bool tabelaResetLeituraArquivoBinario(TABELA* tabela);
     
 
