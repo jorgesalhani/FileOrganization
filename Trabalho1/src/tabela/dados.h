@@ -270,6 +270,7 @@
 
     /**
      * @brief Verificar validade do valor relativo ao campoIndexado para um dado registro de dados 
+     * @param DADOS* dados. Ponteiro para o TAD dados criado
      * @param char* campoIndexado Nome do campo utilizado como chave de busca para a criacao do indice linear correspondente
      * @param char* tipoDado. Tipo de dado do atributo utilizado como chave. Valor esperado: "string" ou "inteiro"
      * @return bool. true: caso registro contenha valores nao nulos para o campo desejado. false: caso contrario

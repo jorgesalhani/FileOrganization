@@ -67,9 +67,6 @@ ARVORE_BINARIA* arvoreBinariaCriar(char* campoIndexado) {
     return arvoreBinaria;
 }
 
-ITEM* arvoreBinariaObterItem(ARVORE_BINARIA* arvoreBinaria, int32_t chave) {
-
-}
 
 int32_t arvoreBinariaObterQtdReg(ARVORE_BINARIA* arvoreBinaria) {
     if (!arvoreBinariaExiste(arvoreBinaria)) return -1;
@@ -228,10 +225,6 @@ bool arvoreBinariaAdicionar(ARVORE_BINARIA* arvoreBinaria, DADOS* dados, METADAD
     return true;
 }
 
-ITEM* arvoreBinariaRemoverItem(ARVORE_BINARIA* arvoreBinaria, int32_t chave) {
-
-}
-
 bool arvoreBinariaDeletar(ARVORE_BINARIA** arvoreBinaria) {
     if (arvoreBinaria == NULL || !arvoreBinariaExiste(*arvoreBinaria)) return false;
 
@@ -335,7 +328,7 @@ bool arvoreBinariaArmazenarOrdemCrescenteAux(
     return true;
 }
 
-bool indiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_BINARIA* arvoreBinaria, char* tipoDado) {
+bool arvoreBinariaIndiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_BINARIA* arvoreBinaria, char* tipoDado) {
     if (!arvoreBinariaExiste(arvoreBinaria) || !indiceExiste(indice)) return false;
     arvoreBinariaArmazenarOrdemCrescenteAux(arvoreBinaria->raiz, indice, arvoreBinaria, tipoDado);
     return true;

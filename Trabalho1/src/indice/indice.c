@@ -174,7 +174,7 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
 
     indiceAtualizarCabecalho(indice, cabecalhoIndice);
 
-    indiceArmazenarRegistrosOrdemCrescente(indice, arvoreBinaria, tipoDado);
+    arvoreBinariaIndiceArmazenarRegistrosOrdemCrescente(indice, arvoreBinaria, tipoDado);
 
 
     int32_t qtdRegExistentes = arvoreBinariaObterQtdReg(arvoreBinaria);
