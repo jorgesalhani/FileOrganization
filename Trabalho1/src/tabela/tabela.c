@@ -394,19 +394,19 @@ void lerEntradaNumeroParCriterio(int* numeroParCriterio) {
   scanf("%d", numeroParCriterio);
 }
 
-void lerEntradasBuscaPorCampos(char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor) {
-  for (int campo_i = 0; campo_i < numeroParesCampoValor; campo_i++) {
-    listaCamposDeBusca[campo_i] = (char*) malloc(sizeof(char)*50);
-    scanf("%s", listaCamposDeBusca[campo_i]);
-    int indiceCampoEscolhido = dadosObterNumeroCampoIndexado(listaCamposDeBusca[campo_i]);
+void lerEntradasCampoValor(char** listaCampos, void** listaValores, int numeroPares) {
+  for (int campo_i = 0; campo_i < numeroPares; campo_i++) {
+    listaCampos[campo_i] = (char*) malloc(sizeof(char)*50);
+    scanf("%s", listaCampos[campo_i]);
+    int indiceCampoEscolhido = dadosObterNumeroCampoIndexado(listaCampos[campo_i]);
     switch (indiceCampoEscolhido) {
       case 0:
-        listaValoresDeBusca[campo_i] = (int32_t*) malloc(sizeof(int32_t));
-        scanf("%d", (int32_t*) listaValoresDeBusca[campo_i]);
+        listaValores[campo_i] = (int32_t*) malloc(sizeof(int32_t));
+        scanf("%d", (int32_t*) listaValores[campo_i]);
         break;
       case 1:
-        listaValoresDeBusca[campo_i] = (char*) malloc(sizeof(char)*50);
-        scan_quote_string((char*) listaValoresDeBusca[campo_i]);
+        listaValores[campo_i] = (char*) malloc(sizeof(char)*200);
+        scan_quote_string((char*) listaValores[campo_i]);
         break;
       default:
         break;
@@ -528,7 +528,7 @@ int tabelaLerImprimirBuscaCampo(TABELA* tabela, ARVORE_BINARIA** arvoreBinaria, 
   char** listaCamposDeBusca = (char**) malloc(sizeof(char*)*numeroParesCampoValor);
   void** listaValoresDeBusca = (void**) malloc(sizeof(void*)*numeroParesCampoValor);
 
-  lerEntradasBuscaPorCampos(listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
+  lerEntradasCampoValor(listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
 
   bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(listaCamposDeBusca, numeroParesCampoValor, campoIndexado);
   int totalRegistros = 0;
@@ -540,7 +540,11 @@ int tabelaLerImprimirBuscaCampo(TABELA* tabela, ARVORE_BINARIA** arvoreBinaria, 
       );
     }
 
-    totalRegistros = arvoreBinariaImprimirBusca(*arvoreBinaria, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
+    totalRegistros = arvoreBinariaBusca(
+      *arvoreBinaria, campoIndexado, 
+      listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor,
+      NULL, NULL, 0, 0
+      );
   }
   else totalRegistros = tabelaBuscaImprimir(tabela, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, nroRegArq);
 
@@ -604,6 +608,164 @@ TABELA* tabelaLerImprimirBusca(
   }
 
   tabelaLerImprimirBuscaPorCampos(tabela, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
+
+  return tabela;
+}
+
+bool liberarParesCampoValor(char*** listaCamposDeBusca, void*** listaValoresDeBusca, int total) {
+  if (listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return false;
+
+  char** listaCampos = *listaCamposDeBusca;
+  void** listaValores = *listaValoresDeBusca;
+
+  for (int i = 0; i < total; i++) {
+    free(listaCampos[i]);
+    listaCampos[i] = NULL;
+    free(listaValores[i]);
+    listaValores[i] = NULL;
+  }
+
+  free(listaCampos);
+  listaCampos = NULL;
+  listaCamposDeBusca = NULL;
+
+  free(listaValores);
+  listaValores = NULL;
+  listaValoresDeBusca = NULL;
+
+  return true;
+}
+
+TABELA* tabelaLerAtualizar(
+  char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
+  char* nomeArquivoIndice, int numeroAtualizacoes
+) {
+  /**
+   * Inicializar tabela (arquivo binario de dados) em modo leitura
+   * e cabecalho do arquivo de dados
+  */
+  TABELA* tabela = tabelaCriar(nomeArquivoEntrada, "rb");
+  if (!tabelaExiste(tabela)) {
+    erroGenerico();
+    return tabela;
+  }
+
+  if (!tabelaExiste(tabela) || (!tipoDadoInteiroValido(tipoDado) && !tipoDadoStringValido(tipoDado))) {
+        erroGenerico();
+        return false;
+    }
+    
+  if (!dadosCampoIndexadoValido(campoIndexado)) {
+      erroGenerico();
+      return false;
+  }
+
+  CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
+  if (!cabecalhoExiste(cabecalho)) return tabela;
+
+  int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
+
+  ARVORE_BINARIA* arvoreBinaria = NULL;
+
+  /**
+   * Inicializar busca para cada uma das n (= numeroAtualizacoes) 
+   * atualizacoes a serem realizadas
+  */
+  for (int i = 0; i < numeroAtualizacoes; i++) {
+    int totalRegistrosEncontrados = 0;
+
+    /**
+     * Para cada atualizacao serao informados 
+     * m (= numeroParesCampoValorBusca) pares campo:valor para busca
+     * p (= numeroParesCampoValorAtualizacao) pares campo:valor para atualizar 
+     * 
+     * Lendo os pares para os criterios de busca
+    */
+    int numeroParesCampoValorBusca;
+    scanf("%d", &numeroParesCampoValorBusca);
+
+    char** listaCamposDeBusca = (char**) malloc(sizeof(char*)*numeroParesCampoValorBusca);
+    void** listaValoresDeBusca = (void**) malloc(sizeof(void*)*numeroParesCampoValorBusca);
+
+    lerEntradasCampoValor(listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValorBusca);
+
+    /**
+     * Lendo os pares para atualizacao
+    */
+    int numeroParesCampoValorAtualizacao;
+    scanf("%d", &numeroParesCampoValorAtualizacao);
+
+    char** listaCamposDeAtualizacao = (char**) malloc(sizeof(char*)*numeroParesCampoValorAtualizacao);
+    void** listaValoresDeAtualizacao = (void**) malloc(sizeof(void*)*numeroParesCampoValorAtualizacao);
+
+    lerEntradasCampoValor(listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao);
+
+
+    /**
+     * Verificar caso algum dos campos de busca seja o mesmo que
+     * o campoIndexado, utilizado para construir o arquivo de indice
+     * 
+     * Se verdadeiro, executar busca binaria
+    */
+    bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(listaCamposDeBusca, numeroParesCampoValorBusca, campoIndexado);
+    if (buscaIndexada) {
+      if (!arvoreBinariaExiste(arvoreBinaria)) {
+          arvoreBinaria = obterArvoreBinariaIndices(
+          tabela, nomeArquivoIndice, listaCamposDeBusca, listaValoresDeBusca, 
+          campoIndexado, tipoDado, numeroParesCampoValorBusca
+        );
+      }
+
+      totalRegistrosEncontrados = arvoreBinariaBusca(
+        arvoreBinaria, campoIndexado, 
+        listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValorBusca,
+        listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao, 1
+        );
+    }
+
+    /**
+     * Caso contrario, executar busca sequencial no arquivo binario de dados
+    */
+    else {
+      int contadorRegistros = nroRegArq;
+
+      while (contadorRegistros--) {
+
+        DADOS* dados = tabelaLerArmazenarDado(tabela);
+        if (!dadosExiste(dados)) continue;
+
+        METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
+        if (!metadadosExiste(metadados)) continue;
+        
+        bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValorBusca);
+        if (correspondenciaCompleta) {
+          dadosImprimir(dados, metadados);
+          bool dadosAtualizados = dadosAtualizaCamposEspecificados(dados, metadados, listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao);
+          METADADOS* metadadosAtualizados = tabelaLerArmazenarMetadado(dados);
+          
+          dadosImprimir(dados, metadadosAtualizados);
+          totalRegistrosEncontrados++;
+
+          dadosMetadadosDeletar(&metadadosAtualizados);
+        }
+
+        dadosDeletar(&dados);
+        dadosMetadadosDeletar(&metadados);
+      }
+
+    }
+
+    tabelaResetLeituraArquivoBinario(tabela);
+
+    liberarParesCampoValor(&listaCamposDeBusca, &listaValoresDeBusca, numeroParesCampoValorBusca);
+    liberarParesCampoValor(&listaCamposDeAtualizacao, &listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao);
+
+    if (totalRegistrosEncontrados <= 0) erroSemRegistros();
+  }
+
+  arvoreBinariaDeletar(&arvoreBinaria);
+
+  cabecalhoDeletar(&cabecalho);
 
   return tabela;
 }

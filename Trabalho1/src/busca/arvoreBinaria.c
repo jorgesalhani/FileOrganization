@@ -334,9 +334,11 @@ bool arvoreBinariaIndiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_
     return true;
 }
 
-bool arvoreBinariaImprimirBuscaAux(
-    NO* raiz, char* campoIndexado, char** listaCamposDeBusca, 
-    void** listaValoresDeBusca, int numeroParesCampoValor, int* totalRegistros
+bool arvoreBinariaBuscaAux(
+    NO* raiz, char* campoIndexado, 
+    char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, 
+    char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao,
+    int* totalRegistros, int processamento
 ) {
     if (!arvoreBinariaNoExiste(raiz) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return false;
 
@@ -372,31 +374,60 @@ bool arvoreBinariaImprimirBuscaAux(
     }
 
     if (buscarEsquerda) {
-        arvoreBinariaImprimirBuscaAux(raiz->esquerda, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, totalRegistros);
+        arvoreBinariaBuscaAux(
+            raiz->esquerda, 
+            campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, 
+            listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao,
+            totalRegistros, processamento);
     }
     
     bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
     if (correspondenciaCompleta) {
-        dadosImprimir(dados, metadados);
+        switch (processamento) {
+            case 0: // Imprimir
+                dadosImprimir(dados, metadados);
+                break;
+            
+            case 1: // Atualizar
+                if (listaCamposDeAtualizacao == NULL || listaValoresDeAtualizacao == NULL || numeroParesCampoValorAtualizacao == 0) return false;
+                dadosImprimir(dados, metadados);
+                bool dadosAtualizados = dadosAtualizaCamposEspecificados(dados, metadados, listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao);
+                METADADOS* metadadosAtualizados = tabelaLerArmazenarMetadado(dados);
+                
+                dadosImprimir(dados, metadadosAtualizados);
+                dadosMetadadosDeletar(&metadadosAtualizados);
+                break;
+            default:
+                break;
+        }
+        
         int contadorRegistrosEncontrados = *totalRegistros;
         contadorRegistrosEncontrados++;
         *totalRegistros = contadorRegistrosEncontrados;
     }
 
-    arvoreBinariaImprimirBuscaAux(raiz->direita, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, totalRegistros);
+    arvoreBinariaBuscaAux(
+        raiz->direita, 
+        campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, 
+        listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao,
+        totalRegistros, processamento);
     return true;
 }
 
-int arvoreBinariaImprimirBusca(
-    ARVORE_BINARIA* arvoreBinaria, char* campoIndexado, char** listaCamposDeBusca, 
-    void** listaValoresDeBusca, int numeroParesCampoValor) 
+int arvoreBinariaBusca(
+    ARVORE_BINARIA* arvoreBinaria, char* campoIndexado, 
+    char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, 
+    char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao,
+    int processamento) 
 {
     if (!arvoreBinariaExiste(arvoreBinaria) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return -1;
 
     int totalRegistros = 0;
-    arvoreBinariaImprimirBuscaAux(
-        arvoreBinaria->raiz, campoIndexado, listaCamposDeBusca, 
-        listaValoresDeBusca, numeroParesCampoValor, &totalRegistros
+    arvoreBinariaBuscaAux(
+        arvoreBinaria->raiz, campoIndexado, 
+        listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, 
+        listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao,
+        &totalRegistros, processamento
     );
     return totalRegistros;
 }

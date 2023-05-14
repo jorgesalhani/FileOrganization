@@ -64,6 +64,16 @@ void lerEntradasModo4(char* nomeArquivoEntrada, char* campoIndexado,
   scanf("%d", numeroCamposBuscados);
 }
 
+void lerEntradasModo7(char* nomeArquivoEntrada, char* campoIndexado, 
+  char* tipoDado, char* nomeArquivoIndice, int* numeroCamposBuscados
+) {
+  scanf("%s", nomeArquivoEntrada);
+  scanf("%s", campoIndexado);
+  scanf("%s", tipoDado);
+  scanf("%s", nomeArquivoIndice);
+  scanf("%d", numeroCamposBuscados);
+}
+
 int main(void) {
   int modo, numeroCamposBuscados;
   char nomeArquivoEntrada[100], nomeArquivoSaida[100], nomeArquivoIndice[100];
@@ -107,6 +117,15 @@ int main(void) {
   case 4:
     lerEntradasModo4(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, &numeroCamposBuscados);
     tabela = tabelaLerImprimirBusca(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
+    if (!tabelaExiste(tabela)) return 0;
+
+    tabelaFecharArquivo(tabela);
+    tabelaDeletar(&tabela, true);
+    break;
+
+  case 7:
+    lerEntradasModo7(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, &numeroCamposBuscados);
+    tabela = tabelaLerAtualizar(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
     if (!tabelaExiste(tabela)) return 0;
 
     tabelaFecharArquivo(tabela);

@@ -277,4 +277,6 @@
     */
     bool dadosValorIndexadoValido(DADOS* dados, char* campoIndexado, char* tipoDado);
 
+    bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao);
+
 #endif

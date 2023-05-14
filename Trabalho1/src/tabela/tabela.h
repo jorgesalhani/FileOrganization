@@ -126,4 +126,11 @@
     bool tabelaResetLeituraArquivoBinario(TABELA* tabela);
     
 
+    TABELA* tabelaLerAtualizar(
+        char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
+        char* nomeArquivoIndice, int numeroAtualizacoes
+    );
+
+    METADADOS* tabelaLerArmazenarMetadado(DADOS* dados);
+
 #endif
