@@ -79,6 +79,11 @@
      * @param void** listaValoresDeBusca. Lista contendo os valores de busca desejados. Exemplo: {1182, 'MOTOROLA'}
      * @param int numeroParesCampoValor. Numero de pares 'campo: valor' desejados. Ou tambem, numero de elementos das listas 'listaCamposDeBusca' e 'listaValoresDeBusca'
     */
-    int arvoreBinariaImprimirBusca(ARVORE_BINARIA* arvoreBinaria, char* campoIndexado, char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor);
+    int arvoreBinariaBusca(
+        ARVORE_BINARIA* arvoreBinaria, TABELA* tabela, CABECALHO* cabecalho, char* campoIndexado, 
+        char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, 
+        char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao,
+        int processamento
+    );
 
 #endif

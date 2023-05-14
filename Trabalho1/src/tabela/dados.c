@@ -49,6 +49,7 @@ static const int camposIndexadosTipos[ENUM_FIM] = {
 */
 
 bool stringFixaValida(char* entrada, size_t tamanho, char delimitador) {
+    printf("%ld %ld\n", strlen(entrada), tamanho);
     return (strlen(entrada) <= sizeof(char)*tamanho) ? true : false;
 }
 
@@ -84,6 +85,11 @@ bool strVazia(char* str) {
   return false;
 }
 
+bool dadosRemovido(DADOS* dados) {
+  if (!dadosExiste(dados)) return true;
+  return dadosObterRemovido(dados) == '1' ? true : false;
+}
+
 /********************
  * FUNCOES PRINCIPAIS
  * ******************
@@ -109,10 +115,11 @@ DADOS* dadosCriar(
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
     
     if (!dadosExiste(dados)) return NULL;
-    if (!dadosEntradasValidas(removido, idCrime, dataCrime, numeroArtigo, marcaCelular)) {
-        dadosDeletar(&dados);
-        return NULL;
-    }
+    // if (!dadosEntradasValidas(removido, idCrime, dataCrime, numeroArtigo, marcaCelular)) {
+    //     free(dados);
+    //     dados = NULL;
+    //     return NULL;
+    // }
 
     dados->removido = removido;
     dados->idCrime = idCrime;
@@ -392,6 +399,16 @@ void* dadosObterCampoIndexado(DADOS* dados, char* campoIndexado) {
   return NULL;
 }
 
+int dadosObterEnumCampo(char* campoIndexado) {
+  enum camposIndexados campo_i;
+  for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
+    if (strcmp(campoIndexado, camposIndexadosNomes[campo_i]) == 0) {
+      return campo_i;
+    }
+  }
+  return ENUM_FIM;
+}
+
 bool dadosValorIndexadoValido(DADOS* dados, char* campoIndexado, char* tipoDado) {
   if (!dadosExiste(dados) || (!tipoDadoInteiroValido(tipoDado) && !tipoDadoStringValido(tipoDado))) return false;
   
@@ -449,4 +466,72 @@ bool dadosBuscaCorrespondenciaCompleta(
 
   return true;
 
+}
+
+bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao) {
+  if (!dadosExiste(dados) || !metadadosExiste(metadados) ||
+    listaCamposDeAtualizacao == NULL || listaValoresDeAtualizacao == NULL
+  ) return false;
+  
+  for (int i = 0; i < numeroParesCampoValorAtualizacao; i++) {
+    char* campoIndexado = listaCamposDeAtualizacao[i];
+    void* valorAtualizado = listaValoresDeAtualizacao[i];
+    int numeroCampoIndexado = dadosObterNumeroCampoIndexado(campoIndexado);
+    
+    int32_t* valorInt = NULL;
+    int32_t* valorNovoInt = NULL;
+    char* valorStr = NULL;
+    char* valorNovoStr = NULL;
+
+    switch (numeroCampoIndexado) {
+      case 0:;
+        valorInt = (int*) dadosObterCampoIndexado(dados, campoIndexado);
+        valorNovoInt = (int*) valorAtualizado;
+        *valorInt = *valorNovoInt;
+        break;
+      
+      case 1:;
+        int enumCampo = dadosObterEnumCampo(campoIndexado);
+        valorStr = (char*) dadosObterCampoIndexado(dados, campoIndexado);
+        valorNovoStr = (char*) valorAtualizado;
+        METADADOS* metadadosAtualizados = NULL;
+        switch (enumCampo) {
+          case 1:; // dataCrime
+            dadosAtualizarDataCrime(dados, valorNovoStr);
+            break;
+
+          case 3:; // marcaCelular
+            dadosAtualizarMarcaCelular(dados, valorNovoStr);
+            break;
+
+          case 4:; // lugarCrime
+            metadadosAtualizados = dadosCriarMetadados(
+              (int)strlen(dadosObterDescricaoCrime(dados)), (int)(strlen(valorNovoStr))
+            );
+            if (!metadadosExiste(metadados)) return false;
+            dadosAtualizarLugarCrime(dados, valorNovoStr, metadadosAtualizados);
+            dadosMetadadosDeletar(&metadadosAtualizados);
+            break;
+          
+          case 5:; // descricaoCrime
+            metadadosAtualizados = dadosCriarMetadados(
+              (int)strlen(valorNovoStr), (int)(strlen(dadosObterLugarCrime(dados)))
+            );
+            if (!metadadosExiste(metadados)) return false;
+            dadosAtualizarDescricaoCrime(dados, valorNovoStr, metadados);
+            dadosMetadadosDeletar(&metadadosAtualizados);
+            break;
+
+          default:;
+            break;
+        }
+
+        break;
+
+      default:;
+        break;
+    }
+  }
+
+  return true;
 }

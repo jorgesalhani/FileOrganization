@@ -29,6 +29,10 @@ bool cabecalhoIndiceExiste(CABECALHO_INDICE* cabecalhoIndice) {
     return cabecalhoIndice != NULL ? true : false;
 }
 
+bool cabecalhoIndiceConsistente(CABECALHO_INDICE* cabecalhoIndice) {
+    return cabecalhoIndice->status == '1' ? true : false;
+}
+
 CABECALHO_INDICE* cabecalhoIndiceCriar(char status) {
     CABECALHO_INDICE* cabecalhoIndice = (CABECALHO_INDICE*) malloc(sizeof(CABECALHO_INDICE));
     if (!cabecalhoIndiceExiste(cabecalhoIndice)) return NULL;

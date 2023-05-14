@@ -55,5 +55,7 @@
      * @return char. Valor do campo 'qtdReg' do registro de cabecalho
     */
     int32_t cabecalhoIndiceObterQtdReg(CABECALHO_INDICE* cabecalhoIndice);
+
+    bool cabecalhoIndiceConsistente(CABECALHO_INDICE* cabecalhoIndice);
     
 #endif

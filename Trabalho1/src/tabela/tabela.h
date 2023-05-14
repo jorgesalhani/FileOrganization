@@ -123,7 +123,16 @@
      * @param TABELA* tabela. Ponteiro par o TAD tabela criado
      * @return bool. true: caso bem-sucedido. false: caso contrario
     */
-    bool tabelaResetLeituraArquivoBinario(TABELA* tabela);
+    bool tabelaResetLeituraArquivoBinario(TABELA* tabela, int64_t byteOffset);
     
+
+    TABELA* tabelaLerAtualizar(
+        char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
+        char* nomeArquivoIndice, int numeroAtualizacoes
+    );
+
+    METADADOS* tabelaLerArmazenarMetadado(DADOS* dados);
+
+    bool tabelaAtualizarDadoComoRemovido(TABELA* tabela, int64_t byteOffset);
 
 #endif

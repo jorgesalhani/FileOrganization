@@ -93,7 +93,7 @@ bool arvoreBinariaOrdenarPorCampo(
     void* valorCampoEscolhidoAnterior = dadosObterCampoIndexado(dadosNoAnterior, campoIndexado);
 
     switch (indiceCampoEscolhido) {
-        case 0:
+        case 0:;
             int32_t* campoIntRaiz = (int32_t*) valorCampoEscolhidoRaiz;
             int32_t* campoInt = (int32_t*) valorCampoEscolhido;
             int32_t* campoIntAnterior = (int32_t*) valorCampoEscolhidoAnterior;
@@ -143,7 +143,7 @@ bool arvoreBinariaOrdenarPorCampo(
             }
             break;
 
-        case 1:
+        case 1:;
             char* campoStrRaiz = (char*) valorCampoEscolhidoRaiz;
             char* campoStr = (char*) valorCampoEscolhido;
             char* campoStrAnterior = (char*) valorCampoEscolhidoAnterior;
@@ -282,7 +282,7 @@ bool armazenarRegistroOrdemCrescente(
     void* valorCampoEscolhido = dadosObterCampoIndexado(dados, campoIndexado);
 
     switch (indiceCampoEscolhido) {
-        case 0:
+        case 0:;
             int32_t* campoInt = (int32_t*) valorCampoEscolhido;
             dadosIndiceInteiro = dadosIndiceInteiroCriar(tipoDado, *campoInt, itemObterByteOffset(item));
             
@@ -290,7 +290,7 @@ bool armazenarRegistroOrdemCrescente(
             
             dadosIndiceInteiroDeletar(&dadosIndiceInteiro);
             break;
-        case 1:
+        case 1:;
             char* campoStr = (char*) valorCampoEscolhido;
             if (strlen(campoStr) == 0) break;
             char* campoTruncado = dadosIndiceTruncarString(campoStr);
@@ -301,7 +301,7 @@ bool armazenarRegistroOrdemCrescente(
             dadosIndiceStringDeletar(&dadosIndiceString);
             free(campoTruncado);
             break;
-        default:
+        default:;
             break;
     }
 
@@ -334,9 +334,11 @@ bool arvoreBinariaIndiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_
     return true;
 }
 
-bool arvoreBinariaImprimirBuscaAux(
-    NO* raiz, char* campoIndexado, char** listaCamposDeBusca, 
-    void** listaValoresDeBusca, int numeroParesCampoValor, int* totalRegistros
+bool arvoreBinariaBuscaAux(
+    NO* raiz, TABELA* tabela, CABECALHO* cabecalho, char* campoIndexado, 
+    char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, 
+    char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao,
+    int* totalRegistros, int processamento
 ) {
     if (!arvoreBinariaNoExiste(raiz) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return false;
 
@@ -355,48 +357,104 @@ bool arvoreBinariaImprimirBuscaAux(
     char* valorEncontradoStr = NULL;
 
     switch (numeroCampo) {
-        case 0:
+        case 0:;
             valorBuscaInt = (int32_t*) valor;
             valorEncontradoInt = (int32_t*) dadosObterCampoIndexado(dados, campoIndexado);
             if (*valorEncontradoInt > *valorBuscaInt) buscarEsquerda = false;
             break;
 
-        case 1:
+        case 1:;
             valorBuscaStr = (char*) valor;
             valorEncontradoStr = (char*) dadosObterCampoIndexado(dados, campoIndexado);
             if (strcmp(valorBuscaStr, valorEncontradoStr) > 0) buscarEsquerda = false;
             break;
 
-        default:
+        default:;
             break;
     }
 
     if (buscarEsquerda) {
-        arvoreBinariaImprimirBuscaAux(raiz->esquerda, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, totalRegistros);
+        arvoreBinariaBuscaAux(
+            raiz->esquerda, tabela, cabecalho,
+            campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, 
+            listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao,
+            totalRegistros, processamento);
     }
     
     bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
     if (correspondenciaCompleta) {
-        dadosImprimir(dados, metadados);
+        switch (processamento) {
+            case 0:; // Imprimir
+                dadosImprimir(dados, metadados);
+                break;
+            
+            case 1:; // Atualizar
+                if (listaCamposDeAtualizacao == NULL || listaValoresDeAtualizacao == NULL || numeroParesCampoValorAtualizacao == 0) return false;
+
+                int64_t tamRegistro = dadosMetadadosObterTamanhoRegistro(dados, metadados);
+                dadosAtualizaCamposEspecificados(dados, metadados, listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao);
+                METADADOS* metadadosAtualizados = tabelaLerArmazenarMetadado(dados);
+                
+                int64_t tamRegistroAtualizado = dadosMetadadosObterTamanhoRegistro(dados, metadadosAtualizados);
+                int64_t byteOffset = itemObterByteOffset(raiz->item);
+                tabelaResetLeituraArquivoBinario(tabela, byteOffset);
+                if (tamRegistro >= tamRegistroAtualizado) {
+                    tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
+                    
+                } else {
+                    tabelaAtualizarDadoComoRemovido(tabela, byteOffset);
+
+                    int64_t byteOffsetFinal = cabecalhoObterProxByteOffset(cabecalho);
+                    tabelaResetLeituraArquivoBinario(tabela, byteOffsetFinal);
+
+                    tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
+                    tabelaResetLeituraArquivoBinario(tabela, 0);
+                    byteOffsetFinal += dadosMetadadosObterTamanhoRegistro(dados, metadadosAtualizados);
+
+                    int32_t nroRem = cabecalhoObterNroRegRem(cabecalho);
+                    int32_t nroReg = cabecalhoObterNroRegArq(cabecalho);
+                    
+                    cabecalhoAtualizarProxByteOffset(cabecalho, byteOffsetFinal);
+                    cabecalhoAtualizarNroRegRem(cabecalho, nroRem+1);
+                    cabecalhoAtualizarNroRegArq(cabecalho, nroReg+1);
+                    
+                    tabelaAtualizarCabecalho(tabela, cabecalho);
+                }
+                
+                dadosMetadadosDeletar(&metadadosAtualizados);
+                break;
+            
+            default:
+                break;
+        }
+        
         int contadorRegistrosEncontrados = *totalRegistros;
         contadorRegistrosEncontrados++;
         *totalRegistros = contadorRegistrosEncontrados;
     }
 
-    arvoreBinariaImprimirBuscaAux(raiz->direita, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, totalRegistros);
+    arvoreBinariaBuscaAux(
+        raiz->direita, tabela, cabecalho,
+        campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, 
+        listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao,
+        totalRegistros, processamento);
     return true;
 }
 
-int arvoreBinariaImprimirBusca(
-    ARVORE_BINARIA* arvoreBinaria, char* campoIndexado, char** listaCamposDeBusca, 
-    void** listaValoresDeBusca, int numeroParesCampoValor) 
+int arvoreBinariaBusca(
+    ARVORE_BINARIA* arvoreBinaria, TABELA* tabela, CABECALHO* cabecalho, char* campoIndexado, 
+    char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, 
+    char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao,
+    int processamento) 
 {
     if (!arvoreBinariaExiste(arvoreBinaria) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return -1;
 
     int totalRegistros = 0;
-    arvoreBinariaImprimirBuscaAux(
-        arvoreBinaria->raiz, campoIndexado, listaCamposDeBusca, 
-        listaValoresDeBusca, numeroParesCampoValor, &totalRegistros
+    arvoreBinariaBuscaAux(
+        arvoreBinaria->raiz, tabela, cabecalho, campoIndexado, 
+        listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, 
+        listaCamposDeAtualizacao, listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao,
+        &totalRegistros, processamento
     );
     return totalRegistros;
 }
