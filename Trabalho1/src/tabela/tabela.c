@@ -831,7 +831,6 @@ TABELA* tabelaLerAtualizar(
     liberarParesCampoValor(&listaCamposDeBusca, &listaValoresDeBusca, numeroParesCampoValorBusca);
     liberarParesCampoValor(&listaCamposDeAtualizacao, &listaValoresDeAtualizacao, numeroParesCampoValorAtualizacao);
 
-    if (totalRegistrosEncontrados <= 0) erroSemRegistros();
   }
 
   indiceDeletar(&indice, true);

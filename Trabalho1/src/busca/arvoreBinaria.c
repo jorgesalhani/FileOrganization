@@ -93,7 +93,7 @@ bool arvoreBinariaOrdenarPorCampo(
     void* valorCampoEscolhidoAnterior = dadosObterCampoIndexado(dadosNoAnterior, campoIndexado);
 
     switch (indiceCampoEscolhido) {
-        case 0:
+        case 0:;
             int32_t* campoIntRaiz = (int32_t*) valorCampoEscolhidoRaiz;
             int32_t* campoInt = (int32_t*) valorCampoEscolhido;
             int32_t* campoIntAnterior = (int32_t*) valorCampoEscolhidoAnterior;
@@ -143,7 +143,7 @@ bool arvoreBinariaOrdenarPorCampo(
             }
             break;
 
-        case 1:
+        case 1:;
             char* campoStrRaiz = (char*) valorCampoEscolhidoRaiz;
             char* campoStr = (char*) valorCampoEscolhido;
             char* campoStrAnterior = (char*) valorCampoEscolhidoAnterior;
@@ -282,7 +282,7 @@ bool armazenarRegistroOrdemCrescente(
     void* valorCampoEscolhido = dadosObterCampoIndexado(dados, campoIndexado);
 
     switch (indiceCampoEscolhido) {
-        case 0:
+        case 0:;
             int32_t* campoInt = (int32_t*) valorCampoEscolhido;
             dadosIndiceInteiro = dadosIndiceInteiroCriar(tipoDado, *campoInt, itemObterByteOffset(item));
             
@@ -290,7 +290,7 @@ bool armazenarRegistroOrdemCrescente(
             
             dadosIndiceInteiroDeletar(&dadosIndiceInteiro);
             break;
-        case 1:
+        case 1:;
             char* campoStr = (char*) valorCampoEscolhido;
             if (strlen(campoStr) == 0) break;
             char* campoTruncado = dadosIndiceTruncarString(campoStr);
@@ -301,7 +301,7 @@ bool armazenarRegistroOrdemCrescente(
             dadosIndiceStringDeletar(&dadosIndiceString);
             free(campoTruncado);
             break;
-        default:
+        default:;
             break;
     }
 
@@ -357,19 +357,19 @@ bool arvoreBinariaBuscaAux(
     char* valorEncontradoStr = NULL;
 
     switch (numeroCampo) {
-        case 0:
+        case 0:;
             valorBuscaInt = (int32_t*) valor;
             valorEncontradoInt = (int32_t*) dadosObterCampoIndexado(dados, campoIndexado);
             if (*valorEncontradoInt > *valorBuscaInt) buscarEsquerda = false;
             break;
 
-        case 1:
+        case 1:;
             valorBuscaStr = (char*) valor;
             valorEncontradoStr = (char*) dadosObterCampoIndexado(dados, campoIndexado);
             if (strcmp(valorBuscaStr, valorEncontradoStr) > 0) buscarEsquerda = false;
             break;
 
-        default:
+        default:;
             break;
     }
 
@@ -384,11 +384,11 @@ bool arvoreBinariaBuscaAux(
     bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
     if (correspondenciaCompleta) {
         switch (processamento) {
-            case 0: // Imprimir
+            case 0:; // Imprimir
                 dadosImprimir(dados, metadados);
                 break;
             
-            case 1: // Atualizar
+            case 1:; // Atualizar
                 if (listaCamposDeAtualizacao == NULL || listaValoresDeAtualizacao == NULL || numeroParesCampoValorAtualizacao == 0) return false;
 
                 int64_t tamRegistro = dadosMetadadosObterTamanhoRegistro(dados, metadados);

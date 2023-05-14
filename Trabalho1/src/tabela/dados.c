@@ -479,27 +479,27 @@ bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char**
     char* valorNovoStr = NULL;
 
     switch (numeroCampoIndexado) {
-      case 0:
+      case 0:;
         valorInt = (int*) dadosObterCampoIndexado(dados, campoIndexado);
         valorNovoInt = (int*) valorAtualizado;
         *valorInt = *valorNovoInt;
         break;
       
-      case 1:
+      case 1:;
         int enumCampo = dadosObterEnumCampo(campoIndexado);
         valorStr = (char*) dadosObterCampoIndexado(dados, campoIndexado);
         valorNovoStr = (char*) valorAtualizado;
         METADADOS* metadadosAtualizados = NULL;
         switch (enumCampo) {
-          case 1: // dataCrime
+          case 1:; // dataCrime
             dadosAtualizarDataCrime(dados, valorNovoStr);
             break;
 
-          case 3: // marcaCelular
+          case 3:; // marcaCelular
             dadosAtualizarMarcaCelular(dados, valorNovoStr);
             break;
 
-          case 4: // lugarCrime
+          case 4:; // lugarCrime
             metadadosAtualizados = dadosCriarMetadados(
               (int)strlen(dadosObterDescricaoCrime(dados)), (int)(strlen(valorNovoStr))
             );
@@ -508,7 +508,7 @@ bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char**
             dadosMetadadosDeletar(&metadadosAtualizados);
             break;
           
-          case 5: // descricaoCrime
+          case 5:; // descricaoCrime
             metadadosAtualizados = dadosCriarMetadados(
               (int)strlen(valorNovoStr), (int)(strlen(dadosObterLugarCrime(dados)))
             );
@@ -517,13 +517,13 @@ bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char**
             dadosMetadadosDeletar(&metadadosAtualizados);
             break;
 
-          default:
+          default:;
             break;
         }
 
         break;
 
-      default:
+      default:;
         break;
     }
   }
