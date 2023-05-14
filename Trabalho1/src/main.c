@@ -129,6 +129,7 @@ int main(void) {
     if (!tabelaExiste(tabela)) return 0;
 
     tabelaFecharArquivo(tabela);
+    binarioNaTela(tabelaObterNomeArquivo(tabela)); 
     tabelaDeletar(&tabela, true);
     break;
 
