@@ -279,4 +279,6 @@
 
     bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao);
 
+    bool dadosRemovido(DADOS* dados);
+
 #endif

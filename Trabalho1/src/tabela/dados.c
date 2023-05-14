@@ -85,6 +85,11 @@ bool strVazia(char* str) {
   return false;
 }
 
+bool dadosRemovido(DADOS* dados) {
+  if (!dadosExiste(dados)) return true;
+  return dadosObterRemovido(dados) == '1' ? true : false;
+}
+
 /********************
  * FUNCOES PRINCIPAIS
  * ******************

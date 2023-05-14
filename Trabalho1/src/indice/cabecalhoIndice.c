@@ -30,7 +30,7 @@ bool cabecalhoIndiceExiste(CABECALHO_INDICE* cabecalhoIndice) {
 }
 
 bool cabecalhoIndiceConsistente(CABECALHO_INDICE* cabecalhoIndice) {
-    return cabecalhoIndice->status == '0' ? true : false;
+    return cabecalhoIndice->status == '1' ? true : false;
 }
 
 CABECALHO_INDICE* cabecalhoIndiceCriar(char status) {
