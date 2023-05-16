@@ -249,7 +249,7 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
         if (!dadosExiste(dados) || !metadadosExiste(metadados)) continue;
 
         int64_t proxByteOffset = dadosMetadadosObterTamanhoRegistro(dados, metadados);
-        if (!dadosValorIndexadoValido(dados, campoIndexado, tipoDado)) {
+        if (!dadosValorIndexadoValido(dados, campoIndexado, tipoDado) || dadosRemovido(dados)) {
             dadosDeletar(&dados);
             dadosMetadadosDeletar(&metadados);
         } else {
@@ -344,7 +344,7 @@ bool arvoreBinariaBuscaAux(
 
     int numeroCampo = dadosObterNumeroCampoIndexado(campoIndexado);
 
-    DADOS* dados = noObterDados(raiz);
+    DADOS* dados = itemObterDados(raiz->item);
     METADADOS* metadados = noObterMetadados(raiz);
 
     void* valor = dadosObterCampoIndexado(dados, campoIndexado);
@@ -353,8 +353,8 @@ bool arvoreBinariaBuscaAux(
 
     int32_t* valorBuscaInt = NULL;
     int32_t* valorEncontradoInt = NULL;
-    char* valorBuscaStr = NULL;
-    char* valorEncontradoStr = NULL;
+    char* valorBuscaStr = "";
+    char* valorEncontradoStr = "";
 
     switch (numeroCampo) {
         case 0:;
@@ -398,26 +398,37 @@ bool arvoreBinariaBuscaAux(
                 int64_t tamRegistroAtualizado = dadosMetadadosObterTamanhoRegistro(dados, metadadosAtualizados);
                 int64_t byteOffset = itemObterByteOffset(raiz->item);
                 tabelaResetLeituraArquivoBinario(tabela, byteOffset);
-                if (tamRegistro >= tamRegistroAtualizado) {
+
+                if (tamRegistro == tamRegistroAtualizado) {
                     tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
-                    
-                } else {
-                    tabelaAtualizarDadoComoRemovido(tabela, byteOffset);
+                }
+                if (tamRegistro > tamRegistroAtualizado) {
+                    tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
+                    tabelaResetLeituraArquivoBinario(tabela, byteOffset+tamRegistroAtualizado-1);
+                    char preenchimentoReg = '$';
+                    for (int k = tamRegistroAtualizado; k < tamRegistro; k++) {
+                        tabelaEscreverChar(tabela, &preenchimentoReg);    
+                    }
+
+                } 
+                if (tamRegistro < tamRegistroAtualizado) {
+                    char removido = '1';
+                    tabelaEscreverChar(tabela, &removido);
 
                     int64_t byteOffsetFinal = cabecalhoObterProxByteOffset(cabecalho);
                     tabelaResetLeituraArquivoBinario(tabela, byteOffsetFinal);
 
                     tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
                     tabelaResetLeituraArquivoBinario(tabela, 0);
+
                     byteOffsetFinal += dadosMetadadosObterTamanhoRegistro(dados, metadadosAtualizados);
 
                     int32_t nroRem = cabecalhoObterNroRegRem(cabecalho);
                     int32_t nroReg = cabecalhoObterNroRegArq(cabecalho);
-                    
                     cabecalhoAtualizarProxByteOffset(cabecalho, byteOffsetFinal);
                     cabecalhoAtualizarNroRegRem(cabecalho, nroRem+1);
                     cabecalhoAtualizarNroRegArq(cabecalho, nroReg+1);
-                    
+
                     tabelaAtualizarCabecalho(tabela, cabecalho);
                 }
                 

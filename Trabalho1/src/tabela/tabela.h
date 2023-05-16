@@ -135,4 +135,6 @@
 
     bool tabelaAtualizarDadoComoRemovido(TABELA* tabela, int64_t byteOffset);
 
+    bool tabelaEscreverChar(TABELA* tabela, char* valor);
+
 #endif

@@ -480,8 +480,13 @@ bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char**
     
     int32_t* valorInt = NULL;
     int32_t* valorNovoInt = NULL;
-    char* valorStr = NULL;
-    char* valorNovoStr = NULL;
+    char* valorStr = "";
+    char* valorNovoStr = "";
+
+    int tamStrAntiga = 0;
+    int tamStrNova = 0;
+
+    int64_t tamRegAntigo = dadosMetadadosObterTamanhoRegistro(dados, metadados);
 
     switch (numeroCampoIndexado) {
       case 0:;
@@ -505,21 +510,15 @@ bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char**
             break;
 
           case 4:; // lugarCrime
-            metadadosAtualizados = dadosCriarMetadados(
-              (int)strlen(dadosObterDescricaoCrime(dados)), (int)(strlen(valorNovoStr))
-            );
-            if (!metadadosExiste(metadados)) return false;
-            dadosAtualizarLugarCrime(dados, valorNovoStr, metadadosAtualizados);
-            dadosMetadadosDeletar(&metadadosAtualizados);
+            tamStrNova = (int)strlen(valorNovoStr);
+            metadados->tamanhoLugarCrime = tamStrNova;
+            dadosAtualizarLugarCrime(dados, valorNovoStr, metadados);
             break;
           
           case 5:; // descricaoCrime
-            metadadosAtualizados = dadosCriarMetadados(
-              (int)strlen(valorNovoStr), (int)(strlen(dadosObterLugarCrime(dados)))
-            );
-            if (!metadadosExiste(metadados)) return false;
+            tamStrNova = (int)strlen(valorNovoStr);
+            metadados->tamanhoDescricaoCrime = tamStrNova;
             dadosAtualizarDescricaoCrime(dados, valorNovoStr, metadados);
-            dadosMetadadosDeletar(&metadadosAtualizados);
             break;
 
           default:;
