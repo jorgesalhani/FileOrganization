@@ -82,10 +82,11 @@ int main(void) {
   scanf("%d", &modo);
 
   TABELA* tabela = NULL;
+  INDICE* indice = NULL;
 
   switch (modo)
   {
-  case 1: ;
+  case 1:;
     lerEntradasModo1(nomeArquivoEntrada, nomeArquivoSaida);
     tabela = tabelaCriarBinario(nomeArquivoEntrada, nomeArquivoSaida);
     if (!tabelaExiste(tabela)) return 0;
@@ -95,7 +96,7 @@ int main(void) {
     tabelaDeletar(&tabela, true);
     break;
 
-  case 2:
+  case 2:;
     lerEntradasModo2(nomeArquivoEntrada);
     tabela = tabelaLerImprimirBinario(nomeArquivoEntrada);
     if (!tabelaExiste(tabela)) return 0;
@@ -104,9 +105,9 @@ int main(void) {
     tabelaDeletar(&tabela, true);
     break;
 
-  case 3:
+  case 3:;
     lerEntradasModo3(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
-    INDICE* indice = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
+    indice = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
     if (!indiceExiste(indice)) return 0;
 
     indiceFecharArquivo(indice);
@@ -114,7 +115,7 @@ int main(void) {
     indiceDeletar(&indice, true);
     break;
   
-  case 4:
+  case 4:;
     lerEntradasModo4(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, &numeroCamposBuscados);
     tabela = tabelaLerImprimirBusca(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
     if (!tabelaExiste(tabela)) return 0;
@@ -123,13 +124,21 @@ int main(void) {
     tabelaDeletar(&tabela, true);
     break;
 
-  case 7:
+  case 7:;
     lerEntradasModo7(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, &numeroCamposBuscados);
     tabela = tabelaLerAtualizar(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
     if (!tabelaExiste(tabela)) return 0;
 
+    indice = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
+    if (!indiceExiste(indice)) return 0;
+
     tabelaFecharArquivo(tabela);
     binarioNaTela(tabelaObterNomeArquivo(tabela)); 
+
+    indiceFecharArquivo(indice);
+    binarioNaTela(indiceObterNomeArquivo(indice)); 
+    
+    indiceDeletar(&indice, true);
     tabelaDeletar(&tabela, true);
     break;
 

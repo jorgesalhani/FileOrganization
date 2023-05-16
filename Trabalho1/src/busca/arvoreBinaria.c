@@ -249,7 +249,7 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
         if (!dadosExiste(dados) || !metadadosExiste(metadados)) continue;
 
         int64_t proxByteOffset = dadosMetadadosObterTamanhoRegistro(dados, metadados);
-        if (!dadosValorIndexadoValido(dados, campoIndexado, tipoDado)) {
+        if (!dadosValorIndexadoValido(dados, campoIndexado, tipoDado) || dadosRemovido(dados)) {
             dadosDeletar(&dados);
             dadosMetadadosDeletar(&metadados);
         } else {
@@ -344,7 +344,7 @@ bool arvoreBinariaBuscaAux(
 
     int numeroCampo = dadosObterNumeroCampoIndexado(campoIndexado);
 
-    DADOS* dados = noObterDados(raiz);
+    DADOS* dados = itemObterDados(raiz->item);
     METADADOS* metadados = noObterMetadados(raiz);
 
     void* valor = dadosObterCampoIndexado(dados, campoIndexado);
@@ -353,8 +353,8 @@ bool arvoreBinariaBuscaAux(
 
     int32_t* valorBuscaInt = NULL;
     int32_t* valorEncontradoInt = NULL;
-    char* valorBuscaStr = NULL;
-    char* valorEncontradoStr = NULL;
+    char* valorBuscaStr = "";
+    char* valorEncontradoStr = "";
 
     switch (numeroCampo) {
         case 0:;

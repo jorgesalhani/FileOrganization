@@ -469,7 +469,13 @@ ARVORE_BINARIA* obterArvoreBinariaIndices(
     fseek(tabela->arquivoBinario, byteOffset, SEEK_SET);
     DADOS* dados = tabelaLerArmazenarDado(tabela);
     METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
-    if (!dadosExiste(dados) || dadosRemovido(dados)) continue;        
+    if (!dadosExiste(dados) || dadosRemovido(dados)) {
+      dadosDeletar(&dados);
+      dadosMetadadosDeletar(&metadados);
+      dadosIndiceInteiroDeletar(&dadosIndiceInteiro);
+      dadosIndiceStringDeletar(&dadosIndiceString);
+      continue;        
+    }
     
     
     arvoreBinariaAdicionar(arvoreBinaria, dados, metadados, chave, byteOffset, campoIndexado);
