@@ -820,7 +820,7 @@ TABELA* tabelaLerAtualizar(
             }
             if (tamRegistro > tamRegistroAtualizado) {
               tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
-              tabelaResetLeituraArquivoBinario(tabela, byteOffset+tamRegistroAtualizado);
+              tabelaResetLeituraArquivoBinario(tabela, byteOffset+tamRegistroAtualizado-1);
               char preenchimentoReg = '$';
               for (int k = tamRegistroAtualizado; k < tamRegistro; k++) {
                 fwrite(&preenchimentoReg, sizeof(char), 1, tabela->arquivoBinario);
