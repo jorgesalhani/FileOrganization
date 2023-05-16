@@ -480,11 +480,13 @@ bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char**
     
     int32_t* valorInt = NULL;
     int32_t* valorNovoInt = NULL;
-    char* valorStr = NULL;
-    char* valorNovoStr = NULL;
+    char* valorStr = "";
+    char* valorNovoStr = "";
 
     int tamStrAntiga = 0;
     int tamStrNova = 0;
+
+    int64_t tamRegAntigo = dadosMetadadosObterTamanhoRegistro(dados, metadados);
 
     switch (numeroCampoIndexado) {
       case 0:;
@@ -508,51 +510,35 @@ bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char**
             break;
 
           case 4:; // lugarCrime
-            tamStrAntiga = (int)strlen(valorStr);
             tamStrNova = (int)strlen(valorNovoStr);
-            if (tamStrAntiga >= tamStrNova) {
-              for (int k = 0; k < tamStrNova; k++) {
-                valorStr[k] = valorNovoStr[k];
-              }
-              // valorNovoStr = (char*) realloc(valorNovoStr, tamStrAntiga+1);
-              for (int l = tamStrNova; l < tamStrAntiga; l++) {
-                valorNovoStr[l] = '$';
-              }
-              valorNovoStr[tamStrAntiga] = '\0';
-            }
-            metadadosAtualizados = dadosCriarMetadados(
-              (int)strlen(dadosObterDescricaoCrime(dados)), tamStrNova
-            );
-            if (!metadadosExiste(metadados)) return false;
-            dadosAtualizarLugarCrime(dados, valorNovoStr, metadadosAtualizados);
-            dadosMetadadosDeletar(&metadadosAtualizados);
+            metadados->tamanhoLugarCrime = tamStrNova;
+            dadosAtualizarLugarCrime(dados, valorNovoStr, metadados);
             break;
           
           case 5:; // descricaoCrime
-
-            tamStrAntiga = (int)strlen(valorStr);
             tamStrNova = (int)strlen(valorNovoStr);
-            if (tamStrAntiga >= tamStrNova) {
-              for (int k = 0; k < tamStrNova; k++) {
-                valorStr[k] = valorNovoStr[k];
-              }
-              // valorNovoStr = (char*) realloc(valorNovoStr, tamStrAntiga+1);
-              for (int l = tamStrNova; l < tamStrAntiga; l++) {
-                valorNovoStr[l] = '$';
-              }
-              valorNovoStr[tamStrAntiga] = '\0';
-            }
-
-            metadadosAtualizados = dadosCriarMetadados(
-              tamStrNova, (int)(strlen(dadosObterLugarCrime(dados)))
-            );
-            if (!metadadosExiste(metadadosAtualizados)) return false;
-            dadosAtualizarDescricaoCrime(dados, valorNovoStr, metadadosAtualizados);
-            dadosMetadadosDeletar(&metadadosAtualizados);
+            metadados->tamanhoDescricaoCrime = tamStrNova;
+            dadosAtualizarDescricaoCrime(dados, valorNovoStr, metadados);
             break;
 
           default:;
             break;
+        }
+
+        int64_t tamRegNovo = dadosMetadadosObterTamanhoRegistro(dados, metadados);
+        int diferencaRegistros = tamRegAntigo - tamRegNovo;
+        if (diferencaRegistros > 0) {
+          int tamStrRegPreenchido = tamStrNova + diferencaRegistros;
+          char descCrimePreenchida[tamStrRegPreenchido+1];
+          for (int k = 0; k < tamStrNova; k++) {
+            descCrimePreenchida[k] = valorNovoStr[k];
+          }
+
+          for (int k = tamStrNova; k < tamStrRegPreenchido; k++) {
+            descCrimePreenchida[k] = '$';
+          }
+          descCrimePreenchida[tamStrRegPreenchido] = '\0';
+          dadosAtualizarDescricaoCrime(dados, descCrimePreenchida, metadados);
         }
 
         break;
