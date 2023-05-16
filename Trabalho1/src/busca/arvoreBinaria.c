@@ -398,26 +398,37 @@ bool arvoreBinariaBuscaAux(
                 int64_t tamRegistroAtualizado = dadosMetadadosObterTamanhoRegistro(dados, metadadosAtualizados);
                 int64_t byteOffset = itemObterByteOffset(raiz->item);
                 tabelaResetLeituraArquivoBinario(tabela, byteOffset);
-                if (tamRegistro >= tamRegistroAtualizado) {
+
+                if (tamRegistro == tamRegistroAtualizado) {
                     tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
-                    
-                } else {
-                    tabelaAtualizarDadoComoRemovido(tabela, byteOffset);
+                }
+                if (tamRegistro > tamRegistroAtualizado) {
+                    tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
+                    tabelaResetLeituraArquivoBinario(tabela, byteOffset+tamRegistroAtualizado-1);
+                    char preenchimentoReg = '$';
+                    for (int k = tamRegistroAtualizado; k < tamRegistro; k++) {
+                        tabelaEscreverChar(tabela, &preenchimentoReg);    
+                    }
+
+                } 
+                if (tamRegistro < tamRegistroAtualizado) {
+                    char removido = '1';
+                    tabelaEscreverChar(tabela, &removido);
 
                     int64_t byteOffsetFinal = cabecalhoObterProxByteOffset(cabecalho);
                     tabelaResetLeituraArquivoBinario(tabela, byteOffsetFinal);
 
                     tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
                     tabelaResetLeituraArquivoBinario(tabela, 0);
+
                     byteOffsetFinal += dadosMetadadosObterTamanhoRegistro(dados, metadadosAtualizados);
 
                     int32_t nroRem = cabecalhoObterNroRegRem(cabecalho);
                     int32_t nroReg = cabecalhoObterNroRegArq(cabecalho);
-                    
                     cabecalhoAtualizarProxByteOffset(cabecalho, byteOffsetFinal);
                     cabecalhoAtualizarNroRegRem(cabecalho, nroRem+1);
                     cabecalhoAtualizarNroRegArq(cabecalho, nroReg+1);
-                    
+
                     tabelaAtualizarCabecalho(tabela, cabecalho);
                 }
                 

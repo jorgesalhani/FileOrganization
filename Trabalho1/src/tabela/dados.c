@@ -525,22 +525,6 @@ bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char**
             break;
         }
 
-        int64_t tamRegNovo = dadosMetadadosObterTamanhoRegistro(dados, metadados);
-        int diferencaRegistros = tamRegAntigo - tamRegNovo;
-        if (diferencaRegistros > 0) {
-          int tamStrRegPreenchido = tamStrNova + diferencaRegistros;
-          char descCrimePreenchida[tamStrRegPreenchido+1];
-          for (int k = 0; k < tamStrNova; k++) {
-            descCrimePreenchida[k] = valorNovoStr[k];
-          }
-
-          for (int k = tamStrNova; k < tamStrRegPreenchido; k++) {
-            descCrimePreenchida[k] = '$';
-          }
-          descCrimePreenchida[tamStrRegPreenchido] = '\0';
-          dadosAtualizarDescricaoCrime(dados, descCrimePreenchida, metadados);
-        }
-
         break;
 
       default:;

@@ -198,6 +198,14 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, METADADOS* metadados,
     char* dataCrime = dadosObterDataCrime(dados);
     int32_t numeroArtigo = dadosObterNumeroArtigo(dados);
     char* marcaCelular = dadosObterMarcaCelular(dados);
+
+    char marcaCelularAux[TAMANHO_MARCA_CELULAR+5];
+
+    strcpy(marcaCelularAux, marcaCelular);
+
+    dadosAtualizarMarcaCelular(dados, marcaCelularAux);
+    char* marcaCelularPreenchida = dadosObterMarcaCelular(dados);
+
     char delimitador = dadosObterDelimitadorRegistro(dados);
 
     int64_t tamanhoLugarCrime = dadosMetadadosObterTamanhoLugarCrime(metadados);
@@ -216,7 +224,7 @@ bool tabelaAtualizarDados(TABELA* tabela, DADOS* dados, METADADOS* metadados,
 
     fwrite(&numeroArtigo, sizeof(int32_t), 1, arquivo);
 
-    fwrite(marcaCelular, sizeof(char), TAMANHO_MARCA_CELULAR, arquivo);
+    fwrite(marcaCelularPreenchida, sizeof(char), TAMANHO_MARCA_CELULAR, arquivo);
 
     fwrite(lugarCrime, sizeof(lugarCrime), 1, arquivo);
     fwrite(&delimitadorCampos, sizeof(char), 1, arquivo);
@@ -658,6 +666,13 @@ bool liberarParesCampoValor(char*** listaCamposDeBusca, void*** listaValoresDeBu
   return true;
 }
 
+bool tabelaEscreverChar(TABELA* tabela, char* valor) {
+  if (!tabelaExiste(tabela)) return false;
+  fwrite(valor, sizeof(char), 1, tabela->arquivoBinario);
+  fflush(tabela->arquivoBinario);
+  return true;
+}
+
 TABELA* tabelaLerAtualizar(
   char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
   char* nomeArquivoIndice, int numeroAtualizacoes
@@ -800,10 +815,19 @@ TABELA* tabelaLerAtualizar(
             int64_t tamRegistroAtualizado = dadosMetadadosObterTamanhoRegistro(dados, metadadosAtualizados);
 
             fseek(tabela->arquivoBinario, byteOffset, SEEK_SET);
-            if (tamRegistro >= tamRegistroAtualizado) {
+            if (tamRegistro == tamRegistroAtualizado) {
               tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
+            }
+            if (tamRegistro > tamRegistroAtualizado) {
+              tabelaAtualizarDados(tabela, dados, metadadosAtualizados, '|');
+              tabelaResetLeituraArquivoBinario(tabela, byteOffset+tamRegistroAtualizado);
+              char preenchimentoReg = '$';
+              for (int k = tamRegistroAtualizado; k < tamRegistro; k++) {
+                fwrite(&preenchimentoReg, sizeof(char), 1, tabela->arquivoBinario);
+              }
               fflush(tabela->arquivoBinario);
-            } else {
+            } 
+            if (tamRegistro < tamRegistroAtualizado) {
               char removido = '1';
               fwrite(&removido, sizeof(char), 1, tabela->arquivoBinario);
               fflush(tabela->arquivoBinario);
