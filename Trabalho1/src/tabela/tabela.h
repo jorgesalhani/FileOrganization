@@ -1,6 +1,7 @@
 #ifndef TABELA_H
     #define TABELA_H
 
+    #include <stdio.h>
     #include "cabecalho.h"
     #include "dados.h"
     #include "../indice/indice.h"
@@ -113,9 +114,9 @@
      * @param int numeroCamposBuscados. Quantidade de buscas que devem ser realizadas. Cada busca deve ser especificada em linhas separadas
      * @return TABELA* tabela. Ponteiro para o TAD tabela criado
     */
-    TABELA* tabelaLerImprimirBusca(
+    TABELA* tabelaBusca(
         char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
-        char* nomeArquivoIndice, int numeroCamposBuscados
+        char* nomeArquivoIndice, int numeroCamposBuscados, int funcionalidade
     );
 
     /**
@@ -136,5 +137,20 @@
     bool tabelaAtualizarDadoComoRemovido(TABELA* tabela, int64_t byteOffset);
 
     bool tabelaEscreverChar(TABELA* tabela, char* valor);
+
+    /**
+     * @brief Obter o arquivo aberto e armazenado no TAD tabela
+     * @param TABELA* tabela. Ponteiro para o TAD tabela criado
+     * @return char* arquivo aberto
+    */
+    FILE* tabelaObterPonteiroArquivo(TABELA* tabela);
+
+    /**
+     * @brief Marca o arquivo como indisponível (status do cabeçalho = '0')
+     * @param TABELA* tabela. Ponteiro par o TAD tabela criado
+     * @param CABECALHO*. Ponteiro para o TAD cabecalho criado
+     * @return bool. true: caso bem-sucedido. false: caso contrario
+    */
+    bool tabelaArquivoIndisponivel(TABELA* tabela, CABECALHO* cabecalho);
 
 #endif

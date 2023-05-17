@@ -83,7 +83,7 @@
         ARVORE_BINARIA* arvoreBinaria, TABELA* tabela, CABECALHO* cabecalho, char* campoIndexado, 
         char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, 
         char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao,
-        int processamento
+        int funcionalidade
     );
 
 #endif

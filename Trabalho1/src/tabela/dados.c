@@ -439,15 +439,15 @@ bool dadosBuscaCorrespondenciaCompleta(
     int32_t* valorEncontradoInt = NULL;
     char* valorBuscaStr = NULL;
     char* valorEncontradoStr = NULL;
-    
+
     switch (numeroCampo) {
-      case 0:
+      case 0:;
         valorBuscaInt = (int32_t*) valor;
         valorEncontradoInt = (int32_t*) dadosObterCampoIndexado(dados, campo);
         if (*valorBuscaInt != *valorEncontradoInt) return false;
         break;
 
-      case 1:
+      case 1:;
         valorBuscaStr = (char*) valor;
         valorEncontradoStr = (char*) dadosObterCampoIndexado(dados, campo);
 
