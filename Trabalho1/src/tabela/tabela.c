@@ -36,6 +36,11 @@ bool delimitadorValido(char delimitadorCampos) {
     return delimitadorCampos == '|' ? true : false;
 }
 
+FILE* tabelaObterPonteiroArquivo(TABELA* tabela) {
+    if (!tabelaExiste(tabela)) return NULL;
+    return tabela->arquivoBinario;
+}
+
 CABECALHO* tabelaLerArmazenarCabecalho(TABELA* tabela) {
   if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario)) return NULL;
 
@@ -140,11 +145,6 @@ METADADOS* tabelaLerArmazenarMetadado(DADOS* dados) {
   METADADOS* metadados = dadosCriarMetadados((int)strlen(descricaoCrime), (int)(strlen(lugarCrime)));
   if (!metadadosExiste(metadados)) return NULL;
   return metadados;
-}
-
-FILE* tabelaObterPonteiroArquivo(TABELA* tabela) {
-    if (!tabelaExiste(tabela)) return NULL;
-    return tabela->arquivoBinario;
 }
 
 /********************
@@ -508,31 +508,39 @@ ARVORE_BINARIA* obterArvoreBinariaIndices(
   return arvoreBinaria;
 }
 
-void tabelaRemoverRegistroLogicamente(TABELA* tabela, DADOS* dados, METADADOS* metadados) {
+void tabelaRemoverRegistroLogicamente(TABELA* tabela, CABECALHO* cabecalho, int64_t byteOffsetInicioRegistro) {
   FILE* arquivoBinario = tabelaObterPonteiroArquivo(tabela);
-  fseek(arquivoBinario, (-1)*dadosMetadadosObterTamanhoRegistro(dados, metadados), SEEK_CUR);
+  int32_t nroRegRem = cabecalhoObterNroRegRem(cabecalho);
+  cabecalhoAtualizarNroRegRem(cabecalho, nroRegRem+1);
+  tabelaResetLeituraArquivoBinario(tabela, byteOffsetInicioRegistro);
   char removido = '1';
-  fwrite(&removido, sizeof(char), 1, arquivoBinario);  
+  fwrite(&removido, sizeof(char), 1, arquivoBinario);
+  fflush(arquivoBinario);
 }
 
-int tabelaBuscaImprimir(TABELA* tabela, char* campoIndexado, char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, int32_t nroRegArq, int funcionalidade) {
+int tabelaBuscaImprimir(TABELA* tabela, CABECALHO* cabecalho, char* campoIndexado, char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, int funcionalidade) {
   if (!tabelaExiste(tabela) || listaCamposDeBusca == NULL || listaValoresDeBusca == NULL) return 0;
 
-  int contadorRegistros = nroRegArq;
+  int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
+  int32_t contadorRegistros = nroRegArq;
 
   int totalRegistrosEncontrados = 0;
-  CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
+
+  int64_t byteOffsetInicioRegistro = cabecalhoObterTamanhoRegistro(cabecalho);
   while (contadorRegistros--) {
 
     DADOS* dados = tabelaLerArmazenarDado(tabela);
     if (!dadosExiste(dados)) continue;
-    if (dadosRemovido(dados)) {
-      dadosDeletar(&dados);
-      continue;
-    }
 
     METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
     if (!metadadosExiste(metadados)) continue;
+
+    if (dadosRemovido(dados)) {
+      byteOffsetInicioRegistro += dadosMetadadosObterTamanhoRegistro(dados, metadados);
+      dadosDeletar(&dados);
+      dadosMetadadosDeletar(&metadados);
+      continue;
+    }
     
     bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
     if (correspondenciaCompleta) {
@@ -541,7 +549,7 @@ int tabelaBuscaImprimir(TABELA* tabela, char* campoIndexado, char** listaCamposD
           dadosImprimir(dados, metadados);
           break;
         case 5: //FUNCIONALIDADE 5
-          tabelaRemoverRegistroLogicamente(tabela, dados, metadados);
+          tabelaRemoverRegistroLogicamente(tabela, cabecalho, byteOffsetInicioRegistro);
           break;
         default:
           erroGenerico();
@@ -550,11 +558,11 @@ int tabelaBuscaImprimir(TABELA* tabela, char* campoIndexado, char** listaCamposD
       totalRegistrosEncontrados++;
     }
 
+    byteOffsetInicioRegistro += dadosMetadadosObterTamanhoRegistro(dados, metadados);
+    tabelaResetLeituraArquivoBinario(tabela, byteOffsetInicioRegistro);
     dadosDeletar(&dados);
     dadosMetadadosDeletar(&metadados);
   }
-
-  cabecalhoDeletar(&cabecalho);
 
   return totalRegistrosEncontrados;
 }
@@ -574,7 +582,7 @@ bool tabelaAtualizarDadoComoRemovido(TABELA* tabela, int64_t byteOffset) {
 }
 
 int tabelaLerImprimirBuscaCampo(TABELA* tabela, CABECALHO* cabecalho, ARVORE_BINARIA** arvoreBinaria, char* campoIndexado, 
-  char* tipoDado, char* nomeArquivoIndice, int32_t nroRegArq, int numeroBuscaAtual, int funcionalidade
+  char* tipoDado, char* nomeArquivoIndice, int numeroBuscaAtual, int funcionalidade
 ) {
   int numeroParesCampoValor;
   lerEntradaNumeroParCriterio(&numeroParesCampoValor);
@@ -603,12 +611,9 @@ int tabelaLerImprimirBuscaCampo(TABELA* tabela, CABECALHO* cabecalho, ARVORE_BIN
       NULL, NULL, 0, funcionalidade
       );
   }
-  else totalRegistros = tabelaBuscaImprimir(tabela, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, nroRegArq, funcionalidade);
+  else totalRegistros = tabelaBuscaImprimir(tabela, cabecalho, campoIndexado, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor, funcionalidade);
 
-  if(funcionalidade == 5) {
-    cabecalhoAtualizarNroRegRem(cabecalho, cabecalhoObterNroRegRem(cabecalho)+totalRegistros);
-    tabelaAtualizarCabecalho(tabela, cabecalho);  
-  }
+  tabelaAtualizarCabecalho(tabela, cabecalho);  
 
   tabelaResetLeituraArquivoBinario(tabela, 0);
 
@@ -628,9 +633,15 @@ int tabelaLerImprimirBuscaCampo(TABELA* tabela, CABECALHO* cabecalho, ARVORE_BIN
 
 TABELA* tabelaBusca(
   char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
-  char* nomeArquivoIndice, int numeroCamposBuscados, int funcionalidade
+  char* nomeArquivoIndice, int numeroCamposBuscados, int funcionalidade, char* modoAberturaArquivoDados
 ) {
-  TABELA* tabela = tabelaCriar(nomeArquivoEntrada, "rb");
+
+  if (!modoAbrirArquivoValido(modoAberturaArquivoDados)) {
+    erroGenerico();
+    return NULL;
+  };
+
+  TABELA* tabela = tabelaCriar(nomeArquivoEntrada, modoAberturaArquivoDados);
   if (!tabelaExiste(tabela)) {
     erroGenerico();
     return tabela;
@@ -649,17 +660,18 @@ TABELA* tabelaBusca(
   CABECALHO* cabecalho = tabelaLerArmazenarCabecalho(tabela);
   if (!cabecalhoExiste(cabecalho)) return tabela;
 
-  int32_t nroRegArq = cabecalhoObterNroRegArq(cabecalho);
 
   ARVORE_BINARIA* arvoreBinaria = NULL;
   for (int i = 0; i < numeroCamposBuscados; i++) {
+    tabelaResetLeituraArquivoBinario(tabela, cabecalhoObterTamanhoRegistro(cabecalho));
     int numeroBuscaAtual = i+1;
     int totalRegistrosEncontrados = 0;
-    totalRegistrosEncontrados = tabelaLerImprimirBuscaCampo(tabela, cabecalho, &arvoreBinaria, campoIndexado, tipoDado, nomeArquivoIndice, nroRegArq, numeroBuscaAtual, funcionalidade);
+    totalRegistrosEncontrados = tabelaLerImprimirBuscaCampo(tabela, cabecalho, &arvoreBinaria, campoIndexado, tipoDado, nomeArquivoIndice, numeroBuscaAtual, funcionalidade);
     if (totalRegistrosEncontrados <= 0 && funcionalidade == 4) erroSemRegistros();
   }
 
   arvoreBinariaDeletar(&arvoreBinaria);
+  tabelaAtualizarCabecalho(tabela, cabecalho);  
 
   cabecalhoDeletar(&cabecalho);
 
