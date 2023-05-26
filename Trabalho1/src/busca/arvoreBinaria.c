@@ -334,13 +334,6 @@ bool arvoreBinariaIndiceArmazenarRegistrosOrdemCrescente(INDICE* indice, ARVORE_
     return true;
 }
 
-void arvoreBinariaRemoverDadoLogicamente(TABELA* tabela, NO* no) {
-  FILE* arquivoBinario = tabelaObterPonteiroArquivo(tabela);
-  fseek(arquivoBinario, itemObterByteOffset(no->item), SEEK_SET);
-  char removido = '1';
-  fwrite(&removido, sizeof(char), 1, arquivoBinario);
-}
-
 bool arvoreBinariaBuscaAux(
     NO* raiz, TABELA* tabela, CABECALHO* cabecalho, char* campoIndexado, 
     char** listaCamposDeBusca, void** listaValoresDeBusca, int numeroParesCampoValor, 
@@ -391,14 +384,15 @@ bool arvoreBinariaBuscaAux(
     }
     
     bool correspondenciaCompleta = dadosBuscaCorrespondenciaCompleta(dados, listaCamposDeBusca, listaValoresDeBusca, numeroParesCampoValor);
-  if (correspondenciaCompleta) { 
+  	if (correspondenciaCompleta) { 
       switch (funcionalidade) {
           case 4:; // Imprimir
               dadosImprimir(dados, metadados);
               break;
 
           case 5:; //Remover
-            arvoreBinariaRemoverDadoLogicamente(tabela, raiz);
+            // arvoreBinariaRemoverDadoLogicamente(tabela, raiz);
+						tabelaRemoverRegistroLogicamente(tabela, cabecalho, itemObterByteOffset(raiz->item));
             break;
 
           case 7:; // Atualizar

@@ -90,7 +90,7 @@ bool inserirRegistro(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDa
 
   if (!tabelaArquivoIndisponivel(tabela, cabecalho)) return false;
 
-  fseek(tabelaObterPonteiroArquivo(tabela), 0, SEEK_END);
+  tabelaResetLeituraArquivoBinario(tabela, proxByteOffset);
   for(int i = 0; i < n; i++) {
     int32_t idCrimeAux;
     char dataCrimeAux[TAMANHO_DATA_CRIME+3];
@@ -194,7 +194,7 @@ int main(void) {
   
   case 4:;
     lerEntradasModo4(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, &numeroCamposBuscados);
-    tabela = tabelaBusca(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados, 4);
+    tabela = tabelaBusca(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados, 4, "rb");
     if (!tabelaExiste(tabela)) return 0;
 
     tabelaFecharArquivo(tabela);
@@ -203,7 +203,7 @@ int main(void) {
 
   case 5:;
     lerEntradasModo4(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, &numeroCamposBuscados);
-    tabela = tabelaBusca(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados, 5);
+    tabela = tabelaBusca(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados, 5, "rb+");
     if (!tabelaExiste(tabela)) return 0;
 
     tabelaFecharArquivo(tabela);

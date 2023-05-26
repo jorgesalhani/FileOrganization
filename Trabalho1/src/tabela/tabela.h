@@ -116,7 +116,7 @@
     */
     TABELA* tabelaBusca(
         char* nomeArquivoEntrada, char* campoIndexado, char* tipoDado, 
-        char* nomeArquivoIndice, int numeroCamposBuscados, int funcionalidade
+        char* nomeArquivoIndice, int numeroCamposBuscados, int funcionalidade, char* modoAberturaArquivoDados
     );
 
     /**
@@ -138,12 +138,7 @@
 
     bool tabelaEscreverChar(TABELA* tabela, char* valor);
 
-    /**
-     * @brief Obter o arquivo aberto e armazenado no TAD tabela
-     * @param TABELA* tabela. Ponteiro para o TAD tabela criado
-     * @return char* arquivo aberto
-    */
-    FILE* tabelaObterPonteiroArquivo(TABELA* tabela);
+    void tabelaRemoverRegistroLogicamente(TABELA* tabela, CABECALHO* cabecalho, int64_t byteOffsetInicioRegistro);
 
     /**
      * @brief Marca o arquivo como indisponível (status do cabeçalho = '0')
