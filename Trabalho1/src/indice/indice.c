@@ -90,6 +90,7 @@ bool indiceStringAtualizarDados(INDICE* indice, DADOS_INDICE_STRING* dadosIndice
 
     fwrite(chaveBuscaString, sizeof(char), TAMANHO_CHAVE_BUSCA, arquivo);
     fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
+    fflush(arquivo);
 }
 
 char* indiceObterNomeArquivo(INDICE* indice) {

@@ -166,37 +166,32 @@ bool arvoreBinariaOrdenarPorCampo(
                     return arvoreBinariaOrdenarPorCampo(arvoreBinaria, raiz->esquerda, raiz, novoNo, campoIndexado, indiceCampoEscolhido);
                 }
             } else {
-                if (!arvoreBinariaNoExiste(raiz->esquerda)) {
+                int64_t novoByteOffset = itemObterByteOffset(novoNo->item);
+                int64_t byteOffset = itemObterByteOffset(raiz->item);
+                if (novoByteOffset <= byteOffset) {
+                    novoNo->esquerda = raiz->esquerda;
                     raiz->esquerda = novoNo;
-                        return true;
-                } else {
-                    int64_t novoByteOffset = itemObterByteOffset(novoNo->item);
-                    int64_t byteOffset = itemObterByteOffset(raiz->item);
-                    if (novoByteOffset <= byteOffset) {
+
+                    if (raiz == anterior) {
                         novoNo->esquerda = raiz->esquerda;
                         raiz->esquerda = novoNo;
+                    }
 
-                        if (raiz == anterior) {
-                            novoNo->esquerda = raiz->esquerda;
-                            raiz->esquerda = novoNo;
-                        }
+                    return true;
+                } else {
+                    novoNo->direita = raiz->direita;
+                    novoNo->esquerda = raiz;
 
-                        return true;
-                    } else {
-                        novoNo->direita = raiz->direita;
-                        novoNo->esquerda = raiz;
-
-                        if (raiz == anterior) {
-                            raiz->direita = NULL;
-                            arvoreBinaria->raiz = novoNo;
-                            return true;
-                        }
-
-                        if (strcmp(campoStrRaiz, campoStrAnterior) < 0) anterior->esquerda = novoNo;
-                        else anterior->direita = novoNo;
+                    if (raiz == anterior) {
                         raiz->direita = NULL;
+                        arvoreBinaria->raiz = novoNo;
                         return true;
                     }
+
+                    if (strcmp(campoStrRaiz, campoStrAnterior) < 0) anterior->esquerda = novoNo;
+                    else anterior->direita = novoNo;
+                    raiz->direita = NULL;
+                    return true;
                 }
             }
             break;
@@ -252,6 +247,19 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
         if (!dadosExiste(dados) || !metadadosExiste(metadados)) {
             continue;
         }
+        // dadosImprimir(dados, metadados);
+        // if (strcmp(dadosObterLugarCrime(dados), "DIADEMA") == 0) {
+        //     printf("AA\n");
+        // }
+        
+        char charAux = tabelaLerChar(tabela);
+        int numPreenchimento = 0;
+        if (charAux == '$') numPreenchimento = 1;
+        while (charAux == '$') {
+            charAux = tabelaLerChar(tabela);
+            numPreenchimento += 1;
+        };
+        dadosMetadadosAtualizarTamanhoPreenchimento(metadados, numPreenchimento);
 
         int64_t proxByteOffset = dadosMetadadosObterTamanhoRegistro(dados, metadados);
         if (!dadosValorIndexadoValido(dados, campoIndexado, tipoDado) || dadosRemovido(dados)) {
@@ -262,6 +270,7 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
             chave++;
         }
         byteOffset += proxByteOffset;
+        tabelaResetLeituraArquivoBinario(tabela, byteOffset);
     }
 
     arvoreBinaria->qtdReg = chave;

@@ -10,6 +10,7 @@
 struct metadados_ {
   int tamanhoLugarCrime;
   int tamanhoDescricaoCrime;
+  int tamanhoPreenchimento;
   int64_t tamanhoRegistro;
 };
 
@@ -141,11 +142,12 @@ DADOS* dadosCriar(
     return dados;
 }
 
-METADADOS* dadosCriarMetadados(int tamanhoDescricaoCrime, int tamanhoLugarCrime) {
+METADADOS* dadosCriarMetadados(int tamanhoDescricaoCrime, int tamanhoLugarCrime, int tamanhoPreenchimento) {
   METADADOS* metadados = (METADADOS*) malloc(sizeof(METADADOS));
   if (!metadadosExiste(metadados)) return NULL;
   metadados->tamanhoDescricaoCrime = tamanhoDescricaoCrime;
   metadados->tamanhoLugarCrime = tamanhoLugarCrime;
+  metadados->tamanhoPreenchimento = tamanhoPreenchimento;
   return metadados;
 }
 
@@ -315,6 +317,17 @@ int64_t dadosMetadadosObterTamanhoLugarCrime(METADADOS* metadados) {
   return metadados->tamanhoLugarCrime;
 }
 
+int dadosMetadadosObterTamanhoPreenchimento(METADADOS* metadados) {
+  if (!metadadosExiste(metadados)) return -1;
+  return metadados->tamanhoPreenchimento;
+}
+
+bool dadosMetadadosAtualizarTamanhoPreenchimento(METADADOS* metadados, int novoTamanhoPreenchimento) {
+  if (!metadadosExiste(metadados)) return false;
+  metadados->tamanhoPreenchimento = novoTamanhoPreenchimento;
+  return true;
+}
+
 int64_t dadosMetadadosObterTamanhoDescricaoCrime(METADADOS* metadados) {
   if (!metadadosExiste(metadados)) return -1;
   return metadados->tamanhoDescricaoCrime;
@@ -337,7 +350,7 @@ int64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
     sizeof(dados->removido) + sizeof(dados->delimitador);
 
   metadados->tamanhoRegistro += 
-    metadados->tamanhoLugarCrime + metadados->tamanhoDescricaoCrime;
+    metadados->tamanhoLugarCrime + metadados->tamanhoDescricaoCrime + metadados->tamanhoPreenchimento;
 
   metadados->tamanhoRegistro += sizeof(char) * (NUMERO_CAMPOS_VARIAVEIS);
   

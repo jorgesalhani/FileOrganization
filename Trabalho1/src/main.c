@@ -128,7 +128,7 @@ bool inserirRegistro(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDa
       dadosAtualizarDataCrime(dados, dataCrimeAux);
     }
     
-    METADADOS* metadados = dadosCriarMetadados(strlen(descricaoCrimeAux), strlen(lugarCrimeAux));
+    METADADOS* metadados = dadosCriarMetadados(strlen(descricaoCrimeAux), strlen(lugarCrimeAux), 0);
     
     tabelaAtualizarDados(tabela, dados, metadados, '|');
     nRegistros++;
@@ -236,17 +236,17 @@ int main(void) {
     tabela = tabelaLerAtualizar(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
     if (!tabelaExiste(tabela)) return 0;
 
-    indice = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
-    if (!indiceExiste(indice)) return 0;
-
     tabelaFecharArquivo(tabela);
     binarioNaTela(tabelaObterNomeArquivo(tabela)); 
+    tabelaDeletar(&tabela, true);
+
+    indice = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
+    if (!indiceExiste(indice)) return 0;
 
     indiceFecharArquivo(indice);
     binarioNaTela(indiceObterNomeArquivo(indice)); 
     
     indiceDeletar(&indice, true);
-    tabelaDeletar(&tabela, true);
     break;
 
   default: ;

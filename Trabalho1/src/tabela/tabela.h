@@ -148,4 +148,6 @@
     */
     bool tabelaArquivoIndisponivel(TABELA* tabela, CABECALHO* cabecalho);
 
+    char tabelaLerChar(TABELA* tabela);
+
 #endif
