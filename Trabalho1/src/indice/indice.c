@@ -173,7 +173,6 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
     }
 
     indiceAtualizarCabecalho(indice, cabecalhoIndice);
-
     arvoreBinariaIndiceArmazenarRegistrosOrdemCrescente(indice, arvoreBinaria, tipoDado);
 
 

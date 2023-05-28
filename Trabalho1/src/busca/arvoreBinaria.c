@@ -28,6 +28,8 @@ bool arvoreBinariaNoExiste(NO* no) {
 bool arvoreBinariaNoDeletar(NO** no) {
     if (no == NULL || !arvoreBinariaNoExiste(*no)) return false;
     if (itemExiste((*no)->item)) itemDeletar(&((*no)->item));
+    (*no)->direita = NULL;
+    (*no)->esquerda = NULL;
     free(*no);
     *no = NULL;
     no = NULL;
@@ -37,8 +39,9 @@ bool arvoreBinariaNoDeletar(NO** no) {
 bool arvoreBinariaDeletarAux(NO* no) {
     if (!arvoreBinariaNoExiste(no)) return false;
 
-    arvoreBinariaDeletarAux(no->direita);
     arvoreBinariaDeletarAux(no->esquerda);
+    arvoreBinariaDeletarAux(no->direita);
+    
     arvoreBinariaNoDeletar(&no);
     return true;
 }
@@ -135,7 +138,7 @@ bool arvoreBinariaOrdenarPorCampo(
                         return true;
                     }
 
-                    if (campoIntAnterior > campoIntRaiz) anterior->esquerda = novoNo;
+                    if (*campoIntAnterior > *campoIntRaiz) anterior->esquerda = novoNo;
                     else anterior->direita = novoNo;
                     raiz->direita = NULL;
                     return true;
@@ -246,7 +249,9 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
     while(nroRegArq--) {
         DADOS* dados = tabelaLerArmazenarDado(tabela);
         METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
-        if (!dadosExiste(dados) || !metadadosExiste(metadados)) continue;
+        if (!dadosExiste(dados) || !metadadosExiste(metadados)) {
+            continue;
+        }
 
         int64_t proxByteOffset = dadosMetadadosObterTamanhoRegistro(dados, metadados);
         if (!dadosValorIndexadoValido(dados, campoIndexado, tipoDado) || dadosRemovido(dados)) {

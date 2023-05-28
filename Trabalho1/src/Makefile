@@ -54,5 +54,4 @@ clean:
 	rm *.o
 
 run:
-	valgrind ./exec < ../casosTeste/in/7.in
-
+	valgrind ./exec < ../casosTeste/in/13.in
