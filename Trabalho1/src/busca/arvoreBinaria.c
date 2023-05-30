@@ -28,6 +28,8 @@ bool arvoreBinariaNoExiste(NO* no) {
 bool arvoreBinariaNoDeletar(NO** no) {
     if (no == NULL || !arvoreBinariaNoExiste(*no)) return false;
     if (itemExiste((*no)->item)) itemDeletar(&((*no)->item));
+    (*no)->direita = NULL;
+    (*no)->esquerda = NULL;
     free(*no);
     *no = NULL;
     no = NULL;
@@ -37,8 +39,9 @@ bool arvoreBinariaNoDeletar(NO** no) {
 bool arvoreBinariaDeletarAux(NO* no) {
     if (!arvoreBinariaNoExiste(no)) return false;
 
-    arvoreBinariaDeletarAux(no->direita);
     arvoreBinariaDeletarAux(no->esquerda);
+    arvoreBinariaDeletarAux(no->direita);
+    
     arvoreBinariaNoDeletar(&no);
     return true;
 }
@@ -76,6 +79,19 @@ int32_t arvoreBinariaObterQtdReg(ARVORE_BINARIA* arvoreBinaria) {
 char* arvoreBinariaObterCampoIndexado(ARVORE_BINARIA* arvoreBinaria) {
     if (!arvoreBinariaExiste(arvoreBinaria)) return NULL;
     return arvoreBinaria->campoIndexado;
+}
+
+int stringCompareMarcaCelular(char* str1, char* str2) {
+    char str1c[TAMANHO_MARCA_CELULAR+5];
+    char str2c[TAMANHO_MARCA_CELULAR+5];
+
+    strcpy(str1c, str1);
+    strcpy(str2c, str2);
+
+    str1c[TAMANHO_MARCA_CELULAR] = '\0';
+    str2c[TAMANHO_MARCA_CELULAR] = '\0';
+
+    return strcmp(str1c, str2c);
 }
 
 bool arvoreBinariaOrdenarPorCampo(
@@ -135,7 +151,7 @@ bool arvoreBinariaOrdenarPorCampo(
                         return true;
                     }
 
-                    if (campoIntAnterior > campoIntRaiz) anterior->esquerda = novoNo;
+                    if (*campoIntAnterior > *campoIntRaiz) anterior->esquerda = novoNo;
                     else anterior->direita = novoNo;
                     raiz->direita = NULL;
                     return true;
@@ -147,6 +163,25 @@ bool arvoreBinariaOrdenarPorCampo(
             char* campoStrRaiz = (char*) valorCampoEscolhidoRaiz;
             char* campoStr = (char*) valorCampoEscolhido;
             char* campoStrAnterior = (char*) valorCampoEscolhidoAnterior;
+
+            // if (dadosObterEnumCampo(campoIndexado) == 3) {
+            //     char campoStrRaizCp[TAMANHO_MARCA_CELULAR+5] = "";
+            //     char campoStrCp[TAMANHO_MARCA_CELULAR+5] = "";
+            //     char campoStrAnteriorCp[TAMANHO_MARCA_CELULAR+5] = "";
+
+            //     strcpy(campoStrRaizCp, campoStrRaiz);
+            //     strcpy(campoStrCp, campoStr);
+            //     strcpy(campoStrAnteriorCp, campoStrAnterior);
+                
+            //     campoStrRaizCp[TAMANHO_MARCA_CELULAR] = '\0';
+            //     campoStrCp[TAMANHO_MARCA_CELULAR] = '\0';
+            //     campoStrAnteriorCp[TAMANHO_MARCA_CELULAR] = '\0';
+
+            //     campoStrRaiz = campoStrRaizCp;
+            //     campoStr = campoStrCp;
+            //     campoStrAnterior = campoStrAnteriorCp;
+            // }
+
             if (strcmp(campoStr, campoStrRaiz) > 0) {
                 if (!arvoreBinariaNoExiste(raiz->direita)) {
                     raiz->direita = novoNo;
@@ -163,37 +198,32 @@ bool arvoreBinariaOrdenarPorCampo(
                     return arvoreBinariaOrdenarPorCampo(arvoreBinaria, raiz->esquerda, raiz, novoNo, campoIndexado, indiceCampoEscolhido);
                 }
             } else {
-                if (!arvoreBinariaNoExiste(raiz->esquerda)) {
+                int64_t novoByteOffset = itemObterByteOffset(novoNo->item);
+                int64_t byteOffset = itemObterByteOffset(raiz->item);
+                if (novoByteOffset <= byteOffset) {
+                    novoNo->esquerda = raiz->esquerda;
                     raiz->esquerda = novoNo;
-                        return true;
-                } else {
-                    int64_t novoByteOffset = itemObterByteOffset(novoNo->item);
-                    int64_t byteOffset = itemObterByteOffset(raiz->item);
-                    if (novoByteOffset <= byteOffset) {
+
+                    if (raiz == anterior) {
                         novoNo->esquerda = raiz->esquerda;
                         raiz->esquerda = novoNo;
+                    }
 
-                        if (raiz == anterior) {
-                            novoNo->esquerda = raiz->esquerda;
-                            raiz->esquerda = novoNo;
-                        }
+                    return true;
+                } else {
+                    novoNo->direita = raiz->direita;
+                    novoNo->esquerda = raiz;
 
-                        return true;
-                    } else {
-                        novoNo->direita = raiz->direita;
-                        novoNo->esquerda = raiz;
-
-                        if (raiz == anterior) {
-                            raiz->direita = NULL;
-                            arvoreBinaria->raiz = novoNo;
-                            return true;
-                        }
-
-                        if (strcmp(campoStrRaiz, campoStrAnterior) < 0) anterior->esquerda = novoNo;
-                        else anterior->direita = novoNo;
+                    if (raiz == anterior) {
                         raiz->direita = NULL;
+                        arvoreBinaria->raiz = novoNo;
                         return true;
                     }
+
+                    if (strcmp(campoStrRaiz, campoStrAnterior) < 0) anterior->esquerda = novoNo;
+                    else anterior->direita = novoNo;
+                    raiz->direita = NULL;
+                    return true;
                 }
             }
             break;
@@ -246,7 +276,18 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
     while(nroRegArq--) {
         DADOS* dados = tabelaLerArmazenarDado(tabela);
         METADADOS* metadados = tabelaLerArmazenarMetadado(dados);
-        if (!dadosExiste(dados) || !metadadosExiste(metadados)) continue;
+        if (!dadosExiste(dados) || !metadadosExiste(metadados)) {
+            continue;
+        }
+        
+        char charAux = tabelaLerChar(tabela);
+        int numPreenchimento = 0;
+        if (charAux == '$') numPreenchimento = 1;
+        while (charAux == '$') {
+            charAux = tabelaLerChar(tabela);
+            numPreenchimento += 1;
+        };
+        dadosMetadadosAtualizarTamanhoPreenchimento(metadados, numPreenchimento);
 
         int64_t proxByteOffset = dadosMetadadosObterTamanhoRegistro(dados, metadados);
         if (!dadosValorIndexadoValido(dados, campoIndexado, tipoDado) || dadosRemovido(dados)) {
@@ -257,6 +298,7 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
             chave++;
         }
         byteOffset += proxByteOffset;
+        tabelaResetLeituraArquivoBinario(tabela, byteOffset);
     }
 
     arvoreBinaria->qtdReg = chave;

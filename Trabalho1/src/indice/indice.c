@@ -90,6 +90,7 @@ bool indiceStringAtualizarDados(INDICE* indice, DADOS_INDICE_STRING* dadosIndice
 
     fwrite(chaveBuscaString, sizeof(char), TAMANHO_CHAVE_BUSCA, arquivo);
     fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
+    fflush(arquivo);
 }
 
 char* indiceObterNomeArquivo(INDICE* indice) {
@@ -158,7 +159,7 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
 
     arvoreBinariaArmazenarRegistrosOrdenados(arvoreBinaria, tabela, cabecalho, tipoDado);
 
-    INDICE* indice = indiceCriar(nomeArquivoIndice, "wb+");
+    INDICE* indice = indiceCriar(nomeArquivoIndice, "wb");
     if (!indiceExiste(indice)) {
         liberarMemoriaCasoErro(&tabela, &cabecalho, &arvoreBinaria);
         erroGenerico();
@@ -173,7 +174,6 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
     }
 
     indiceAtualizarCabecalho(indice, cabecalhoIndice);
-
     arvoreBinariaIndiceArmazenarRegistrosOrdemCrescente(indice, arvoreBinaria, tipoDado);
 
 

@@ -90,6 +90,13 @@ bool verificarSeRemovido(TABELA* tabela, char removido) {
   return false;
 }
 
+char tabelaLerChar(TABELA* tabela) {
+  char charAux = '@';
+  if (!tabelaExiste(tabela)) return charAux;
+  fread(&charAux, sizeof(char), 1, tabela->arquivoBinario);
+  return charAux;
+}
+
 DADOS* tabelaLerArmazenarDado(TABELA* tabela) {
   if (!tabelaExiste(tabela) || !arquivoExiste(tabela->arquivoBinario)) return NULL;
 
@@ -142,7 +149,7 @@ METADADOS* tabelaLerArmazenarMetadado(DADOS* dados) {
   if (!dadosExiste(dados)) return NULL;
   char* descricaoCrime = dadosObterDescricaoCrime(dados);
   char* lugarCrime = dadosObterLugarCrime(dados);
-  METADADOS* metadados = dadosCriarMetadados((int)strlen(descricaoCrime), (int)(strlen(lugarCrime)));
+  METADADOS* metadados = dadosCriarMetadados((int)strlen(descricaoCrime), (int)(strlen(lugarCrime)), 0);
   if (!metadadosExiste(metadados)) return NULL;
   return metadados;
 }
@@ -155,6 +162,7 @@ METADADOS* tabelaLerArmazenarMetadado(DADOS* dados) {
 bool modoAbrirArquivoValido(char* modoAberturaArquivo) {
   return (
     strcmp(modoAberturaArquivo, "wb+") == 0 ||
+    strcmp(modoAberturaArquivo, "wb") == 0 ||
     strcmp(modoAberturaArquivo, "rb") == 0 ||
     strcmp(modoAberturaArquivo, "rb+") == 0
   ) ? true : false;
@@ -282,7 +290,7 @@ TABELA* tabelaCriarBinario(char* nomeEntrada, char* nomeSaida) {
 
     CABECALHO* cabecalho = cabecalhoCriar('0', 1, 2, 3);
     DADOS* dados = dadosCriar(0, "$$$$$$$$$$", 0, "$$$$$$$$$$$$", "", "", '0');
-    METADADOS* metadados = dadosCriarMetadados(0, 0);
+    METADADOS* metadados = dadosCriarMetadados(0, 0, 0);
 
     int32_t tamanhoRegistroDados = 0;
     int64_t tamanhoRegistroCabecalho = 0;

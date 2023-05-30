@@ -93,12 +93,12 @@ bool inserirRegistro(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDa
   tabelaResetLeituraArquivoBinario(tabela, proxByteOffset);
   for(int i = 0; i < n; i++) {
     int32_t idCrimeAux;
-    char dataCrimeAux[TAMANHO_DATA_CRIME+3];
+    char dataCrimeAux[TAMANHO_DATA_CRIME+1];
     char numeroArtigoStr[10];
     int32_t numeroArtigoAux;
     char lugarCrimeAux[256]; 
     char descricaoCrimeAux[256];
-    char marcaCelularAux[TAMANHO_MARCA_CELULAR+3];
+    char marcaCelularAux[TAMANHO_MARCA_CELULAR+1];
     
     scanf("%d", &idCrimeAux);
     scan_quote_string(dataCrimeAux);
@@ -128,7 +128,7 @@ bool inserirRegistro(char* nomeArquivoEntrada, char* campoIndexado, char* tipoDa
       dadosAtualizarDataCrime(dados, dataCrimeAux);
     }
     
-    METADADOS* metadados = dadosCriarMetadados(strlen(descricaoCrimeAux), strlen(lugarCrimeAux));
+    METADADOS* metadados = dadosCriarMetadados(strlen(descricaoCrimeAux), strlen(lugarCrimeAux), 0);
     
     tabelaAtualizarDados(tabela, dados, metadados, '|');
     nRegistros++;
@@ -236,17 +236,17 @@ int main(void) {
     tabela = tabelaLerAtualizar(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
     if (!tabelaExiste(tabela)) return 0;
 
-    indice = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
-    if (!indiceExiste(indice)) return 0;
-
     tabelaFecharArquivo(tabela);
     binarioNaTela(tabelaObterNomeArquivo(tabela)); 
+    tabelaDeletar(&tabela, true);
+
+    indice = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
+    if (!indiceExiste(indice)) return 0;
 
     indiceFecharArquivo(indice);
     binarioNaTela(indiceObterNomeArquivo(indice)); 
     
     indiceDeletar(&indice, true);
-    tabelaDeletar(&tabela, true);
     break;
 
   default: ;

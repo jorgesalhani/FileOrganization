@@ -34,7 +34,7 @@
      * @param int tamanhoLugarCrime. Tamanho da string 'lugarCrime', originalmente campo de tamanho variado no registro de dados
      * @return METADADOS*. Ponteiro para o TAD metadados criado
     */
-    METADADOS* dadosCriarMetadados(int tamanhoDescricaoCrime, int tamanhoLugarCrime);
+    METADADOS* dadosCriarMetadados(int tamanhoDescricaoCrime, int tamanhoLugarCrime, int tamanhoPreenchimento);
 
     /**
      * @brief Imprime oconteudo dos dados
@@ -280,5 +280,9 @@
     bool dadosAtualizaCamposEspecificados(DADOS* dados, METADADOS* metadados, char** listaCamposDeAtualizacao, void** listaValoresDeAtualizacao, int numeroParesCampoValorAtualizacao);
 
     bool dadosRemovido(DADOS* dados);
+
+    int dadosMetadadosObterTamanhoPreenchimento(METADADOS* metadados);
+    bool dadosMetadadosAtualizarTamanhoPreenchimento(METADADOS* metadados, int novoTamanhoPreenchimento);
+    int dadosObterEnumCampo(char* campoIndexado);
 
 #endif
