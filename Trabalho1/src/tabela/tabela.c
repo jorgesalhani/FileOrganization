@@ -162,6 +162,7 @@ METADADOS* tabelaLerArmazenarMetadado(DADOS* dados) {
 bool modoAbrirArquivoValido(char* modoAberturaArquivo) {
   return (
     strcmp(modoAberturaArquivo, "wb+") == 0 ||
+    strcmp(modoAberturaArquivo, "wb") == 0 ||
     strcmp(modoAberturaArquivo, "rb") == 0 ||
     strcmp(modoAberturaArquivo, "rb+") == 0
   ) ? true : false;

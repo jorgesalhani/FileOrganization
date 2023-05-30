@@ -283,5 +283,6 @@
 
     int dadosMetadadosObterTamanhoPreenchimento(METADADOS* metadados);
     bool dadosMetadadosAtualizarTamanhoPreenchimento(METADADOS* metadados, int novoTamanhoPreenchimento);
+    int dadosObterEnumCampo(char* campoIndexado);
 
 #endif

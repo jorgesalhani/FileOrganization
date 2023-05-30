@@ -81,6 +81,19 @@ char* arvoreBinariaObterCampoIndexado(ARVORE_BINARIA* arvoreBinaria) {
     return arvoreBinaria->campoIndexado;
 }
 
+int stringCompareMarcaCelular(char* str1, char* str2) {
+    char str1c[TAMANHO_MARCA_CELULAR+5];
+    char str2c[TAMANHO_MARCA_CELULAR+5];
+
+    strcpy(str1c, str1);
+    strcpy(str2c, str2);
+
+    str1c[TAMANHO_MARCA_CELULAR] = '\0';
+    str2c[TAMANHO_MARCA_CELULAR] = '\0';
+
+    return strcmp(str1c, str2c);
+}
+
 bool arvoreBinariaOrdenarPorCampo(
     ARVORE_BINARIA* arvoreBinaria, NO* raiz, NO* anterior, NO* novoNo, 
     char* campoIndexado, int indiceCampoEscolhido
@@ -150,6 +163,25 @@ bool arvoreBinariaOrdenarPorCampo(
             char* campoStrRaiz = (char*) valorCampoEscolhidoRaiz;
             char* campoStr = (char*) valorCampoEscolhido;
             char* campoStrAnterior = (char*) valorCampoEscolhidoAnterior;
+
+            // if (dadosObterEnumCampo(campoIndexado) == 3) {
+            //     char campoStrRaizCp[TAMANHO_MARCA_CELULAR+5] = "";
+            //     char campoStrCp[TAMANHO_MARCA_CELULAR+5] = "";
+            //     char campoStrAnteriorCp[TAMANHO_MARCA_CELULAR+5] = "";
+
+            //     strcpy(campoStrRaizCp, campoStrRaiz);
+            //     strcpy(campoStrCp, campoStr);
+            //     strcpy(campoStrAnteriorCp, campoStrAnterior);
+                
+            //     campoStrRaizCp[TAMANHO_MARCA_CELULAR] = '\0';
+            //     campoStrCp[TAMANHO_MARCA_CELULAR] = '\0';
+            //     campoStrAnteriorCp[TAMANHO_MARCA_CELULAR] = '\0';
+
+            //     campoStrRaiz = campoStrRaizCp;
+            //     campoStr = campoStrCp;
+            //     campoStrAnterior = campoStrAnteriorCp;
+            // }
+
             if (strcmp(campoStr, campoStrRaiz) > 0) {
                 if (!arvoreBinariaNoExiste(raiz->direita)) {
                     raiz->direita = novoNo;
@@ -247,10 +279,6 @@ bool arvoreBinariaArmazenarRegistrosOrdenados(ARVORE_BINARIA* arvoreBinaria, TAB
         if (!dadosExiste(dados) || !metadadosExiste(metadados)) {
             continue;
         }
-        // dadosImprimir(dados, metadados);
-        // if (strcmp(dadosObterLugarCrime(dados), "DIADEMA") == 0) {
-        //     printf("AA\n");
-        // }
         
         char charAux = tabelaLerChar(tabela);
         int numPreenchimento = 0;

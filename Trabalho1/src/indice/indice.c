@@ -159,7 +159,7 @@ INDICE* indiceCriarBinario(char* nomeArquivoEntrada, char* campoIndexado, char* 
 
     arvoreBinariaArmazenarRegistrosOrdenados(arvoreBinaria, tabela, cabecalho, tipoDado);
 
-    INDICE* indice = indiceCriar(nomeArquivoIndice, "wb+");
+    INDICE* indice = indiceCriar(nomeArquivoIndice, "wb");
     if (!indiceExiste(indice)) {
         liberarMemoriaCasoErro(&tabela, &cabecalho, &arvoreBinaria);
         erroGenerico();
