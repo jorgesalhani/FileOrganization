@@ -16,9 +16,9 @@ struct metadados_ {
 
 struct dados_ {
     int32_t idCrime;
-    char dataCrime[TAMANHO_DATA_CRIME];
+    char dataCrime[TAMANHO_DATA_CRIME+1];
     int32_t numeroArtigo; 
-    char marcaCelular[TAMANHO_MARCA_CELULAR];
+    char marcaCelular[TAMANHO_MARCA_CELULAR+1];
     char* lugarCrime;
     char* descricaoCrime;
     char removido;
@@ -109,8 +109,8 @@ bool dadosExiste(DADOS* dados) {
 }
 
 DADOS* dadosCriar(
-    int32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME], 
-    int32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR], 
+    int32_t idCrime, char dataCrime[TAMANHO_DATA_CRIME+1], 
+    int32_t numeroArtigo, char marcaCelular[TAMANHO_MARCA_CELULAR+1], 
     char* lugarCrime, char* descricaoCrime, char removido) {
     
     DADOS* dados = (DADOS*) malloc(sizeof(DADOS));
@@ -213,6 +213,7 @@ bool dadosAtualizarDataCrime(DADOS* dados, char* novoDataCrime) {
       dados->dataCrime[i] = '$';
     }
   } 
+  dados->dataCrime[TAMANHO_DATA_CRIME] = '\0';
   return true;
 }
 
@@ -229,6 +230,7 @@ bool dadosAtualizarMarcaCelular(DADOS* dados, char* novoMarcaCelular) {
   for(int i = tam; i < TAMANHO_MARCA_CELULAR; i++) {
     dados->marcaCelular[i] = '$';
   }
+  dados->marcaCelular[TAMANHO_MARCA_CELULAR] = '\0';
   return true;
 }
 
@@ -345,8 +347,8 @@ int64_t dadosMetadadosObterTamanhoRegistro(DADOS* dados, METADADOS* metadados) {
   if (!dadosExiste(dados) || !metadadosExiste(metadados)) return -1;
   metadados->tamanhoRegistro = 0;
   metadados->tamanhoRegistro += 
-    sizeof(dados->idCrime) + sizeof(dados->dataCrime) + 
-    sizeof(dados->numeroArtigo) + sizeof(dados->marcaCelular) + 
+    sizeof(dados->idCrime) + sizeof(dados->dataCrime) - 1 + 
+    sizeof(dados->numeroArtigo) + sizeof(dados->marcaCelular) - 1 + 
     sizeof(dados->removido) + sizeof(dados->delimitador);
 
   metadados->tamanhoRegistro += 

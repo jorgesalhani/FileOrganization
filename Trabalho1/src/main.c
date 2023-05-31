@@ -220,8 +220,8 @@ int main(void) {
   
   case 6:;
       lerEntradasModo4(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, &numeroCamposBuscados);
-      inserirRegistro(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
-      binarioNaTela(nomeArquivoEntrada);
+      // inserirRegistro(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice, numeroCamposBuscados);
+      // binarioNaTela(nomeArquivoEntrada);
 
       INDICE* indiceAtualizado = indiceCriarBinario(nomeArquivoEntrada, campoIndexado, tipoDado, nomeArquivoIndice);
       if (!indiceExiste(indiceAtualizado)) return 0;
