@@ -164,24 +164,6 @@ bool arvoreBinariaOrdenarPorCampo(
             char* campoStr = (char*) valorCampoEscolhido;
             char* campoStrAnterior = (char*) valorCampoEscolhidoAnterior;
 
-            // if (dadosObterEnumCampo(campoIndexado) == 3) {
-            //     char campoStrRaizCp[TAMANHO_MARCA_CELULAR+5] = "";
-            //     char campoStrCp[TAMANHO_MARCA_CELULAR+5] = "";
-            //     char campoStrAnteriorCp[TAMANHO_MARCA_CELULAR+5] = "";
-
-            //     strcpy(campoStrRaizCp, campoStrRaiz);
-            //     strcpy(campoStrCp, campoStr);
-            //     strcpy(campoStrAnteriorCp, campoStrAnterior);
-                
-            //     campoStrRaizCp[TAMANHO_MARCA_CELULAR] = '\0';
-            //     campoStrCp[TAMANHO_MARCA_CELULAR] = '\0';
-            //     campoStrAnteriorCp[TAMANHO_MARCA_CELULAR] = '\0';
-
-            //     campoStrRaiz = campoStrRaizCp;
-            //     campoStr = campoStrCp;
-            //     campoStrAnterior = campoStrAnteriorCp;
-            // }
-
             if (strcmp(campoStr, campoStrRaiz) > 0) {
                 if (!arvoreBinariaNoExiste(raiz->direita)) {
                     raiz->direita = novoNo;

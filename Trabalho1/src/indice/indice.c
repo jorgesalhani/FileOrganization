@@ -76,6 +76,7 @@ bool indiceInteiroAtualizarDados(INDICE* indice, DADOS_INDICE_INTEIRO* dadosIndi
 
     fwrite(&chaveBusca, sizeof(int32_t), 1, arquivo);
     fwrite(&byteOffset, sizeof(int64_t), 1, arquivo);
+    fflush(arquivo);
 }
 
 bool indiceStringAtualizarDados(INDICE* indice, DADOS_INDICE_STRING* dadosIndiceString) {
