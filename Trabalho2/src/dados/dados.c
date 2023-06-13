@@ -59,9 +59,9 @@ int64_t dadosObterByteoffset(REGISTRO* registro);
 bool dadosImprimirArquivoBinario(ENTRADA* entrada);
 void dadosVarreduraDeBuscaArvoreBinaria(
   ARGS* args, NO* raiz, NO* anterior, 
-  void (*ftnPorRegistro)(ARGS* args, NO* no, bool direita)
+  void (*ftnPorRegistro)(ARGS* args, NO* no, int ordem)
 );
-void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args, NO* anterior, bool direita);
+void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args, NO* anterior, int ordem);
 void dadosOrdernarRegistrosEmArvoreBinaria (ARGS* args) ;
 ARGS* dadosRegistrosEmArvoreBinaria(ENTRADA* entrada);
 void dadosArvoreBinariaApagarNo(ARGS* args, NO* raiz) ;
@@ -72,30 +72,30 @@ int64_t dadosObterByteoffset(REGISTRO* registro) {
   return registro->byteOffset;
 }
 
+void preencherString(char* dest, char* orig, int tamanho) {
+  for (int i = 0; i < strlen(orig); i++) {
+    dest[i] = orig[i];
+  }
+  for (int i = strlen(orig); i < tamanho; i++) {
+    dest[i] = '$';
+  }
+}
+
 bool dadosArmazenarRegistro(REGISTRO* registro, FILE* arquivoBinarioDados) {
   if (registro == NULL || arquivoBinarioDados == NULL) return false;
 
   fwrite(&registro->removido, sizeof(char), 1, arquivoBinarioDados);
   fwrite(&registro->idCrime, sizeof(int32_t), 1, arquivoBinarioDados);
 
-  char dataCrimePreenchida [TAMANHO_DATA_CRIME] = "";
-  for (int i = 0; i < strlen(registro->dataCrime); i++) {
-    dataCrimePreenchida[i] = registro->dataCrime[i];
-  }
-  for (int i = strlen(registro->dataCrime); i < TAMANHO_DATA_CRIME; i++) {
-    dataCrimePreenchida[i] = '$';
-  }
+  char dataCrimePreenchida[TAMANHO_DATA_CRIME] = "";
+  preencherString(dataCrimePreenchida, registro->dataCrime, TAMANHO_DATA_CRIME);
+
   fwrite(registro->dataCrime, sizeof(char), TAMANHO_DATA_CRIME, arquivoBinarioDados);
 
   fwrite(&registro->numeroArtigo, sizeof(int32_t), 1, arquivoBinarioDados);
 
-  char marcaCelularPreenchida [TAMANHO_MARCA_CELULAR] = "";
-  for (int i = 0; i < strlen(registro->marcaCelular); i++) {
-    marcaCelularPreenchida[i] = registro->marcaCelular[i];
-  }
-  for (int i = strlen(registro->marcaCelular); i < TAMANHO_MARCA_CELULAR; i++) {
-    marcaCelularPreenchida[i] = '$';
-  }
+  char marcaCelularPreenchida[TAMANHO_MARCA_CELULAR] = "";
+  preencherString(marcaCelularPreenchida, registro->marcaCelular, TAMANHO_MARCA_CELULAR);
 
   fwrite(marcaCelularPreenchida, sizeof(char), TAMANHO_MARCA_CELULAR, arquivoBinarioDados);
 
@@ -528,7 +528,7 @@ bool dadosImprimirArquivoBinario(ENTRADA* entrada) {
 
 void dadosVarreduraDeBuscaArvoreBinaria(
   ARGS* args, NO* raiz, NO* anterior, 
-  void (*ftnPorRegistro)(ARGS* args, NO* no, bool direita)
+  void (*ftnPorRegistro)(ARGS* args, NO* no, int ordem)
 ) {
   if (args == NULL || anterior == NULL) return;
   if (ftnPorRegistro == NULL || raiz == NULL) return;
@@ -541,44 +541,54 @@ void dadosVarreduraDeBuscaArvoreBinaria(
 
   char* tipoDado = entradaObterTipoDado(args->entrada);
 
-  bool separarPorByteOffset = false;
-  bool direita = false;
+  int ordem = 0;
 
   if (strcmp(tipoDado, "string") == 0) {
     char* valorPadrao = (char*) campoIndexadoPadrao;
     char* valorRaiz = (char*) campoIndexadoRaiz;
     char* valorAnterior = (char*) campoIndexadoAnterior;
 
-    if (strcmp(valorRaiz, valorPadrao) < 0) direita = false;
+    if (strlen(valorPadrao) == 0 || valorPadrao[0] == '$') {
+      return;
+    }
+
+    if (strcmp(valorRaiz, valorPadrao) > 0) ordem = -1;
     else 
-    if (strcmp(valorRaiz, valorPadrao) > 0) direita = true;
-    else separarPorByteOffset = true;
+    if (strcmp(valorRaiz, valorPadrao) < 0) ordem = 1;
+    else ordem = 0;
     
   } else {
     int32_t* valorPadrao = (int32_t*) campoIndexadoPadrao;
     int32_t* valorRaiz = (int32_t*) campoIndexadoRaiz;
     int32_t* valorAnterior = (int32_t*) campoIndexadoAnterior;
 
-    if (*valorPadrao < *valorRaiz) direita = false; 
+    if (*valorPadrao == -1) {
+      return;
+    }
+
+    if (*valorPadrao < *valorRaiz) ordem = -1; 
     else
-    if ((*valorPadrao > *valorRaiz)) direita = true;
-    else separarPorByteOffset = true;
+    if ((*valorPadrao > *valorRaiz)) ordem = 1;
+    else ordem = 0;
   }
 
-  if (direita) {
+  if (ordem == 1) {
     dadosVarreduraDeBuscaArvoreBinaria(args, raiz->direita, raiz, ftnPorRegistro);
-  } else {
+  } else 
+  if (ordem == -1) {
     dadosVarreduraDeBuscaArvoreBinaria(args, raiz->esquerda, raiz, ftnPorRegistro);
+  } else {
+    return ftnPorRegistro(args, raiz, ordem);
   }
 
-  if (raiz->esquerda == NULL && !direita) return ftnPorRegistro(args, raiz, direita);
-  if (raiz->direita == NULL && direita) return ftnPorRegistro(args, raiz, direita);
+  if (raiz->esquerda == NULL && ordem == -1) return ftnPorRegistro(args, raiz, ordem);
+  if (raiz->direita == NULL && ordem == 1) return ftnPorRegistro(args, raiz, ordem);
 
   return;
 }
 
 
-void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args, NO* anterior, bool direita) {
+void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args, NO* anterior, int ordem) {
   if (args == NULL) return;
 
   NO* novoNo = (NO*) malloc(sizeof(NO));
@@ -586,13 +596,32 @@ void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args, NO* anterior, bool direit
   copiarRegistro(args->registro, novoNo->registro);
   novoNo->direita = NULL;
   novoNo->esquerda = NULL;
+  args->arvoreBinaria->totalRegistros++;
 
-  if (direita) {
+  if (ordem == 1) {
     anterior->direita = novoNo;
     return;
-  } 
+  } else 
+  if (ordem == -1) {
+    anterior->esquerda = novoNo;
+    return;
+  } else {
+    novoNo->esquerda = anterior->esquerda;
+    anterior->esquerda = novoNo;
 
-  anterior->esquerda = novoNo;
+    if (args->arvoreBinaria->raiz == anterior) {
+      REGISTRO* regRaizAux = args->arvoreBinaria->raiz->registro;
+      args->arvoreBinaria->raiz->registro = novoNo->registro;
+      novoNo->registro = regRaizAux;
+    }
+
+    if (novoNo->esquerda == NULL) {
+      novoNo->direita = NULL;
+    } else {
+      novoNo->direita = novoNo->esquerda->direita;
+      novoNo->esquerda->direita = NULL;
+    }
+  }
   return;
 }
 
@@ -615,8 +644,6 @@ void dadosOrdernarRegistrosEmArvoreBinaria (ARGS* args) {
     args->arvoreBinaria->raiz, 
     dadosAdicionarRegistroEmArvoreBinaria
   );
-
-  args->arvoreBinaria->totalRegistros++;
 }
 
 ARGS* dadosRegistrosEmArvoreBinaria(ENTRADA* entrada) {
@@ -639,9 +666,14 @@ void dadosArvoreBinariaApagarNo(ARGS* args, NO* raiz) {
 void dadosVarreduraCompletaArvoreBinaria(ARGS* args, NO* raiz, void (*ftnPorRegistro)()) {
   if (args == NULL || raiz == NULL || ftnPorRegistro == NULL) return;
   args->registro = raiz->registro;
+
+  if (args->arvoreBinaria->ordem == preOrdem) ftnPorRegistro(args, raiz);
   dadosVarreduraCompletaArvoreBinaria(args, raiz->esquerda, ftnPorRegistro);
+
+  if (args->arvoreBinaria->ordem == emOrdem) ftnPorRegistro(args, raiz);
   dadosVarreduraCompletaArvoreBinaria(args, raiz->direita, ftnPorRegistro);
-  ftnPorRegistro(args, raiz);
+  
+  if (args->arvoreBinaria->ordem == posOrdem) ftnPorRegistro(args, raiz);
 }
 
 bool dadosArvoreBinariaApagar(ARGS* args) {
@@ -651,6 +683,7 @@ bool dadosArvoreBinariaApagar(ARGS* args) {
   if (arvoreBinaria == NULL || arvoreBinaria->raiz == NULL) return false;
 
   args->registro = arvoreBinaria->raiz->registro;
+  args->arvoreBinaria->ordem = posOrdem;
   dadosVarreduraCompletaArvoreBinaria(
     args, arvoreBinaria->raiz, dadosArvoreBinariaApagarNo);
 

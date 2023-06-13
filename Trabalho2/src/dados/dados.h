@@ -23,6 +23,10 @@
   typedef struct args_ ARGS;
   typedef struct no_ NO ;
 
+  enum ordemBuscaBinaria_ {
+    emOrdem, preOrdem, posOrdem
+  };
+
   struct no_ {
     REGISTRO* registro;
     NO* esquerda;
@@ -31,6 +35,7 @@
 
   struct arvore_binaria_ {
     int32_t totalRegistros;
+    enum ordemBuscaBinaria_ ordem;
     NO* raiz;
   };
 
@@ -50,6 +55,7 @@
   void* dadosObterCampoIndexado(REGISTRO* registro, char* campoIndexado);
   int64_t dadosObterByteoffset(REGISTRO* registro);
   bool argsApagar(ARGS** args);
+  void preencherString(char* dest, char* orig, int tamanho);
 
   CABECALHO* dadosCabecalhoInit();
   REGISTRO* dadosRegistroInit();

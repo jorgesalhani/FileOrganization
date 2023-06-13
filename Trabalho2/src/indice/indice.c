@@ -38,7 +38,7 @@ REGISTRO_INDICE* indiceRegistroInit(char* tipoDado) {
 
   registroIndice->byteOffset = 0;
   if (strcmp(tipoDado, "string") == 0) {
-    registroIndice->chaveBusca = (char*) malloc(sizeof(char)*TAMANHO_CHAVE_BUSCA+1);
+    registroIndice->chaveBusca = (char*) calloc(TAM_MAX_STR, sizeof(char));
     return registroIndice;
   }
 
@@ -77,8 +77,8 @@ void indiceArmazenarRegistro(ARGS* args, NO* raiz) {
   registroIndice->byteOffset = dadosObterByteoffset(raiz->registro);
   if (strcmp(tipoDado, "string") == 0) {
     char* chaveBusca = (char*) valorCampoDeBusca;
-    registroIndice->chaveBusca = chaveBusca;
-    fwrite(chaveBusca, sizeof(char), TAMANHO_CHAVE_BUSCA, args->arquivoIndiceBin);
+    preencherString(registroIndice->chaveBusca, chaveBusca, TAMANHO_CHAVE_BUSCA);
+    fwrite(registroIndice->chaveBusca, sizeof(char), TAMANHO_CHAVE_BUSCA, args->arquivoIndiceBin);
   } else {
     int32_t* chaveBusca = (int32_t*) valorCampoDeBusca;
     registroIndice->chaveBusca = chaveBusca;
@@ -86,7 +86,8 @@ void indiceArmazenarRegistro(ARGS* args, NO* raiz) {
   }
 
   fwrite(&registroIndice->byteOffset, sizeof(int64_t), 1, args->arquivoIndiceBin);
-
+  fflush(args->arquivoIndiceBin);
+  args->registro = raiz->registro;
   indiceRegistroApagar(&registroIndice, tipoDado);
   return;
 }
@@ -114,6 +115,7 @@ bool indiceCriarArquivoBinario(ENTRADA* entrada) {
   cabecalhoIndice->qtdReg = args->arvoreBinaria->totalRegistros;
   indiceArmazenarCabecalho(cabecalhoIndice, arquivoBinarioIndice);
 
+  args->arvoreBinaria->ordem = emOrdem;
   dadosVarreduraCompletaArvoreBinaria(args, args->arvoreBinaria->raiz, indiceArmazenarRegistro);
 
 
