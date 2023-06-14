@@ -16,6 +16,9 @@ int main() {
   } else 
   if (funcionalidade == 3) {
     indiceCriarArquivoBinario(entrada);
+  } else 
+  if (funcionalidade == 4) {
+    dadosBuscarPorCampos(entrada);
   } else {
     erroModo();
   }

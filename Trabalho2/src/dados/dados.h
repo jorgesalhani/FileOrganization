@@ -52,10 +52,13 @@
   ARGS* dadosRegistrosEmArvoreBinaria(ENTRADA* entrada);
   bool resetLeituraDeArquivo(FILE* arquivoBin, int64_t byteOffset);
   void dadosVarreduraCompletaArvoreBinaria(ARGS* args, NO* raiz, void (*ftnPorRegistro)()); 
+  bool dadosLerRegistroDoArquivoBinario(FILE* arquivoBinarioDados, REGISTRO* registro);
   void* dadosObterCampoIndexado(REGISTRO* registro, char* campoIndexado);
   int64_t dadosObterByteoffset(REGISTRO* registro);
   bool argsApagar(ARGS** args);
   void preencherString(char* dest, char* orig, int tamanho);
+  bool dadosBuscarPorCampos(ENTRADA* entrada);
+  ARGS* argsInit();
 
   CABECALHO* dadosCabecalhoInit();
   REGISTRO* dadosRegistroInit();

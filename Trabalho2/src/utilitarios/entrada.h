@@ -19,5 +19,7 @@
     char* entradaObterTipoDado(ENTRADA* entrada);
     int entradaObterNumeroCamposBuscados(ENTRADA* entrada);
     char** entradaObterLinhasBusca(ENTRADA* entrada);
+    char* entradaProximaLinhaDeBusca(ENTRADA* entrada);
+    char* entradaObterLinhaDeBusca(ENTRADA* entrada);
     
 #endif

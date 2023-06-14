@@ -1,4 +1,5 @@
 #include "dados.h"
+#include "../indice/indice.h"
 
 struct cabecalho_ {
   char status;
@@ -37,6 +38,12 @@ static const char* camposIndexadosNomes[ENUM_FIM] = {
   "delimitador", "tamanhoRegistro"
 };
 
+const char* camposIndexadosTipos[ENUM_FIM] = {
+  "inteiro", "string", "inteiro", "string", 
+  "string", "descricaoCrime", "char", "char", 
+  "char", "inteiro"
+};
+
 bool dadosArmazenarRegistro(REGISTRO* registro, FILE* arquivoBinarioDados);
 bool resetLeituraDeArquivo(FILE* arquivoBin, int64_t byteOffset);
 bool dadosAtualizarTamanhoRegistro(REGISTRO* registro);
@@ -66,6 +73,7 @@ void dadosOrdernarRegistrosEmArvoreBinaria (ARGS* args) ;
 ARGS* dadosRegistrosEmArvoreBinaria(ENTRADA* entrada);
 void dadosArvoreBinariaApagarNo(ARGS* args, NO* raiz) ;
 bool dadosArvoreBinariaApagar(ARGS* args);
+const char* dadosObterTipoCampo(char* campoIndexado);
 
 int64_t dadosObterByteoffset(REGISTRO* registro) {
   if (registro == NULL) return -1;
@@ -78,6 +86,13 @@ void preencherString(char* dest, char* orig, int tamanho) {
   }
   for (int i = strlen(orig); i < tamanho; i++) {
     dest[i] = '$';
+  }
+}
+
+void removerPreenchimento(char* dest, char* orig) {
+  for (int i = 0; i < strlen(orig); i++) {
+    if (orig[i] != '$') dest[i] = orig[i];
+    else break;
   }
 }
 
@@ -472,6 +487,7 @@ ARGS* dadosVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegi
   }
   ARGS* args = argsInit();
   args->entrada = entrada;
+  args->arquivoDadosBin = arquivoBinarioDados;
 
   resetLeituraDeArquivo(arquivoBinarioDados, cabecalho->tamanhoRegistro);
 
@@ -690,4 +706,123 @@ bool dadosArvoreBinariaApagar(ARGS* args) {
   free(arvoreBinaria);
   arvoreBinaria = NULL;
   return true;
+}
+
+bool verificarSeCriterioDeBuscaIndexado(char* linhaDeBusca, char* campoIndexado) {
+  char delim[] = " ";
+  char linhaDeBuscaCp[100];
+  strcpy(linhaDeBuscaCp, linhaDeBusca);
+  char* linhaSplit = strtok(linhaDeBuscaCp, delim);
+  while (linhaSplit != NULL) {
+    linhaSplit = strtok(NULL, delim);
+    char* campo = linhaSplit;
+    linhaSplit = strtok(NULL, delim);
+    char* valor = linhaSplit;
+
+    if (strcmp(campoIndexado, campo) == 0) return true;
+  }
+  return false;
+}
+
+void dadosEncontrarEImprimirRegistro(ARGS* args) {
+  if (args == NULL) return;
+
+  char* tipoDado = entradaObterTipoDado(args->entrada);
+
+  char delimEspaco[] = " ";
+  char* linhaDeBusca = entradaObterLinhaDeBusca(args->entrada);
+
+  char linhaDeBuscaCp[100];
+  strcpy(linhaDeBuscaCp, linhaDeBusca);
+  char* linhaSplit = strtok(linhaDeBuscaCp, delimEspaco);
+
+  bool match = true;
+  while ((linhaSplit = strtok(NULL, delimEspaco)) != NULL) {
+    char* campo = "";
+    campo = linhaSplit;
+
+    void* valorRegistro = dadosObterCampoIndexado(args->registro, campo);
+
+    const char* tipoCampo = dadosObterTipoCampo(campo);
+
+    char* valorStr = "";
+    int32_t valorInt = -1;
+    if (strcmp(tipoCampo, "string") == 0) {
+      char delimQuote[] = "\"";
+      linhaSplit = strtok(NULL, delimQuote);
+      valorStr = linhaSplit;
+
+      char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
+      char* valorReg = (char*) valorRegistro;
+      removerPreenchimento(valorLimpo, valorReg);
+      if (strcmp(valorLimpo, valorStr) != 0) match = false;
+
+    } else {
+      linhaSplit = strtok(NULL, delimEspaco);
+      valorInt = (int32_t) atoi(linhaSplit);
+      int32_t* valorReg = (int32_t*) valorRegistro;
+      if (*valorReg != valorInt) match = false;
+    }
+  }  
+
+  if (match) dadosImprimirRegistro(args);
+}
+
+// void dadosBuscaBinariaEImprimirRegistro(ARGS* args, NO* raiz, int ordem) {
+//   char* campoIndexado = entradaObterCampoIndexado(args->entrada);
+  
+//   char delim[] = " ";
+//   char* linhaSplit = strtok(linhaDeBusca, delim);
+//   while (linhaSplit != NULL) {
+//     linhaSplit = strtok(NULL, delim);
+//     char* campo = linhaSplit;
+//     linhaSplit = strtok(NULL, delim);
+//     char* valor = linhaSplit;
+
+//     if (strcmp(campoIndexado, campo) == 0) {
+//       args->registro = 
+//     }
+//   }
+// }
+
+bool dadosBuscarPorCampos(ENTRADA* entrada) {
+  if (entrada == NULL) return false;
+
+  char* campoIndexado = entradaObterCampoIndexado(entrada);
+  ARGS* argsArvore = dadosRegistrosEmArvoreBinaria(entrada);
+
+  int nroCamposBuscados = entradaObterNumeroCamposBuscados(entrada);
+  char** linhasDeBusca = entradaObterLinhasBusca(entrada);
+  char* linhaDeBusca = entradaObterLinhaDeBusca(entrada);
+  for (int i = 0; i < nroCamposBuscados; i++) {
+    bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(linhaDeBusca, campoIndexado);
+    ARGS* args = NULL;
+
+    if (!buscaIndexada) {
+      args = dadosVarreduraSequencialArquivoBinario(entrada, dadosEncontrarEImprimirRegistro);
+    } else {
+      argsArvore->arvoreBinaria->ordem = emOrdem;
+      // dadosVarreduraDeBuscaArvoreBinaria(
+      //   argsArvore, argsArvore->arvoreBinaria->raiz, 
+      //   argsArvore->arvoreBinaria->raiz, 
+      //   dadosBuscaBinariaEImprimirRegistro
+      // );
+      linhaDeBusca = entradaProximaLinhaDeBusca(entrada);
+    }
+    if (args == NULL) return false;
+
+    argsApagar(&args);
+  }
+  argsApagar(&argsArvore);
+}
+
+const char* dadosObterTipoCampo(char* campoIndexado) {
+  enum camposIndexados campo_i = 0;
+  const char* nomeCampo = camposIndexadosTipos[campo_i];
+  for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
+    if (strcmp(campoIndexado, camposIndexadosNomes[campo_i]) == 0) {
+      nomeCampo = camposIndexadosTipos[campo_i];
+    }
+  }
+  return nomeCampo;
 }

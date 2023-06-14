@@ -9,6 +9,7 @@ struct entrada_ {
   char tipoDado[50];
   int numeroCamposBuscados;
   char** linhasBusca;
+  int proxLinhaDeBusca;
 };
 
 ENTRADA* lerEntradas() {
@@ -50,6 +51,7 @@ ENTRADA* lerEntradas() {
 
     int numLinhas = entrada->numeroCamposBuscados;
     entrada->linhasBusca = (char**) malloc(sizeof(char*)*numLinhas);
+    entrada->proxLinhaDeBusca = 0;
 
     size_t bufLinha1 = 5;
     char* linha1Buff = NULL;
@@ -121,6 +123,18 @@ int entradaObterNumeroCamposBuscados(ENTRADA* entrada) {
 char** entradaObterLinhasBusca(ENTRADA* entrada) {
   if (entrada == NULL) return NULL;
   return entrada->linhasBusca;
+} 
+
+char* entradaProximaLinhaDeBusca(ENTRADA* entrada) {
+  if (entrada == NULL) return NULL;
+  int prox = entrada->proxLinhaDeBusca;
+  entrada->proxLinhaDeBusca++;
+  return entrada->linhasBusca[prox];
+} 
+
+char* entradaObterLinhaDeBusca(ENTRADA* entrada) {
+  if (entrada == NULL) return NULL;
+  return entrada->linhasBusca[entrada->proxLinhaDeBusca];
 } 
 
 

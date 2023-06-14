@@ -14,5 +14,6 @@
   
 
   bool indiceCriarArquivoBinario(ENTRADA* entrada);
+  ARGS* indiceVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)());
 
 #endif

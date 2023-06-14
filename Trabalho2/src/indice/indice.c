@@ -1,6 +1,7 @@
 #include "indice.h"
 
 struct registro_indice_ {
+  char* tipoDado;
   void* chaveBusca;
   int64_t byteOffset;
 };
@@ -8,10 +9,10 @@ struct registro_indice_ {
 struct cabecalho_indice_ {
   char status;
   int32_t qtdReg;
-  int32_t tamanhoRegistro;
+  int64_t tamanhoRegistro;
 };
 
-bool indiceCabacelhoApagar(CABECALHO_INDICE** cabecalho_indice) {
+bool indiceCabecalhoApagar(CABECALHO_INDICE** cabecalho_indice) {
   if (cabecalho_indice == NULL || *cabecalho_indice == NULL) return false;
   free(*cabecalho_indice);
   *cabecalho_indice = NULL;
@@ -37,12 +38,15 @@ REGISTRO_INDICE* indiceRegistroInit(char* tipoDado) {
   if (registroIndice == NULL) return NULL;
 
   registroIndice->byteOffset = 0;
+  registroIndice->tipoDado = tipoDado;
+
   if (strcmp(tipoDado, "string") == 0) {
     registroIndice->chaveBusca = (char*) calloc(TAM_MAX_STR, sizeof(char));
     return registroIndice;
   }
 
-  registroIndice->chaveBusca = (int32_t) 0;
+  int32_t* chaveBusca;
+  registroIndice->chaveBusca = chaveBusca;
   return registroIndice;
 }
 
@@ -124,10 +128,102 @@ bool indiceCriarArquivoBinario(ENTRADA* entrada) {
 
   fclose(arquivoBinarioIndice);
 
-  indiceCabacelhoApagar(&cabecalhoIndice);
+  indiceCabecalhoApagar(&cabecalhoIndice);
   argsApagar(&args);
   
   binarioNaTela(arquivoIndice);
 
   return true;
+}
+
+bool indiceLerCabecalhoDoArquivoBinario(FILE* arquivoBinarioIndice, CABECALHO_INDICE* cabecalhoIndice) {
+  if (arquivoBinarioIndice == NULL || cabecalhoIndice == NULL) return false;
+  resetLeituraDeArquivo(arquivoBinarioIndice, 0);
+  fread(&cabecalhoIndice->status, sizeof(char), 1, arquivoBinarioIndice);
+
+  // char statusEmProgresso = '0';
+  // resetLeituraDeArquivo(arquivoBinarioIndice, 0);
+  // fwrite(&statusEmProgresso, sizeof(char), 1, arquivoBinarioIndice);
+  fread(&cabecalhoIndice->qtdReg, sizeof(int32_t), 1, arquivoBinarioIndice);
+}
+
+bool indiceLerRegistroDoArquivoBinario(FILE* arquivoBinarioIndice, REGISTRO_INDICE* registroIndice) {
+  if (arquivoBinarioIndice == NULL || registroIndice == NULL) return false;
+  
+  if (strcmp(registroIndice->tipoDado, "string") == 0) {
+    fread(&registroIndice->chaveBusca, sizeof(char), TAMANHO_CHAVE_BUSCA, arquivoBinarioIndice);  
+  } else {
+    fread(&registroIndice->chaveBusca, sizeof(int32_t), 1, arquivoBinarioIndice);
+  }
+  fread(&registroIndice->byteOffset, sizeof(int64_t), 1, arquivoBinarioIndice);
+  
+  return true;
+}
+
+ARGS* indiceVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)()) {
+
+  char* arquivoIndice = entradaObterArquivoIndice(entrada);
+  FILE* arquivoBinarioIndice = fopen(arquivoIndice, MODO_LEITURA_ARQUIVO);
+  if (arquivoBinarioIndice == NULL) {
+    erroGenerico();
+    return false;
+  };
+
+  char* arquivoEntrada = entradaObterArquivoEntrada(entrada);
+  FILE* arquivoBinarioDados = fopen(arquivoEntrada, MODO_LEITURA_ARQUIVO);
+  if (arquivoBinarioDados == NULL) {
+    erroGenerico();
+    return false;
+  };
+
+  CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
+  indiceLerCabecalhoDoArquivoBinario(arquivoBinarioIndice, cabecalhoIndice);
+
+  if (cabecalhoIndice->status == '0') {
+    erroGenerico();
+    fclose(arquivoBinarioIndice);
+    indiceCabecalhoApagar(&cabecalhoIndice);
+    return NULL;
+  }
+
+  if (cabecalhoIndice->qtdReg == 0) {
+    erroSemRegistros();
+    fclose(arquivoBinarioIndice);
+    indiceCabecalhoApagar(&cabecalhoIndice);
+    return NULL;
+  }
+
+  ARGS* args = argsInit();
+  args->entrada = entrada;
+  args->arquivoDadosBin = arquivoBinarioDados;
+  args->arquivoIndiceBin = arquivoBinarioIndice;
+
+  int32_t qtdReg = cabecalhoIndice->qtdReg;
+
+  resetLeituraDeArquivo(arquivoBinarioIndice, cabecalhoIndice->tamanhoRegistro);
+
+  char* tipoDado = entradaObterTipoDado(entrada);
+  while (qtdReg--) {
+    REGISTRO_INDICE* registroIndice = indiceRegistroInit(tipoDado);
+    if (registroIndice == NULL) continue;
+    
+    indiceLerRegistroDoArquivoBinario(arquivoBinarioIndice, registroIndice);
+
+    resetLeituraDeArquivo(arquivoBinarioDados, registroIndice->byteOffset);
+    
+    REGISTRO* registro = dadosRegistroInit();
+    if (registro == NULL) continue;
+    dadosLerRegistroDoArquivoBinario(arquivoBinarioDados, registro);
+
+    args->registro = registro;
+
+    ftnPorRegistro(args);
+
+    indiceRegistroApagar(&registroIndice, tipoDado);
+  }
+
+  indiceCabecalhoApagar(&cabecalhoIndice);
+  fclose(arquivoBinarioIndice);
+
+  return args;
 }
