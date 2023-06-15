@@ -40,7 +40,7 @@ static const char* camposIndexadosNomes[ENUM_FIM] = {
 
 const char* camposIndexadosTipos[ENUM_FIM] = {
   "inteiro", "string", "inteiro", "string", 
-  "string", "descricaoCrime", "char", "char", 
+  "string", "string", "char", "char", 
   "char", "inteiro"
 };
 
@@ -780,10 +780,13 @@ int dadosCompararRegistroComChaveBusca(ARGS* args) {
       linhaSplit = strtok(NULL, delimQuote);
       char valorTrunc[TAMANHO_CHAVE_BUSCA+1] = "";
       strcpy(valorTrunc, linhaSplit);
+      valorTrunc[TAMANHO_CHAVE_BUSCA] = '\0';
 
       char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
       char* valorReg = (char*) valorRegistro;
       removerPreenchimento(valorLimpo, valorReg);
+      valorLimpo[TAMANHO_CHAVE_BUSCA] = '\0';
+
       if (strcmp(campo, entradaObterCampoIndexado(args->entrada)) != 0) continue;
       return (int)strcmp(valorTrunc, valorLimpo);
       
@@ -829,10 +832,12 @@ void dadosEncontrarEImprimirRegistro(ARGS* args) {
       linhaSplit = strtok(NULL, delimQuote);
       char valorTrunc[TAMANHO_CHAVE_BUSCA+1] = "";
       strcpy(valorTrunc, linhaSplit);
+      valorTrunc[TAMANHO_CHAVE_BUSCA] = '\0';
 
       char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
       char* valorReg = (char*) valorRegistro;
       removerPreenchimento(valorLimpo, valorReg);
+      valorLimpo[TAMANHO_CHAVE_BUSCA] = '\0';
       if (strcmp(valorLimpo, valorTrunc) != 0) match = false;
 
     } else {
@@ -876,7 +881,7 @@ bool dadosBuscarPorCampos(ENTRADA* entrada) {
   char* linhaDeBusca = entradaObterLinhaDeBusca(entrada);
   for (int i = 0; i < nroCamposBuscados; i++) {
     if (entradaObterFuncionalidade(entrada) == 4) {
-      printf("resposta para a busca %d\n", i+1);
+      printf("Resposta para a busca %d\n", i+1);
     }
     bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(linhaDeBusca, campoIndexado);
     ARGS* args = NULL;
