@@ -127,9 +127,11 @@ char** entradaObterLinhasBusca(ENTRADA* entrada) {
 
 char* entradaProximaLinhaDeBusca(ENTRADA* entrada) {
   if (entrada == NULL) return NULL;
-  int prox = entrada->proxLinhaDeBusca;
   entrada->proxLinhaDeBusca++;
-  return entrada->linhasBusca[prox];
+  if (entrada->numeroCamposBuscados <= entrada->proxLinhaDeBusca) {
+    return NULL;
+  }
+  return entrada->linhasBusca[entrada->proxLinhaDeBusca];
 } 
 
 char* entradaObterLinhaDeBusca(ENTRADA* entrada) {

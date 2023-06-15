@@ -66,9 +66,9 @@ int64_t dadosObterByteoffset(REGISTRO* registro);
 bool dadosImprimirArquivoBinario(ENTRADA* entrada);
 void dadosVarreduraDeBuscaArvoreBinaria(
   ARGS* args, NO* raiz, NO* anterior, 
-  void (*ftnPorRegistro)(ARGS* args, NO* no, int ordem)
+  void (*ftnPorRegistro)(ARGS* args)
 );
-void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args, NO* anterior, int ordem);
+void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args);
 void dadosOrdernarRegistrosEmArvoreBinaria (ARGS* args) ;
 ARGS* dadosRegistrosEmArvoreBinaria(ENTRADA* entrada);
 void dadosArvoreBinariaApagarNo(ARGS* args, NO* raiz) ;
@@ -446,6 +446,10 @@ ARGS* argsInit() {
   args->entrada = NULL;
   args->arquivoDadosBin = NULL;
   args->arquivoIndiceBin = NULL;
+  args->regEncontradoEmBusca = false;
+  args->idProxRamo = 0;
+  args->proxRamoArvore = NULL;
+  args->bOffPrimOcorArqIndice = -1;
   return args;
 }
 
@@ -544,7 +548,7 @@ bool dadosImprimirArquivoBinario(ENTRADA* entrada) {
 
 void dadosVarreduraDeBuscaArvoreBinaria(
   ARGS* args, NO* raiz, NO* anterior, 
-  void (*ftnPorRegistro)(ARGS* args, NO* no, int ordem)
+  void (*ftnPorRegistro)(ARGS*)
 ) {
   if (args == NULL || anterior == NULL) return;
   if (ftnPorRegistro == NULL || raiz == NULL) return;
@@ -588,26 +592,31 @@ void dadosVarreduraDeBuscaArvoreBinaria(
     else ordem = 0;
   }
 
+  args->idProxRamo = ordem;
+  args->proxRamoArvore = raiz;
+
   if (ordem == 1) {
     dadosVarreduraDeBuscaArvoreBinaria(args, raiz->direita, raiz, ftnPorRegistro);
   } else 
   if (ordem == -1) {
     dadosVarreduraDeBuscaArvoreBinaria(args, raiz->esquerda, raiz, ftnPorRegistro);
   } else {
-    return ftnPorRegistro(args, raiz, ordem);
+    ftnPorRegistro(args);
   }
 
-  if (raiz->esquerda == NULL && ordem == -1) return ftnPorRegistro(args, raiz, ordem);
-  if (raiz->direita == NULL && ordem == 1) return ftnPorRegistro(args, raiz, ordem);
+  if (raiz->esquerda == NULL && ordem == -1) ftnPorRegistro(args);
+  if (raiz->direita == NULL && ordem == 1) ftnPorRegistro(args);
 
   return;
 }
 
 
-void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args, NO* anterior, int ordem) {
+void dadosAdicionarRegistroEmArvoreBinaria(ARGS* args) {
   if (args == NULL) return;
 
   NO* novoNo = (NO*) malloc(sizeof(NO));
+  NO* anterior = args->proxRamoArvore;
+  int ordem = args->idProxRamo;
   novoNo->registro = dadosRegistroInit();
   copiarRegistro(args->registro, novoNo->registro);
   novoNo->direita = NULL;
@@ -652,6 +661,7 @@ void dadosOrdernarRegistrosEmArvoreBinaria (ARGS* args) {
     copiarRegistro(args->registro, args->arvoreBinaria->raiz->registro);
     args->arvoreBinaria->raiz->direita = NULL;
     args->arvoreBinaria->raiz->esquerda = NULL;
+    args->proxRamoArvore = args->arvoreBinaria->raiz;
     return;
   }
 
@@ -709,23 +719,90 @@ bool dadosArvoreBinariaApagar(ARGS* args) {
 }
 
 bool verificarSeCriterioDeBuscaIndexado(char* linhaDeBusca, char* campoIndexado) {
-  char delim[] = " ";
+  char delimEspaco[] = " ";
+
   char linhaDeBuscaCp[100];
   strcpy(linhaDeBuscaCp, linhaDeBusca);
-  char* linhaSplit = strtok(linhaDeBuscaCp, delim);
-  while (linhaSplit != NULL) {
-    linhaSplit = strtok(NULL, delim);
-    char* campo = linhaSplit;
-    linhaSplit = strtok(NULL, delim);
-    char* valor = linhaSplit;
+  char* linhaSplit = strtok(linhaDeBuscaCp, delimEspaco);
 
-    if (strcmp(campoIndexado, campo) == 0) return true;
+  bool match = false;
+  while ((linhaSplit = strtok(NULL, delimEspaco)) != NULL) {
+    if (strcmp(linhaSplit, "\n") == 0) break;
+    char* campo = "";
+    campo = linhaSplit;
+    if (strcmp(campo, campoIndexado) == 0) {
+      match = true;
+      break;
+    }
+    const char* tipoCampo = dadosObterTipoCampo(campo);
+
+    char* valorStr = "";
+    int32_t valorInt = -1;
+    if (strcmp(tipoCampo, "string") == 0) {
+      char delimQuote[] = "\"";
+      linhaSplit = strtok(NULL, delimQuote);
+      valorStr = linhaSplit;
+    } else {
+      linhaSplit = strtok(NULL, delimEspaco);
+      valorInt = (int32_t) atoi(linhaSplit);
+    }
+  }  
+  
+  return match;
+}
+
+int dadosCompararRegistroComChaveBusca(ARGS* args) {
+  if (args == NULL) return 2;
+  if (args->registro->idCrime == 560) {
+    printf("AA\n");
   }
-  return false;
+
+  char* tipoDado = entradaObterTipoDado(args->entrada);
+
+  char delimEspaco[] = " ";
+  char* linhaDeBusca = entradaObterLinhaDeBusca(args->entrada);
+
+  char linhaDeBuscaCp[100];
+  strcpy(linhaDeBuscaCp, linhaDeBusca);
+  char* linhaSplit = strtok(linhaDeBuscaCp, delimEspaco);
+
+  while ((linhaSplit = strtok(NULL, delimEspaco)) != NULL) {
+    if (strcmp(linhaSplit, "\n") == 0) break;
+    char* campo = "";
+    campo = linhaSplit;
+
+    void* valorRegistro = dadosObterCampoIndexado(args->registro, campo);
+
+    const char* tipoCampo = dadosObterTipoCampo(campo);
+
+    char* valorStr = "";
+    int32_t valorInt = -1;
+    if (strcmp(tipoCampo, "string") == 0) {
+      char delimQuote[] = "\"";
+      linhaSplit = strtok(NULL, delimQuote);
+      valorStr = linhaSplit;
+
+      char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
+      char* valorReg = (char*) valorRegistro;
+      removerPreenchimento(valorLimpo, valorReg);
+      return (int)strcmp(valorLimpo, valorStr);
+
+    } else {
+      linhaSplit = strtok(NULL, delimEspaco);
+      valorInt = (int32_t) atoi(linhaSplit);
+      int32_t* valorReg = (int32_t*) valorRegistro;
+      if (*valorReg > valorInt) return 1;
+      if (*valorReg == valorInt) return 0;
+      if (*valorReg < valorInt) return -1;
+    }
+  }
 }
 
 void dadosEncontrarEImprimirRegistro(ARGS* args) {
   if (args == NULL) return;
+  if (args->registro->idCrime == 560) {
+    printf("AA\n");
+  }
 
   char* tipoDado = entradaObterTipoDado(args->entrada);
 
@@ -738,6 +815,7 @@ void dadosEncontrarEImprimirRegistro(ARGS* args) {
 
   bool match = true;
   while ((linhaSplit = strtok(NULL, delimEspaco)) != NULL) {
+    if (strcmp(linhaSplit, "\n") == 0) break;
     char* campo = "";
     campo = linhaSplit;
 
@@ -765,7 +843,10 @@ void dadosEncontrarEImprimirRegistro(ARGS* args) {
     }
   }  
 
-  if (match) dadosImprimirRegistro(args);
+  if (match) {
+    dadosImprimirRegistro(args);
+    args->regEncontradoEmBusca = true;
+  }
 }
 
 // void dadosBuscaBinariaEImprimirRegistro(ARGS* args, NO* raiz, int ordem) {
@@ -789,31 +870,29 @@ bool dadosBuscarPorCampos(ENTRADA* entrada) {
   if (entrada == NULL) return false;
 
   char* campoIndexado = entradaObterCampoIndexado(entrada);
-  ARGS* argsArvore = dadosRegistrosEmArvoreBinaria(entrada);
 
   int nroCamposBuscados = entradaObterNumeroCamposBuscados(entrada);
   char** linhasDeBusca = entradaObterLinhasBusca(entrada);
   char* linhaDeBusca = entradaObterLinhaDeBusca(entrada);
   for (int i = 0; i < nroCamposBuscados; i++) {
+    if (entradaObterFuncionalidade(entrada) == 4) {
+      printf("resposta para a busca %d\n", i+1);
+    }
     bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(linhaDeBusca, campoIndexado);
     ARGS* args = NULL;
 
     if (!buscaIndexada) {
       args = dadosVarreduraSequencialArquivoBinario(entrada, dadosEncontrarEImprimirRegistro);
     } else {
-      argsArvore->arvoreBinaria->ordem = emOrdem;
-      // dadosVarreduraDeBuscaArvoreBinaria(
-      //   argsArvore, argsArvore->arvoreBinaria->raiz, 
-      //   argsArvore->arvoreBinaria->raiz, 
-      //   dadosBuscaBinariaEImprimirRegistro
-      // );
-      linhaDeBusca = entradaProximaLinhaDeBusca(entrada);
+      args = indiceBuscaBinariaArquivoBinario(entrada, dadosEncontrarEImprimirRegistro);
     }
-    if (args == NULL) return false;
 
+    if (args == NULL) continue;
+    if (!args->regEncontradoEmBusca) erroSemRegistros();
     argsApagar(&args);
+
+    linhaDeBusca = entradaProximaLinhaDeBusca(entrada);
   }
-  argsApagar(&argsArvore);
 }
 
 const char* dadosObterTipoCampo(char* campoIndexado) {

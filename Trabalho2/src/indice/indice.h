@@ -15,5 +15,6 @@
 
   bool indiceCriarArquivoBinario(ENTRADA* entrada);
   ARGS* indiceVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)());
+  ARGS* indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)());
 
 #endif

@@ -4,6 +4,7 @@ struct registro_indice_ {
   char* tipoDado;
   void* chaveBusca;
   int64_t byteOffset;
+  int32_t tamanhoRegistro;
 };
 
 struct cabecalho_indice_ {
@@ -42,11 +43,16 @@ REGISTRO_INDICE* indiceRegistroInit(char* tipoDado) {
 
   if (strcmp(tipoDado, "string") == 0) {
     registroIndice->chaveBusca = (char*) calloc(TAM_MAX_STR, sizeof(char));
+    registroIndice->tamanhoRegistro = 
+      sizeof(registroIndice->byteOffset) + 
+      sizeof(char) * TAMANHO_CHAVE_BUSCA;
     return registroIndice;
   }
 
   int32_t* chaveBusca;
   registroIndice->chaveBusca = chaveBusca;
+  registroIndice->tamanhoRegistro = 
+    sizeof(registroIndice->byteOffset) + sizeof(int32_t);
   return registroIndice;
 }
 
@@ -224,6 +230,129 @@ ARGS* indiceVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorReg
 
   indiceCabecalhoApagar(&cabecalhoIndice);
   fclose(arquivoBinarioIndice);
+
+  return args;
+}
+
+void indiceByteoffsetDaPrimeiraOcorrencia(ARGS* args) {
+  if (args == NULL) return;
+  int regComp = dadosCompararRegistroComChaveBusca(args);
+  if (regComp == 0) {
+
+    REGISTRO_INDICE* registroIndice = indiceRegistroInit(entradaObterTipoDado(args->entrada));
+    if (registroIndice == NULL) return;
+
+    resetLeituraDeArquivo(
+      args->arquivoIndiceBin, 
+      args->bOffPrimOcorArqIndice - registroIndice->tamanhoRegistro
+    );
+    
+    indiceLerRegistroDoArquivoBinario(args->arquivoIndiceBin, registroIndice);
+
+    REGISTRO* registro = dadosRegistroInit();
+    if (registro == NULL) return;
+    resetLeituraDeArquivo(args->arquivoDadosBin, registroIndice->byteOffset);
+    dadosLerRegistroDoArquivoBinario(args->arquivoDadosBin, registro);
+    args->registro = registro;
+    indiceByteoffsetDaPrimeiraOcorrencia(args);
+  }
+}
+
+ARGS* indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)()) {
+  char* arquivoIndice = entradaObterArquivoIndice(entrada);
+  FILE* arquivoBinarioIndice = fopen(arquivoIndice, MODO_LEITURA_ARQUIVO);
+  if (arquivoBinarioIndice == NULL) {
+    erroGenerico();
+    return false;
+  };
+
+  char* arquivoEntrada = entradaObterArquivoEntrada(entrada);
+  FILE* arquivoBinarioDados = fopen(arquivoEntrada, MODO_LEITURA_ARQUIVO);
+  if (arquivoBinarioDados == NULL) {
+    erroGenerico();
+    return false;
+  };
+
+  CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
+  indiceLerCabecalhoDoArquivoBinario(arquivoBinarioIndice, cabecalhoIndice);
+
+  if (cabecalhoIndice->status == '0') {
+    erroGenerico();
+    fclose(arquivoBinarioIndice);
+    indiceCabecalhoApagar(&cabecalhoIndice);
+    return NULL;
+  }
+
+  if (cabecalhoIndice->qtdReg == 0) {
+    erroSemRegistros();
+    fclose(arquivoBinarioIndice);
+    indiceCabecalhoApagar(&cabecalhoIndice);
+    return NULL;
+  }
+
+  ARGS* args = argsInit();
+  args->entrada = entrada;
+  args->arquivoDadosBin = arquivoBinarioDados;
+  args->arquivoIndiceBin = arquivoBinarioIndice;
+
+  int32_t qtdReg = cabecalhoIndice->qtdReg;
+
+  resetLeituraDeArquivo(arquivoBinarioIndice, cabecalhoIndice->tamanhoRegistro);
+
+  char* tipoDado = entradaObterTipoDado(entrada);
+
+  REGISTRO_INDICE* registroBase = indiceRegistroInit(tipoDado);
+  int32_t tamRegIndice = registroBase->tamanhoRegistro;
+  indiceRegistroApagar(&registroBase, tipoDado);
+
+  int32_t pivotCentral =
+    tamRegIndice * (((int32_t) (qtdReg / 2)) - 1) + 
+    cabecalhoIndice->tamanhoRegistro;
+
+  int32_t pivotSuperior = 
+    tamRegIndice * (int32_t) (qtdReg - 1) + 
+    cabecalhoIndice->tamanhoRegistro;
+
+  int32_t pivotInferior = cabecalhoIndice->tamanhoRegistro;
+
+  int32_t metade = 4;
+  while (
+    (pivotCentral < pivotSuperior) &&
+    (pivotCentral > pivotInferior)
+  ) {
+    resetLeituraDeArquivo(arquivoBinarioIndice, pivotCentral);
+
+    REGISTRO_INDICE* registroIndice = indiceRegistroInit(tipoDado);
+    if (registroIndice == NULL) continue;
+    
+    indiceLerRegistroDoArquivoBinario(arquivoBinarioIndice, registroIndice);
+    
+    REGISTRO* registro = dadosRegistroInit();
+    if (registro == NULL) continue;
+    resetLeituraDeArquivo(arquivoBinarioDados, registroIndice->byteOffset);
+    dadosLerRegistroDoArquivoBinario(arquivoBinarioDados, registro);
+
+    args->registro = registro;
+
+    // ftnPorRegistro(args);
+    int regComp = dadosCompararRegistroComChaveBusca(args);
+
+    if (regComp < 0) {
+      pivotSuperior = pivotCentral;
+      pivotCentral = tamRegIndice * ((int32_t) (qtdReg / metade));  
+    } else 
+    if (regComp > 0) {
+      pivotInferior = pivotCentral;
+      pivotCentral = pivotInferior + tamRegIndice * ((int32_t) (qtdReg / metade));
+    } else {
+      args->bOffPrimOcorArqIndice = registroIndice->byteOffset;
+      indiceByteoffsetDaPrimeiraOcorrencia(args);
+      break;
+    }
+    
+    indiceRegistroApagar(&registroIndice, tipoDado);
+    metade *= 2;
+  }
 
   return args;
 }

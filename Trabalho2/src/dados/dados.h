@@ -45,6 +45,10 @@
     ARVORE_BINARIA* arvoreBinaria;
     FILE* arquivoDadosBin;
     FILE* arquivoIndiceBin;
+    bool regEncontradoEmBusca;
+    int idProxRamo;
+    NO* proxRamoArvore;
+    int64_t bOffPrimOcorArqIndice;
   };
 
   bool dadosCriarArquivoBinario(ENTRADA* entrada);
@@ -58,6 +62,7 @@
   bool argsApagar(ARGS** args);
   void preencherString(char* dest, char* orig, int tamanho);
   bool dadosBuscarPorCampos(ENTRADA* entrada);
+  int dadosCompararRegistroComChaveBusca(ARGS* args);
   ARGS* argsInit();
 
   CABECALHO* dadosCabecalhoInit();
