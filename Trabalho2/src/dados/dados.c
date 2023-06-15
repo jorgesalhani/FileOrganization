@@ -91,6 +91,7 @@ void preencherString(char* dest, char* orig, int tamanho) {
 
 void removerPreenchimento(char* dest, char* orig) {
   for (int i = 0; i < strlen(orig); i++) {
+    if (i > TAMANHO_CHAVE_BUSCA) break;
     if (orig[i] != '$') dest[i] = orig[i];
     else break;
   }
@@ -753,9 +754,6 @@ bool verificarSeCriterioDeBuscaIndexado(char* linhaDeBusca, char* campoIndexado)
 
 int dadosCompararRegistroComChaveBusca(ARGS* args) {
   if (args == NULL) return 2;
-  if (args->registro->idCrime == 560) {
-    printf("AA\n");
-  }
 
   char* tipoDado = entradaObterTipoDado(args->entrada);
 
@@ -780,29 +778,30 @@ int dadosCompararRegistroComChaveBusca(ARGS* args) {
     if (strcmp(tipoCampo, "string") == 0) {
       char delimQuote[] = "\"";
       linhaSplit = strtok(NULL, delimQuote);
-      valorStr = linhaSplit;
+      char valorTrunc[TAMANHO_CHAVE_BUSCA+1] = "";
+      strcpy(valorTrunc, linhaSplit);
 
       char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
       char* valorReg = (char*) valorRegistro;
       removerPreenchimento(valorLimpo, valorReg);
-      return (int)strcmp(valorLimpo, valorStr);
+      if (strcmp(campo, entradaObterCampoIndexado(args->entrada)) != 0) continue;
+      return (int)strcmp(valorTrunc, valorLimpo);
+      
 
     } else {
       linhaSplit = strtok(NULL, delimEspaco);
       valorInt = (int32_t) atoi(linhaSplit);
       int32_t* valorReg = (int32_t*) valorRegistro;
-      if (*valorReg > valorInt) return 1;
+      if (strcmp(campo, entradaObterCampoIndexado(args->entrada)) != 0) continue;
+      if (*valorReg < valorInt) return 1;
       if (*valorReg == valorInt) return 0;
-      if (*valorReg < valorInt) return -1;
+      if (*valorReg > valorInt) return -1;
     }
   }
 }
 
 void dadosEncontrarEImprimirRegistro(ARGS* args) {
   if (args == NULL) return;
-  if (args->registro->idCrime == 560) {
-    printf("AA\n");
-  }
 
   char* tipoDado = entradaObterTipoDado(args->entrada);
 
@@ -828,12 +827,13 @@ void dadosEncontrarEImprimirRegistro(ARGS* args) {
     if (strcmp(tipoCampo, "string") == 0) {
       char delimQuote[] = "\"";
       linhaSplit = strtok(NULL, delimQuote);
-      valorStr = linhaSplit;
+      char valorTrunc[TAMANHO_CHAVE_BUSCA+1] = "";
+      strcpy(valorTrunc, linhaSplit);
 
       char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
       char* valorReg = (char*) valorRegistro;
       removerPreenchimento(valorLimpo, valorReg);
-      if (strcmp(valorLimpo, valorStr) != 0) match = false;
+      if (strcmp(valorLimpo, valorTrunc) != 0) match = false;
 
     } else {
       linhaSplit = strtok(NULL, delimEspaco);

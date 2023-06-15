@@ -60,9 +60,11 @@
   void* dadosObterCampoIndexado(REGISTRO* registro, char* campoIndexado);
   int64_t dadosObterByteoffset(REGISTRO* registro);
   bool argsApagar(ARGS** args);
+  bool dadosRegistroApagar(REGISTRO** registro);
   void preencherString(char* dest, char* orig, int tamanho);
   bool dadosBuscarPorCampos(ENTRADA* entrada);
   int dadosCompararRegistroComChaveBusca(ARGS* args);
+  void copiarRegistro(REGISTRO* regOrig, REGISTRO* regDest);
   ARGS* argsInit();
 
   CABECALHO* dadosCabecalhoInit();
