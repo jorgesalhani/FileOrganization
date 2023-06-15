@@ -463,6 +463,114 @@ bool argsApagar(ARGS** args) {
   return true;
 }
 
+void dadosEncontrar(ARGS* args, void (*ftnPorRegistro)()) {
+  if (args == NULL) return;
+
+  char* tipoDado = entradaObterTipoDado(args->entrada);
+
+  char delimEspaco[] = " ";
+  char* linhaDeBusca = entradaObterLinhaDeBusca(args->entrada);
+
+  char linhaDeBuscaCp[100];
+  strcpy(linhaDeBuscaCp, linhaDeBusca);
+  char* linhaSplit = strtok(linhaDeBuscaCp, delimEspaco);
+
+  bool match = true;
+  while ((linhaSplit = strtok(NULL, delimEspaco)) != NULL) {
+    if (strcmp(linhaSplit, "\n") == 0) break;
+    char* campo = "";
+    campo = linhaSplit;
+
+    void* valorRegistro = dadosObterCampoIndexado(args->registro, campo);
+
+    const char* tipoCampo = dadosObterTipoCampo(campo);
+
+    char* valorStr = "";
+    int32_t valorInt = -1;
+    if (strcmp(tipoCampo, "string") == 0) {
+      char delimQuote[] = "\"";
+      linhaSplit = strtok(NULL, delimQuote);
+      char valorTrunc[TAMANHO_CHAVE_BUSCA+1] = "";
+      strcpy(valorTrunc, linhaSplit);
+      valorTrunc[TAMANHO_CHAVE_BUSCA] = '\0';
+
+      char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
+      char* valorReg = (char*) valorRegistro;
+      removerPreenchimento(valorLimpo, valorReg);
+      valorLimpo[TAMANHO_CHAVE_BUSCA] = '\0';
+      if (strcmp(valorLimpo, valorTrunc) != 0) match = false;
+
+    } else {
+      linhaSplit = strtok(NULL, delimEspaco);
+      valorInt = (int32_t) atoi(linhaSplit);
+      int32_t* valorReg = (int32_t*) valorRegistro;
+      if (*valorReg != valorInt) match = false;
+    }
+  }  
+
+  if (match) {
+    ftnPorRegistro(args);
+    args->regEncontradoEmBusca = true;
+  }
+}
+
+ARGS* dadosBuscaSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)()) {
+  char* arquivoEntrada = entradaObterArquivoEntrada(entrada);
+  FILE* arquivoBinarioDados = fopen(arquivoEntrada, MODO_LEITURA_ARQUIVO);
+  if (arquivoBinarioDados == NULL) {
+    erroGenerico();
+    return false;
+  };
+
+  CABECALHO* cabecalho = dadosCabecalhoInit();
+  dadosLerCabecalhoDoArquivoBinario(arquivoBinarioDados, cabecalho);
+
+  int32_t nroRegArq = cabecalho->nroRegArq;
+  int64_t byteOffset = cabecalho->tamanhoRegistro;
+
+  if (cabecalho->status == '0') {
+    erroGenerico();
+    fclose(arquivoBinarioDados);
+    dadosCabecalhoApagar(&cabecalho);
+    return NULL;
+  }
+
+  if (cabecalho->nroRegArq == 0) {
+    erroSemRegistros();
+    fclose(arquivoBinarioDados);
+    dadosCabecalhoApagar(&cabecalho);
+    return NULL;
+  }
+  ARGS* args = argsInit();
+  args->entrada = entrada;
+  args->arquivoDadosBin = arquivoBinarioDados;
+
+  resetLeituraDeArquivo(arquivoBinarioDados, cabecalho->tamanhoRegistro);
+
+  while (nroRegArq--) {
+    REGISTRO* registro = dadosRegistroInit();
+    if (registro == NULL) continue;
+    args->registro = registro;
+    
+    dadosLerRegistroDoArquivoBinario(arquivoBinarioDados, registro);
+    if (registro->removido == '1') {
+      dadosRegistroApagar(&registro);
+      continue;
+    }
+
+    registro->byteOffset = byteOffset;
+    byteOffset += registro->tamanhoRegistro;
+
+    dadosEncontrar(args, ftnPorRegistro);
+
+    dadosRegistroApagar(&registro);
+  }
+
+  dadosCabecalhoApagar(&cabecalho);
+  fclose(arquivoBinarioDados);
+  return args;
+}
+
 ARGS* dadosVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)()) {
   char* arquivoEntrada = entradaObterArquivoEntrada(entrada);
   FILE* arquivoBinarioDados = fopen(arquivoEntrada, MODO_LEITURA_ARQUIVO);
@@ -887,9 +995,9 @@ bool dadosBuscarPorCampos(ENTRADA* entrada) {
     ARGS* args = NULL;
 
     if (!buscaIndexada) {
-      args = dadosVarreduraSequencialArquivoBinario(entrada, dadosEncontrarEImprimirRegistro);
+      args = dadosBuscaSequencialArquivoBinario(entrada, dadosImprimirRegistro);
     } else {
-      args = indiceBuscaBinariaArquivoBinario(entrada, dadosEncontrarEImprimirRegistro);
+      args = indiceBuscaBinariaArquivoBinario(entrada, dadosImprimirRegistro);
     }
 
     if (args == NULL) continue;
@@ -909,4 +1017,9 @@ const char* dadosObterTipoCampo(char* campoIndexado) {
     }
   }
   return nomeCampo;
+}
+
+bool dadoRemoverRegistroLogicamente(ENTRADA* entrada) {
+  if (entrada == NULL) return false;
+
 }

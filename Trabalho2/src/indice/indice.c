@@ -275,7 +275,7 @@ void indiceMapDadosAPartirDaPrimeiraOcorrencia(ARGS* args, void (*ftnPorRegistro
     regComp = dadosCompararRegistroComChaveBusca(args);
   }
   while (regComp == 0) {
-    ftnPorRegistro(args);
+    dadosEncontrar(args, ftnPorRegistro);
     indiceLerRegistroDoArquivoBinario(args->arquivoIndiceBin, registroIndice);
     resetLeituraDeArquivo(args->arquivoDadosBin, registroIndice->byteOffset);
     dadosLerRegistroDoArquivoBinario(args->arquivoDadosBin, args->registro);

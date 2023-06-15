@@ -19,6 +19,9 @@ int main() {
   } else 
   if (funcionalidade == 4) {
     dadosBuscarPorCampos(entrada);
+  } else 
+  if (funcionalidade == 5) {
+    dadoRemoverRegistroLogicamente(entrada);
   } else {
     erroModo();
   }

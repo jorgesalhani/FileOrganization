@@ -66,6 +66,8 @@
   int dadosCompararRegistroComChaveBusca(ARGS* args);
   void copiarRegistro(REGISTRO* regOrig, REGISTRO* regDest);
   ARGS* argsInit();
+  bool dadoRemoverRegistroLogicamente(ENTRADA* entrada);
+  void dadosEncontrar(ARGS* args, void (*ftnPorRegistro)());
 
   CABECALHO* dadosCabecalhoInit();
   REGISTRO* dadosRegistroInit();
