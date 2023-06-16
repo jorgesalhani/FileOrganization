@@ -92,7 +92,6 @@ void indiceArmazenarRegistro(ARGS* args, NO* raiz) {
   } else {
     int32_t* chaveBusca = (int32_t*) valorCampoDeBusca;
     registroIndice->chaveBusca = chaveBusca;
-    if (dadosObterRemovido(raiz->registro) == '1') return;
     fwrite(chaveBusca, sizeof(int32_t), 1, args->arquivoIndiceBin);
   }
 

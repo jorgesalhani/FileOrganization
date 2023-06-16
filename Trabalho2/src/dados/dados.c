@@ -609,6 +609,7 @@ ARGS* dadosVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegi
     
     dadosLerRegistroDoArquivoBinario(arquivoBinarioDados, registro);
     if (registro->removido == '1') {
+      byteOffset += registro->tamanhoRegistro;
       dadosRegistroApagar(&registro);
       continue;
     }

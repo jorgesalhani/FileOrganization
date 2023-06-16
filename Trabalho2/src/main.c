@@ -23,7 +23,7 @@ int main() {
   if (funcionalidade == 5) {
     dadosBuscarPorCampos(entrada, dadosRemoverRegistroLogicamente);
     binarioNaTela(entradaObterArquivoEntrada(entrada));
-    // indiceCriarArquivoBinario(entrada);
+    indiceCriarArquivoBinario(entrada);
   } else {
     erroModo();
   }
