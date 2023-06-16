@@ -72,6 +72,7 @@
   void dadosImprimirRegistro(ARGS* args);
   void dadosAtualizarByteoffset(REGISTRO* registro, int64_t byteOffset);
   int64_t dadosObterRemovido(REGISTRO* registro);
+  bool dadosInserirNovoRegistro(ENTRADA* entrada);
 
   CABECALHO* dadosCabecalhoInit();
   REGISTRO* dadosRegistroInit();

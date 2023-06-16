@@ -12,6 +12,14 @@ struct entrada_ {
   int proxLinhaDeBusca;
 };
 
+bool strVaziaEntrada(char* str) {
+  if(strcmp(str, "") == 0) {
+    strcpy(str, STR_VAZIA);
+    return true;
+  }
+  return false;
+}
+
 ENTRADA* lerEntradas() {
   ENTRADA* entrada = (ENTRADA*) malloc(sizeof(ENTRADA));
   if (entrada == NULL) return NULL;
@@ -40,9 +48,8 @@ ENTRADA* lerEntradas() {
   }
 
   if (entrada->funcionalidade == 4 ||
-      entrada->funcionalidade == 5 ||
-      entrada->funcionalidade == 6 || 
-      entrada->funcionalidade == 7) {
+      entrada->funcionalidade == 5
+  ) {
     scanf("%s", entrada->arquivoEntrada);
     scanf("%s", entrada->campoIndexado);
     scanf("%s", entrada->tipoDado);
@@ -66,7 +73,68 @@ ENTRADA* lerEntradas() {
     return entrada;
   }
 
-  return entrada;
+  if (entrada->funcionalidade == 6) {
+    scanf("%s", entrada->arquivoEntrada);
+    scanf("%s", entrada->campoIndexado);
+    scanf("%s", entrada->tipoDado);
+    scanf("%s", entrada->arquivoIndice);
+    scanf("%d", &entrada->numeroCamposBuscados);
+
+    int numLinhas = entrada->numeroCamposBuscados;
+    entrada->linhasBusca = (char**) malloc(sizeof(char*)*numLinhas);
+    entrada->proxLinhaDeBusca = 0;
+
+    size_t bufLinha1 = 5;
+    char* linha1Buff = NULL;
+    scanf("%s ", linha1Buff);
+
+
+    size_t tam = 300;
+    for (int i = 0; i < entrada->numeroCamposBuscados; i++) {
+      entrada->linhasBusca[i] = (char*) malloc(sizeof(char)*tam);
+      char valor[300] = "";
+      char token[60] = "";
+      scan_quote_string(token);
+      strVaziaEntrada(token);
+      strcat(valor, token);
+      strcat(valor, ",");
+      memset(token, 0, sizeof(token));
+
+      scan_quote_string(token);
+      strVaziaEntrada(token);
+      strcat(valor, token);
+      strcat(valor, ",");
+      memset(token, 0, sizeof(token));
+
+      scan_quote_string(token);
+      strVaziaEntrada(token);
+      strcat(valor, token);
+      strcat(valor, ",");
+      memset(token, 0, sizeof(token));
+
+      scan_quote_string(token);
+      strVaziaEntrada(token);
+      strcat(valor, token);
+      strcat(valor, ",");
+      memset(token, 0, sizeof(token));
+
+      scan_quote_string(token);
+      strVaziaEntrada(token);
+      strcat(valor, token);
+      strcat(valor, ",");
+      memset(token, 0, sizeof(token));
+
+      scan_quote_string(token);
+      strVaziaEntrada(token);
+      strcat(valor, token);
+      strcat(valor, ",FIM,");
+      memset(token, 0, sizeof(token));
+
+      strcpy(entrada->linhasBusca[i], valor);
+    }
+
+    return entrada;
+  }
 }
 
 bool entradaApagar(ENTRADA** entrada) {

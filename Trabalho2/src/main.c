@@ -24,6 +24,11 @@ int main() {
     dadosBuscarPorCampos(entrada, dadosRemoverRegistroLogicamente);
     binarioNaTela(entradaObterArquivoEntrada(entrada));
     indiceCriarArquivoBinario(entrada);
+  } else 
+  if (funcionalidade == 6) {
+    dadosInserirNovoRegistro(entrada);
+    binarioNaTela(entradaObterArquivoEntrada(entrada));
+    indiceCriarArquivoBinario(entrada);
   } else {
     erroModo();
   }
