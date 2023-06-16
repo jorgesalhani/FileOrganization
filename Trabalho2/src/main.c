@@ -18,10 +18,12 @@ int main() {
     indiceCriarArquivoBinario(entrada);
   } else 
   if (funcionalidade == 4) {
-    dadosBuscarPorCampos(entrada);
+    dadosBuscarPorCampos(entrada, dadosImprimirRegistro);
   } else 
   if (funcionalidade == 5) {
-    dadoRemoverRegistroLogicamente(entrada);
+    dadosBuscarPorCampos(entrada, dadosRemoverRegistroLogicamente);
+    binarioNaTela(entradaObterArquivoEntrada(entrada));
+    // indiceCriarArquivoBinario(entrada);
   } else {
     erroModo();
   }

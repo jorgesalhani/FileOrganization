@@ -42,6 +42,7 @@
   struct args_ {
     ENTRADA* entrada;
     REGISTRO* registro;
+    CABECALHO* cabecalho;
     ARVORE_BINARIA* arvoreBinaria;
     FILE* arquivoDadosBin;
     FILE* arquivoIndiceBin;
@@ -62,12 +63,15 @@
   bool argsApagar(ARGS** args);
   bool dadosRegistroApagar(REGISTRO** registro);
   void preencherString(char* dest, char* orig, int tamanho);
-  bool dadosBuscarPorCampos(ENTRADA* entrada);
+  bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca));
   int dadosCompararRegistroComChaveBusca(ARGS* args);
   void copiarRegistro(REGISTRO* regOrig, REGISTRO* regDest);
   ARGS* argsInit();
-  bool dadoRemoverRegistroLogicamente(ENTRADA* entrada);
+  bool dadosRemoverRegistroLogicamente(ARGS* args);
   void dadosEncontrar(ARGS* args, void (*ftnPorRegistro)());
+  void dadosImprimirRegistro(ARGS* args);
+  void dadosAtualizarByteoffset(REGISTRO* registro, int64_t byteOffset);
+  int64_t dadosObterRemovido(REGISTRO* registro);
 
   CABECALHO* dadosCabecalhoInit();
   REGISTRO* dadosRegistroInit();
