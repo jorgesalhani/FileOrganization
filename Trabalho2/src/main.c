@@ -7,6 +7,7 @@ int main() {
   ENTRADA* entrada = lerEntradas();
   
   int funcionalidade = entradaObterFuncionalidade(entrada);
+  bool sucesso = true;
 
   if (funcionalidade == 1) {
     dadosCriarArquivoBinario(entrada);
@@ -21,17 +22,28 @@ int main() {
     dadosBuscarPorCampos(entrada, dadosImprimirRegistro);
   } else 
   if (funcionalidade == 5) {
-    dadosBuscarPorCampos(entrada, dadosRemoverRegistroLogicamente);
+    sucesso = dadosBuscarPorCampos(entrada, dadosRemoverRegistroLogicamente);
+    if (!sucesso) return -1;
     binarioNaTela(entradaObterArquivoEntrada(entrada));
     indiceCriarArquivoBinario(entrada);
   } else 
   if (funcionalidade == 6) {
-    dadosInserirNovoRegistro(entrada);
-    binarioNaTela(entradaObterArquivoEntrada(entrada));
-    indiceCriarArquivoBinario(entrada);
+    sucesso = dadosInserirNovosRegistros(entrada);
+    if (sucesso) {
+      binarioNaTela(entradaObterArquivoEntrada(entrada));
+      indiceCriarArquivoBinario(entrada);
+    }
+  } else 
+  if (funcionalidade == 7) {
+    sucesso = dadosBuscarPorCampos(entrada, dadosAtualizarRegistros);
+    if (sucesso) {
+      binarioNaTela(entradaObterArquivoEntrada(entrada));
+      indiceCriarArquivoBinario(entrada);
+    }
   } else {
     erroModo();
   }
 
   entradaApagar(&entrada);
+  return 0;
 }

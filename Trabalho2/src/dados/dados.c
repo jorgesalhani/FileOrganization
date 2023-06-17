@@ -24,30 +24,11 @@ struct registro_ {
   int64_t byteOffset;
 };
 
-
-enum camposIndexados { 
-  idCrime, dataCrime, numeroArtigo, marcaCelular, 
-  lugarCrime, descricaoCrime, removido, delimitadorCampos,
-  delimitador, tamanhoRegistro,
-  ENUM_FIM
-};
-
 enum sequenciaCamposAInserir {
   idCrimeInput, dataCrimeInput, numeroArtigoInput, lugarCrimeInput,
   descricaoCrimeInput, marcaCelularInput
 };
 
-static char* camposIndexadosNomes[ENUM_FIM] = {
-  "idCrime", "dataCrime", "numeroArtigo", "marcaCelular", 
-  "lugarCrime", "descricaoCrime", "removido", "delimitadorCampos", 
-  "delimitador", "tamanhoRegistro"
-};
-
-char* camposIndexadosTipos[ENUM_FIM] = {
-  "inteiro", "string", "inteiro", "string", 
-  "string", "string", "char", "char", 
-  "char", "inteiro"
-};
 
 bool dadosArmazenarRegistro(REGISTRO* registro, FILE* arquivoBinarioDados);
 bool resetLeituraDeArquivo(FILE* arquivoBin, int64_t byteOffset);
@@ -78,7 +59,6 @@ void dadosOrdernarRegistrosEmArvoreBinaria (ARGS* args) ;
 ARGS* dadosRegistrosEmArvoreBinaria(ENTRADA* entrada);
 void dadosArvoreBinariaApagarNo(ARGS* args, NO* raiz) ;
 bool dadosArvoreBinariaApagar(ARGS* args);
-char* dadosObterTipoCampo(char* campoIndexado);
 
 int64_t dadosObterByteoffset(REGISTRO* registro) {
   if (registro == NULL) return -1;
@@ -198,7 +178,7 @@ void copiarRegistro(REGISTRO* regOrig, REGISTRO* regDest) {
   strcpy(regDest->lugarCrime, regOrig->lugarCrime);
   strcpy(regDest->descricaoCrime, regOrig->descricaoCrime);
   regDest->removido = regOrig->removido;
-  regDest->delimitadorCampos = regOrig->delimitador;
+  regDest->delimitadorCampos = regOrig->delimitadorCampos;
   regDest->delimitador = regOrig->delimitador;
   regDest->tamanhoRegistro = regOrig->tamanhoRegistro;
   regDest->byteOffset = regOrig->byteOffset;
@@ -526,12 +506,12 @@ void dadosEncontrar(ARGS* args, void (*ftnPorRegistro)()) {
   }  
 
   if (match) {
-    ftnPorRegistro(args);
     args->regEncontradoEmBusca = true;
+    ftnPorRegistro(args);
   }
 }
 
-void dadosBuscaSequencialArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)()) {
+bool dadosBuscaSequencialArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)()) {
 
   dadosLerCabecalhoDoArquivoBinario(args->arquivoDadosBin, args->cabecalho);
 
@@ -540,12 +520,12 @@ void dadosBuscaSequencialArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftn
 
   if (args->cabecalho->status == '0') {
     erroGenerico();
-    return;
+    return false;
   }
 
   if (args->cabecalho->nroRegArq == 0) {
     erroSemRegistros();
-    return;
+    return false;
   }
 
   resetLeituraDeArquivo(args->arquivoDadosBin, args->cabecalho->tamanhoRegistro);
@@ -571,7 +551,7 @@ void dadosBuscaSequencialArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftn
   }
   
   dadosArmazenarCabecalho(args->cabecalho, args->arquivoDadosBin);
-  return;
+  return true;
 }
 
 ARGS* dadosVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)()) {
@@ -910,6 +890,54 @@ bool verificarSeCriterioDeBuscaIndexado(char* linhaDeBusca, char* campoIndexado)
   return match;
 }
 
+bool atualizarRegistro(REGISTRO* registro, char* linhaDeAtualizacao, char* campoIndexado) {
+  if (registro == NULL) return false;
+
+  char delimEspaco[] = " ";
+
+  char linhaDeAtualizacaoCp[100];
+  strcpy(linhaDeAtualizacaoCp, linhaDeAtualizacao);
+  char* linhaSplit = strtok(linhaDeAtualizacaoCp, delimEspaco);
+
+  while ((linhaSplit = strtok(NULL, delimEspaco)) != NULL) {
+    if (strcmp(linhaSplit, "\n") == 0) break;
+    char* campo = "";
+    campo = linhaSplit;
+    char* tipoCampo = dadosObterTipoCampo(campo);
+    void* regValorAtual = dadosObterCampoIndexado(registro, campo);
+
+    char valorStr[100] = "";
+    int32_t valorInt = -1;
+    if (strcmp(tipoCampo, "string") == 0) {
+      char delimQuote[] = "\"";
+      linhaSplit = strtok(NULL, delimQuote);
+      char* regValorStr = (char*)regValorAtual;
+      if (strcmp(campo, "dataCrime") == 0) {
+        strcpy(valorStr, linhaSplit);
+      }
+      if (strcmp(campo, "marcaCelular") == 0) {
+        preencherString(valorStr, linhaSplit, TAMANHO_MARCA_CELULAR); 
+      }
+      if ((strcmp(campo, "lugarCrime") == 0 ||
+          strcmp(campo, "descricaoCrime") == 0) &&
+          (strlen(regValorStr) > strlen(linhaSplit))
+        ) {
+          strcat(valorStr, "|");
+          preencherString(valorStr, linhaSplit, strlen(linhaSplit)); 
+      }
+
+      strcpy(regValorStr, valorStr);
+    } else {
+      linhaSplit = strtok(NULL, delimEspaco);
+      valorInt = (int32_t) atoi(linhaSplit);
+      int32_t* val = (int32_t*) regValorAtual;
+      *val = valorInt;
+    }
+  }  
+  
+  return true;
+}
+
 int dadosCompararRegistroComChaveBusca(ARGS* args) {
   if (args == NULL) return 2;
 
@@ -990,6 +1018,8 @@ bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
   };
   args->arquivoIndiceBin = arquivoBinarioIndice;
 
+  bool busca = false;
+
   char* linhaDeBusca = entradaObterLinhaDeBusca(entrada);
   for (int i = 0; i < nroCamposBuscados; i++) {
     args->regEncontradoEmBusca = false;
@@ -997,11 +1027,12 @@ bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
       printf("Resposta para a busca %d\n", i+1);
     }
     bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(linhaDeBusca, campoIndexado);
-
     if (!buscaIndexada) {
-      dadosBuscaSequencialArquivoBinario(entrada, args, ftnPorBusca);
+      busca = dadosBuscaSequencialArquivoBinario(entrada, args, ftnPorBusca);
+      if (!busca) break;
     } else {
-      indiceBuscaBinariaArquivoBinario(entrada, args, ftnPorBusca);
+      busca = indiceBuscaBinariaArquivoBinario(entrada, args, ftnPorBusca);
+      if (!busca) break;
     }
 
     if (!args->regEncontradoEmBusca && 
@@ -1010,21 +1041,11 @@ bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
 
     linhaDeBusca = entradaProximaLinhaDeBusca(entrada);
   }
-  dadosArmazenarCabecalho(args->cabecalho, args->arquivoDadosBin);
+  if (busca) dadosArmazenarCabecalho(args->cabecalho, args->arquivoDadosBin);
   fclose(args->arquivoDadosBin);
   fclose(args->arquivoIndiceBin);
   argsApagar(&args);
-}
-
-char* dadosObterTipoCampo(char* campoIndexado) {
-  enum camposIndexados campo_i = 0;
-  char* nomeCampo = camposIndexadosTipos[campo_i];
-  for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
-    if (strcmp(campoIndexado, camposIndexadosNomes[campo_i]) == 0) {
-      nomeCampo = camposIndexadosTipos[campo_i];
-    }
-  }
-  return nomeCampo;
+  return busca;
 }
 
 bool dadosRemoverRegistroLogicamente(ARGS* args) {
@@ -1040,7 +1061,17 @@ bool dadosRemoverRegistroLogicamente(ARGS* args) {
   return true;
 }
 
-bool dadosInserirNovoRegistro(ENTRADA* entrada) {
+bool dadosAppendRegistroNoArquivoBinario(ARGS* args) {
+  if (args == NULL) return false;
+  resetLeituraDeArquivo(args->arquivoDadosBin, args->cabecalho->proxByteOffset);
+  dadosArmazenarRegistro(args->registro, args->arquivoDadosBin);
+  args->cabecalho->nroRegArq++;
+  args->cabecalho->proxByteOffset += args->registro->tamanhoRegistro;
+  return true;
+}
+
+
+bool dadosInserirNovosRegistros(ENTRADA* entrada) {
   if (entrada == NULL) return false;
   
   ARGS* args = argsInit();
@@ -1057,22 +1088,60 @@ bool dadosInserirNovoRegistro(ENTRADA* entrada) {
   };
   args->arquivoDadosBin = arquivoBinarioDados;
   dadosLerCabecalhoDoArquivoBinario(args->arquivoDadosBin, args->cabecalho);
+  int32_t nroRegArq = args->cabecalho->nroRegArq;
 
   int64_t byteOffset = args->cabecalho->proxByteOffset;
   int nroCamposBuscados = entradaObterNumeroCamposBuscados(entrada);
   char* linhaDeBusca = entradaObterLinhaDeBusca(entrada);
   for (int i = 0; i < nroCamposBuscados; i++) {
     REGISTRO* registro = construirRegistroAInserir(linhaDeBusca);
-    resetLeituraDeArquivo(args->arquivoDadosBin, byteOffset);
-    dadosArmazenarRegistro(registro, args->arquivoDadosBin);
-    byteOffset += registro->tamanhoRegistro;
-    args->cabecalho->nroRegArq++;
+    args->registro = registro;
+    dadosAppendRegistroNoArquivoBinario(args);
+    nroRegArq++;
     linhaDeBusca = entradaProximaLinhaDeBusca(entrada);
     dadosRegistroApagar(&registro);
   }
   args->cabecalho->proxByteOffset = byteOffset;
+  args->cabecalho->nroRegArq = nroRegArq;
 
   dadosArmazenarCabecalho(args->cabecalho, args->arquivoDadosBin);
   fclose(args->arquivoDadosBin);
   argsApagar(&args);
+}
+
+bool dadosAtualizarRegistros(ARGS* args) {
+  if (args == NULL) return false;
+
+  if (!args->regEncontradoEmBusca) {
+    dadosAppendRegistroNoArquivoBinario(args);
+    return true;
+  }
+
+  REGISTRO* regAtualizado = args->registro;
+  REGISTRO* regAnteriorCp = dadosRegistroInit();
+  copiarRegistro(regAtualizado, regAnteriorCp);
+
+  int64_t tamAnterior = regAtualizado->tamanhoRegistro;
+  atualizarRegistro(
+    regAtualizado, 
+    entradaObterLinhaDeAtualizacao(args->entrada),
+    entradaObterCampoIndexado(args->entrada)
+  );
+
+  int64_t byteOffset = regAtualizado->byteOffset;
+  FILE* arqDadosBin = args->arquivoDadosBin;
+  if (tamAnterior >= regAtualizado->tamanhoRegistro) {
+    resetLeituraDeArquivo(arqDadosBin, byteOffset);
+    dadosArmazenarRegistro(regAtualizado, args->arquivoDadosBin);
+    dadosRegistroApagar(&regAnteriorCp);
+    return true;
+  }
+
+  regAnteriorCp->removido = '1';
+  resetLeituraDeArquivo(arqDadosBin, byteOffset);
+  dadosArmazenarRegistro(regAnteriorCp, args->arquivoDadosBin);
+
+  dadosAppendRegistroNoArquivoBinario(args);
+
+  return true;
 }

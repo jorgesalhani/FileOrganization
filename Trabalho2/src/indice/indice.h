@@ -1,8 +1,6 @@
 #ifndef INDICE_H
   #define INDICE_H
 
-  #define TAMANHO_CHAVE_BUSCA 12
-
   #include "../utilitarios/entrada.h"
   #include "../utilitarios/funcoesFornecidas.h"
   #include "../utilitarios/erros.h"
@@ -15,6 +13,6 @@
 
   bool indiceCriarArquivoBinario(ENTRADA* entrada);
   ARGS* indiceVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)());
-  void indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)());
+  bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)());
 
 #endif

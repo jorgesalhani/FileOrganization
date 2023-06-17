@@ -9,6 +9,7 @@ struct entrada_ {
   char tipoDado[50];
   int numeroCamposBuscados;
   char** linhasBusca;
+  char** linhasAtualizacoes;
   int proxLinhaDeBusca;
 };
 
@@ -20,11 +21,25 @@ bool strVaziaEntrada(char* str) {
   return false;
 }
 
+char* dadosObterTipoCampo(char* campoIndexado) {
+  enum camposIndexados campo_i = 0;
+  char* nomeCampo = camposIndexadosTipos[campo_i];
+  for (campo_i = 0; campo_i < ENUM_FIM; ++campo_i) {
+    if (strcmp(campoIndexado, camposIndexadosNomes[campo_i]) == 0) {
+      nomeCampo = camposIndexadosTipos[campo_i];
+    }
+  }
+  return nomeCampo;
+}
+
+
 ENTRADA* lerEntradas() {
   ENTRADA* entrada = (ENTRADA*) malloc(sizeof(ENTRADA));
   if (entrada == NULL) return NULL;
   
   entrada->numeroCamposBuscados = 0;
+  entrada->linhasBusca = NULL;
+  entrada->linhasAtualizacoes = NULL;
 
   scanf("%d", &entrada->funcionalidade);
   
@@ -135,18 +150,65 @@ ENTRADA* lerEntradas() {
 
     return entrada;
   }
+
+  if (entrada->funcionalidade == 7) { 
+    scanf("%s", entrada->arquivoEntrada);
+    scanf("%s", entrada->campoIndexado);
+    scanf("%s", entrada->tipoDado);
+    scanf("%s", entrada->arquivoIndice);
+    scanf("%d", &entrada->numeroCamposBuscados);
+
+    int numLinhas = entrada->numeroCamposBuscados;
+    entrada->linhasBusca = (char**) malloc(sizeof(char*)*numLinhas);
+    entrada->linhasAtualizacoes = (char**) malloc(sizeof(char*)*numLinhas);
+    entrada->proxLinhaDeBusca = 0;
+
+    size_t tamBuff = 5;
+    char* linha1Buff = NULL;
+    scanf("%s ", linha1Buff);
+    linha1Buff = (char*) malloc(sizeof(char)*tamBuff);
+    
+    size_t tam = 250;
+    for (int i = 0; i < entrada->numeroCamposBuscados; i++) {
+      entrada->linhasBusca[i] = (char*) malloc(sizeof(char)*250);
+      getline(&(entrada->linhasBusca)[i], &tam, stdin);
+
+      entrada->linhasAtualizacoes[i] = (char*) malloc(sizeof(char)*250);
+      getline(&(entrada->linhasAtualizacoes)[i], &tam, stdin);
+
+      getline(&(linha1Buff), &tamBuff, stdin);
+    }
+
+    free(linha1Buff);
+    return entrada;
+  }
 }
+
+bool stringApagar(char* campo) {
+  if (campo == NULL) return false;
+  free(campo);
+  campo = NULL;
+  return true;
+}
+
 
 bool entradaApagar(ENTRADA** entrada) {
   if (entrada == NULL || *entrada == NULL) return false;
 
+  bool apresentaAtualizacoes = (*entrada)->linhasAtualizacoes == NULL ? false : true;
   if ((*entrada)->numeroCamposBuscados != 0) {
     for (int i = 0; i < (*entrada)->numeroCamposBuscados; i++) {
-      free(((*entrada)->linhasBusca)[i]);
-      (*entrada)->linhasBusca[i] = NULL;
+      stringApagar((*entrada)->linhasBusca[i]);
+      if (apresentaAtualizacoes) {
+        stringApagar((*entrada)->linhasAtualizacoes[i]);
+      }
     }
     free((*entrada)->linhasBusca);
     (*entrada)->linhasBusca = NULL;
+    if (apresentaAtualizacoes) {
+      free((*entrada)->linhasAtualizacoes);
+      (*entrada)->linhasAtualizacoes = NULL;
+    }
   }
   free(*entrada);
   *entrada = NULL;
@@ -205,6 +267,11 @@ char* entradaProximaLinhaDeBusca(ENTRADA* entrada) {
 char* entradaObterLinhaDeBusca(ENTRADA* entrada) {
   if (entrada == NULL) return NULL;
   return entrada->linhasBusca[entrada->proxLinhaDeBusca];
+}
+
+char* entradaObterLinhaDeAtualizacao(ENTRADA* entrada) {
+  if (entrada == NULL) return NULL;
+  return entrada->linhasAtualizacoes[entrada->proxLinhaDeBusca];
 } 
 
 

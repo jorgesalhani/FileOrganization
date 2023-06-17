@@ -285,19 +285,21 @@ void indiceMapDadosAPartirDaPrimeiraOcorrencia(ARGS* args, void (*ftnPorRegistro
   indiceRegistroApagar(&registroIndice, registroIndice->tipoDado);
 }
 
-void indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)()) {
+bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)()) {
 
   CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
   indiceLerCabecalhoDoArquivoBinario(args->arquivoIndiceBin, cabecalhoIndice);
 
   if (cabecalhoIndice->status == '0') {
+    indiceCabecalhoApagar(&cabecalhoIndice);
     erroGenerico();
-    return;
+    return false;
   }
 
   if (cabecalhoIndice->qtdReg == 0) {
+    indiceCabecalhoApagar(&cabecalhoIndice);
     erroSemRegistros();
-    return;
+    return false;
   }
 
   int32_t qtdReg = cabecalhoIndice->qtdReg;
@@ -369,5 +371,5 @@ void indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
   }
 
   indiceCabecalhoApagar(&cabecalhoIndice);
-  return;
+  return true;
 }
