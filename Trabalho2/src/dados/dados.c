@@ -908,6 +908,9 @@ bool atualizarRegistro(REGISTRO* registro, char* linhaDeAtualizacao, char* campo
 
     char valorStr[100] = "";
     int32_t valorInt = -1;
+    if (registro->byteOffset == 100126) {
+      printf("AA\n");
+    }
     if (strcmp(tipoCampo, "string") == 0) {
       char delimQuote[] = "\"";
       linhaSplit = strtok(NULL, delimQuote);
@@ -918,12 +921,10 @@ bool atualizarRegistro(REGISTRO* registro, char* linhaDeAtualizacao, char* campo
       if (strcmp(campo, "marcaCelular") == 0) {
         preencherString(valorStr, linhaSplit, TAMANHO_MARCA_CELULAR); 
       }
-      if ((strcmp(campo, "lugarCrime") == 0 ||
-          strcmp(campo, "descricaoCrime") == 0) &&
-          (strlen(regValorStr) > strlen(linhaSplit))
-        ) {
-          strcat(valorStr, "|");
-          preencherString(valorStr, linhaSplit, strlen(linhaSplit)); 
+      if (strcmp(campo, "lugarCrime") == 0 ||
+          strcmp(campo, "descricaoCrime") == 0
+      ) {
+        strcpy(valorStr, linhaSplit);
       }
 
       strcpy(regValorStr, valorStr);
@@ -933,7 +934,9 @@ bool atualizarRegistro(REGISTRO* registro, char* linhaDeAtualizacao, char* campo
       int32_t* val = (int32_t*) regValorAtual;
       *val = valorInt;
     }
-  }  
+  }
+
+  dadosAtualizarTamanhoRegistro(registro);
   
   return true;
 }
@@ -1090,19 +1093,15 @@ bool dadosInserirNovosRegistros(ENTRADA* entrada) {
   dadosLerCabecalhoDoArquivoBinario(args->arquivoDadosBin, args->cabecalho);
   int32_t nroRegArq = args->cabecalho->nroRegArq;
 
-  int64_t byteOffset = args->cabecalho->proxByteOffset;
   int nroCamposBuscados = entradaObterNumeroCamposBuscados(entrada);
   char* linhaDeBusca = entradaObterLinhaDeBusca(entrada);
   for (int i = 0; i < nroCamposBuscados; i++) {
     REGISTRO* registro = construirRegistroAInserir(linhaDeBusca);
     args->registro = registro;
     dadosAppendRegistroNoArquivoBinario(args);
-    nroRegArq++;
     linhaDeBusca = entradaProximaLinhaDeBusca(entrada);
     dadosRegistroApagar(&registro);
   }
-  args->cabecalho->proxByteOffset = byteOffset;
-  args->cabecalho->nroRegArq = nroRegArq;
 
   dadosArmazenarCabecalho(args->cabecalho, args->arquivoDadosBin);
   fclose(args->arquivoDadosBin);
@@ -1132,6 +1131,9 @@ bool dadosAtualizarRegistros(ARGS* args) {
   FILE* arqDadosBin = args->arquivoDadosBin;
   if (tamAnterior >= regAtualizado->tamanhoRegistro) {
     resetLeituraDeArquivo(arqDadosBin, byteOffset);
+    char descPreench[150] = "";
+    strcpy(descPreench, regAtualizado->descricaoCrime);
+    preencherString(descPreench, regAtualizado->descricaoCrime, tamAnterior);
     dadosArmazenarRegistro(regAtualizado, args->arquivoDadosBin);
     dadosRegistroApagar(&regAnteriorCp);
     return true;
@@ -1140,8 +1142,11 @@ bool dadosAtualizarRegistros(ARGS* args) {
   regAnteriorCp->removido = '1';
   resetLeituraDeArquivo(arqDadosBin, byteOffset);
   dadosArmazenarRegistro(regAnteriorCp, args->arquivoDadosBin);
+  args->cabecalho->nroRegRem++;
 
   dadosAppendRegistroNoArquivoBinario(args);
+  byteOffset += tamAnterior;
+  resetLeituraDeArquivo(arqDadosBin, byteOffset);
 
   return true;
 }
