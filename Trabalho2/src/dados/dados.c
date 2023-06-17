@@ -917,7 +917,7 @@ bool atualizarRegistro(REGISTRO* registro, char* linhaDeAtualizacao, char* campo
 
     char valorStr[100] = "";
     int32_t valorInt = -1;
-    if (registro->byteOffset == 100126) {
+    if (registro->byteOffset == 29294) {
       printf("AA\n");
     }
     if (strcmp(tipoCampo, "string") == 0) {
@@ -1122,6 +1122,10 @@ bool dadosAtualizarRegistros(ARGS* args) {
 
   if (!args->regEncontradoEmBusca) {
     dadosAppendRegistroNoArquivoBinario(args);
+    resetLeituraDeArquivo(
+      args->arquivoDadosBin, 
+      args->registro->byteOffset + args->registro->tamanhoRegistro
+    );
     return true;
   }
 
@@ -1160,6 +1164,8 @@ bool dadosAtualizarRegistros(ARGS* args) {
   dadosAppendRegistroNoArquivoBinario(args);
   byteOffset += tamAnterior;
   resetLeituraDeArquivo(arqDadosBin, byteOffset);
+
+  dadosRegistroApagar(&regAnteriorCp);
 
   return true;
 }
