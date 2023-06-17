@@ -62,7 +62,7 @@
   int64_t dadosObterByteoffset(REGISTRO* registro);
   bool argsApagar(ARGS** args);
   bool dadosRegistroApagar(REGISTRO** registro);
-  void preencherString(char* dest, char* orig, int tamanho);
+  void preencherString(char* dest, char* orig, int tamanho, bool comDelimitador);
   bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca));
   int dadosCompararRegistroComChaveBusca(ARGS* args);
   void copiarRegistro(REGISTRO* regOrig, REGISTRO* regDest);

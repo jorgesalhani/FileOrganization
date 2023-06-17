@@ -87,7 +87,7 @@ void indiceArmazenarRegistro(ARGS* args, NO* raiz) {
   registroIndice->byteOffset = dadosObterByteoffset(raiz->registro);
   if (strcmp(tipoDado, "string") == 0) {
     char* chaveBusca = (char*) valorCampoDeBusca;
-    preencherString(registroIndice->chaveBusca, chaveBusca, TAMANHO_CHAVE_BUSCA);
+    preencherString(registroIndice->chaveBusca, chaveBusca, TAMANHO_CHAVE_BUSCA, false);
     fwrite(registroIndice->chaveBusca, sizeof(char), TAMANHO_CHAVE_BUSCA, args->arquivoIndiceBin);
   } else {
     int32_t* chaveBusca = (int32_t*) valorCampoDeBusca;

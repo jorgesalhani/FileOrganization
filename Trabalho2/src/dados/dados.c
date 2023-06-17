@@ -22,6 +22,7 @@ struct registro_ {
 
   int64_t tamanhoRegistro;
   int64_t byteOffset;
+  bool atualizadoInplace;
 };
 
 enum sequenciaCamposAInserir {
@@ -75,11 +76,16 @@ void dadosAtualizarByteoffset(REGISTRO* registro, int64_t byteOffset) {
   registro->byteOffset = byteOffset;
 }
 
-void preencherString(char* dest, char* orig, int tamanho) {
-  for (int i = 0; i < strlen(orig); i++) {
+void preencherString(char* dest, char* orig, int tamanho, bool comDelimitador) {
+  int i = 0;
+  for (i; i < strlen(orig); i++) {
     dest[i] = orig[i];
   }
-  for (int i = strlen(orig); i < tamanho; i++) {
+  if (comDelimitador && i < tamanho) {
+    dest[i] = '|';
+    i++;
+  }
+  for (i; i < tamanho; i++) {
     dest[i] = '$';
   }
 }
@@ -99,14 +105,14 @@ bool dadosArmazenarRegistro(REGISTRO* registro, FILE* arquivoBinarioDados) {
   fwrite(&registro->idCrime, sizeof(int32_t), 1, arquivoBinarioDados);
 
   char dataCrimePreenchida[TAMANHO_DATA_CRIME] = "";
-  preencherString(dataCrimePreenchida, registro->dataCrime, TAMANHO_DATA_CRIME);
+  preencherString(dataCrimePreenchida, registro->dataCrime, TAMANHO_DATA_CRIME, false);
 
   fwrite(registro->dataCrime, sizeof(char), TAMANHO_DATA_CRIME, arquivoBinarioDados);
 
   fwrite(&registro->numeroArtigo, sizeof(int32_t), 1, arquivoBinarioDados);
 
   char marcaCelularPreenchida[TAMANHO_MARCA_CELULAR] = "";
-  preencherString(marcaCelularPreenchida, registro->marcaCelular, TAMANHO_MARCA_CELULAR);
+  preencherString(marcaCelularPreenchida, registro->marcaCelular, TAMANHO_MARCA_CELULAR, false);
 
   fwrite(marcaCelularPreenchida, sizeof(char), TAMANHO_MARCA_CELULAR, arquivoBinarioDados);
 
@@ -114,7 +120,9 @@ bool dadosArmazenarRegistro(REGISTRO* registro, FILE* arquivoBinarioDados) {
   fwrite(&registro->delimitadorCampos, sizeof(char), 1, arquivoBinarioDados);
 
   fwrite(registro->descricaoCrime, strlen(registro->descricaoCrime), 1, arquivoBinarioDados);
-  fwrite(&registro->delimitadorCampos, sizeof(char), 1, arquivoBinarioDados);    
+  if (!registro->atualizadoInplace) {
+    fwrite(&registro->delimitadorCampos, sizeof(char), 1, arquivoBinarioDados);    
+  }
   
   fwrite(&registro->delimitador, sizeof(char), 1, arquivoBinarioDados);
   fflush(arquivoBinarioDados);
@@ -200,6 +208,7 @@ REGISTRO* dadosRegistroInit() {
   registro->delimitador = '#';
   registro->tamanhoRegistro = dadosAtualizarTamanhoRegistro(registro);
   registro->byteOffset = 0;
+  registro->atualizadoInplace = false;
 
   return registro;
 }
@@ -919,7 +928,7 @@ bool atualizarRegistro(REGISTRO* registro, char* linhaDeAtualizacao, char* campo
         strcpy(valorStr, linhaSplit);
       }
       if (strcmp(campo, "marcaCelular") == 0) {
-        preencherString(valorStr, linhaSplit, TAMANHO_MARCA_CELULAR); 
+        preencherString(valorStr, linhaSplit, TAMANHO_MARCA_CELULAR, false); 
       }
       if (strcmp(campo, "lugarCrime") == 0 ||
           strcmp(campo, "descricaoCrime") == 0
@@ -1130,10 +1139,14 @@ bool dadosAtualizarRegistros(ARGS* args) {
   int64_t byteOffset = regAtualizado->byteOffset;
   FILE* arqDadosBin = args->arquivoDadosBin;
   if (tamAnterior >= regAtualizado->tamanhoRegistro) {
+    int dif = tamAnterior - regAtualizado->tamanhoRegistro;
+    int tamNovaDescri = strlen(regAtualizado->descricaoCrime) + dif + 1;
     resetLeituraDeArquivo(arqDadosBin, byteOffset);
     char descPreench[150] = "";
     strcpy(descPreench, regAtualizado->descricaoCrime);
-    preencherString(descPreench, regAtualizado->descricaoCrime, tamAnterior);
+    preencherString(descPreench, regAtualizado->descricaoCrime, tamNovaDescri, true);
+    regAtualizado->atualizadoInplace = true;
+    strcpy(regAtualizado->descricaoCrime, descPreench);
     dadosArmazenarRegistro(regAtualizado, args->arquivoDadosBin);
     dadosRegistroApagar(&regAnteriorCp);
     return true;
