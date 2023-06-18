@@ -458,6 +458,7 @@ ARGS* argsInit() {
   args->cabecalho = NULL;
   args->paginaIndiceArvoreB = NULL;
   args->cabecalhoIndiceArvoreB = NULL;
+  args->registroIndice = NULL;
   return args;
 }
 
@@ -465,6 +466,9 @@ bool argsApagar(ARGS** args) {
   if (args == NULL || *args == NULL) return false;
   dadosArvoreBinariaApagar(*args);
   dadosCabecalhoApagar(&((*args)->cabecalho));
+  char* tipoDado = entradaObterTipoDado((*args)->entrada);
+  REGISTRO_INDICE* registroIndice = (*args)->registroIndice;
+  indiceRegistroApagar(&registroIndice, tipoDado);
   free(*args);
   *args = NULL;
   args = NULL;

@@ -1,17 +1,37 @@
 #include "indice.h"
 
+
+struct chave_ {
+  int32_t C;
+  int64_t Pr;
+};
+
 struct registro_indice_ {
   char* tipoDado;
   void* chaveBusca;
   int64_t byteOffset;
   int32_t tamanhoRegistro;
+    
+  int contadorDeOcupacao;
+  int32_t* P;
+  CHAVE** chaves;
+  int32_t nivel;
+  int32_t n;
 };
 
 struct cabecalho_indice_ {
   char status;
   int32_t qtdReg;
   int64_t tamanhoRegistro;
+
+  int32_t noRaiz;
+  int32_t RNNproxNo;
+  int32_t nroNiveis;
+  int32_t nroChaves;
+  int64_t tamanhoRegistroArvoreB;
 };
+
+void indiceArvoreBVarreduraDeBusca(ARGS* args);
 
 bool indiceCabecalhoApagar(CABECALHO_INDICE** cabecalho_indice) {
   if (cabecalho_indice == NULL || *cabecalho_indice == NULL) return false;
@@ -31,7 +51,20 @@ CABECALHO_INDICE* indiceCabecalhoInit() {
     sizeof(cabecalhoIndice->status) + 
     sizeof(cabecalhoIndice->qtdReg);
 
+  cabecalhoIndice->noRaiz = -1;
+  cabecalhoIndice->RNNproxNo = 0;
+  cabecalhoIndice->nroNiveis = 0;
+  cabecalhoIndice->nroChaves = 0;
+  cabecalhoIndice->tamanhoRegistroArvoreB = TAM_MAX_CABECALHO_INDICEB;
+
   return cabecalhoIndice;
+}
+
+CHAVE* arvoreBchaveInit() {
+  CHAVE* chave = (CHAVE*) malloc(sizeof(CHAVE));
+  chave->C = -1;
+  chave->Pr = -1;
+  return chave;
 }
 
 REGISTRO_INDICE* indiceRegistroInit(char* tipoDado) {
@@ -53,8 +86,50 @@ REGISTRO_INDICE* indiceRegistroInit(char* tipoDado) {
   registroIndice->chaveBusca = chaveBusca;
   registroIndice->tamanhoRegistro = 
     sizeof(registroIndice->byteOffset) + sizeof(int32_t);
+
+  registroIndice->contadorDeOcupacao = 0;
+  registroIndice->n = 0;
+  registroIndice->nivel = 1;
+  registroIndice->P = (int32_t*) malloc(sizeof(int32_t)*(ORDEM_ARVOREB-1));
+
+  int numChaves = ORDEM_ARVOREB-2;
+  registroIndice->chaves = (CHAVE**) malloc(sizeof(CHAVE*)*numChaves);
+  for (int i = 0; i < numChaves; i++) {
+    (registroIndice->chaves)[i] = (CHAVE*) malloc(sizeof(CHAVE));
+  }
   return registroIndice;
 }
+
+bool indiceArvoreBLerCabecalhoDoArquivoBinario(FILE* arquivoBinarioIndice, CABECALHO_INDICE* cabecalho) {
+  if (cabecalho == NULL || arquivoBinarioIndice == NULL) return false;
+
+  resetLeituraDeArquivo(arquivoBinarioIndice, 0);
+  fread(&cabecalho->status, sizeof(char), 1, arquivoBinarioIndice);
+
+  // char statusEmProgresso = '0';
+  // resetLeituraDeArquivo(arquivoBinarioIndice, 0);
+  // fwrite(&statusEmProgresso, sizeof(char), 1, arquivoBinarioIndice);
+  fread(&cabecalho->noRaiz, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fread(&cabecalho->RNNproxNo, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fread(&cabecalho->nroNiveis, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fread(&cabecalho->nroChaves, sizeof(int32_t), 1, arquivoBinarioIndice);
+  return true;
+}
+
+bool indiceArvoreBLerPaginaDoArquivoBinario(FILE* arquivoBinarioIndice, REGISTRO_INDICE* registro) {
+  if (arquivoBinarioIndice == NULL || registro == NULL) return false;
+
+  fread(&registro->nivel, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fread(&registro->n, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fread(&(registro->P)[0], sizeof(int64_t), 1, arquivoBinarioIndice);
+  for (int i = 0; i < ORDEM_ARVOREB-1; i++) {
+    fread(&(registro->chaves)[i]->C, sizeof(int32_t), 1, arquivoBinarioIndice);
+    fread(&(registro->chaves)[i]->Pr, sizeof(int64_t), 1, arquivoBinarioIndice);
+    fread(&(registro->P)[i+1], sizeof(int64_t), 1, arquivoBinarioIndice);
+  }
+  return true;
+}
+
 
 bool indiceRegistroApagar(REGISTRO_INDICE** registroIndice, char* tipoDado) {
   if (registroIndice == NULL || *registroIndice == NULL) return false;
@@ -62,18 +137,35 @@ bool indiceRegistroApagar(REGISTRO_INDICE** registroIndice, char* tipoDado) {
     free((*registroIndice)->chaveBusca);
     (*registroIndice)->chaveBusca = NULL;
   }
+
+  if ((*registroIndice)->chaves != NULL) {
+    int numChaves = ORDEM_ARVOREB-2;
+    for (int i = 0; i < numChaves; i++) {
+      free(&((*registroIndice)->chaves)[i]);
+      (*registroIndice)->chaves[i] = NULL;
+    }
+  }
+  
   free((*registroIndice));
   *registroIndice = NULL;
   registroIndice = NULL;
   return true;
 }
 
-bool indiceArmazenarCabecalho(CABECALHO_INDICE* cabecalhoIndice, FILE* arquivoBinarioIndice) {
-  if (arquivoBinarioIndice == NULL || cabecalhoIndice == NULL) return false;
+void indiceLinearArmazenarCabecalho(FILE* arquivoBinarioIndice, CABECALHO_INDICE* cabecalhoIndice) {
+  if (arquivoBinarioIndice == NULL || cabecalhoIndice == NULL) return;
   resetLeituraDeArquivo(arquivoBinarioIndice, 0);
   fwrite(&cabecalhoIndice->status, sizeof(char), 1, arquivoBinarioIndice);
   fwrite(&cabecalhoIndice->qtdReg, sizeof(int32_t), 1, arquivoBinarioIndice);
-  return true;
+  return;
+}
+
+bool indiceArmazenarCabecalho(
+  FILE* arquivoBinarioIndice,
+  CABECALHO_INDICE* cabecalhoIndice,
+  void (ftnArmazenarCabecalho(FILE*, CABECALHO_INDICE*))
+) {
+  ftnArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice);
 }
 
 void indiceArmazenarRegistro(ARGS* args, NO* raiz) {
@@ -101,10 +193,53 @@ void indiceArmazenarRegistro(ARGS* args, NO* raiz) {
   return;
 }
 
+void indiceArvoreBArmazenarCabecalho(FILE* arquivoBinarioIndice, CABECALHO_INDICE* cabecalho) {
+  if (cabecalho == NULL || arquivoBinarioIndice == NULL) return;
+  resetLeituraDeArquivo(arquivoBinarioIndice, 0);
+  fwrite(&cabecalho->status, sizeof(char), 1, arquivoBinarioIndice);
+  fwrite(&cabecalho->noRaiz, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fwrite(&cabecalho->RNNproxNo, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fwrite(&cabecalho->nroNiveis, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fwrite(&cabecalho->nroChaves, sizeof(int32_t), 1, arquivoBinarioIndice);
+
+  int32_t tamCab = sizeof(cabecalho->status) + sizeof(cabecalho->noRaiz) +
+    sizeof(cabecalho->RNNproxNo) + sizeof(cabecalho->nroNiveis) + sizeof(cabecalho->nroChaves);
+  
+  int32_t tamLixo = TAM_MAX_CABECALHO_INDICEB - tamCab;
+  char lixo = '$';
+  for (int i = 0; i < tamLixo; i++) {
+    fwrite(&lixo, sizeof(char), 1, arquivoBinarioIndice);
+  }
+  fflush(arquivoBinarioIndice);
+  return;
+}
+
+void indiceArvoreBArmazenarRegistro(ARGS* args) {
+  if (args == NULL) return;
+  FILE* arquivoBinarioIndice = args->arquivoIndiceBin;
+  REGISTRO_INDICE* registro = args->registroIndice;
+  
+  fwrite(&registro->nivel, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fwrite(&registro->n, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fwrite(&(registro->P)[0], sizeof(int64_t), 1, arquivoBinarioIndice);
+  for (int i = 0; i < ORDEM_ARVOREB-1; i++) {
+    fwrite(&(registro->chaves)[i]->C, sizeof(int32_t), 1, arquivoBinarioIndice);
+    fwrite(&(registro->chaves)[i]->Pr, sizeof(int64_t), 1, arquivoBinarioIndice);
+    fwrite(&(registro->P)[i+1], sizeof(int64_t), 1, arquivoBinarioIndice);
+  }
+  return;
+}
+
 bool indiceCriarArquivoBinario(ENTRADA* entrada) {
   if (entrada == NULL) return false;
-
-  ARGS* args = dadosRegistrosEmArvoreBinaria(entrada);
+  ARGS* args = NULL;
+  
+  bool indiceEmArvoreB = entradaObterIndiceEmArvoreB(entrada);
+  if (!indiceEmArvoreB) {
+    args = dadosRegistrosEmArvoreBinaria(entrada);
+  } else {
+    args = argsInit();
+  }
   if (args == NULL) return false;
 
   CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
@@ -121,15 +256,20 @@ bool indiceCriarArquivoBinario(ENTRADA* entrada) {
   };
   args->arquivoIndiceBin = arquivoBinarioIndice;
 
-  cabecalhoIndice->qtdReg = args->arvoreBinaria->totalRegistros;
-  indiceArmazenarCabecalho(cabecalhoIndice, arquivoBinarioIndice);
-
-  args->arvoreBinaria->ordem = emOrdem;
-  dadosVarreduraCompletaArvoreBinaria(args, args->arvoreBinaria->raiz, indiceArmazenarRegistro);
-
-
   cabecalhoIndice->status = '1';
-  indiceArmazenarCabecalho(cabecalhoIndice, arquivoBinarioIndice);
+  
+  if (!indiceEmArvoreB) {
+    cabecalhoIndice->qtdReg = args->arvoreBinaria->totalRegistros;
+    indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceLinearArmazenarCabecalho);
+    args->arvoreBinaria->ordem = emOrdem;
+    dadosVarreduraCompletaArvoreBinaria(args, args->arvoreBinaria->raiz, indiceArmazenarRegistro);
+    indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceLinearArmazenarCabecalho);
+  } else {
+    indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceArvoreBArmazenarCabecalho);
+    ARGS* argsSeq = dadosVarreduraSequencialArquivoBinario(entrada, indiceArvoreBVarreduraDeBusca);
+    indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceArvoreBArmazenarCabecalho);
+    argsApagar(&argsSeq);
+  }
 
   fclose(arquivoBinarioIndice);
 
@@ -141,8 +281,8 @@ bool indiceCriarArquivoBinario(ENTRADA* entrada) {
   return true;
 }
 
-bool indiceLerCabecalhoDoArquivoBinario(FILE* arquivoBinarioIndice, CABECALHO_INDICE* cabecalhoIndice) {
-  if (arquivoBinarioIndice == NULL || cabecalhoIndice == NULL) return false;
+void indiceLinearLerCabecalho(FILE* arquivoBinarioIndice, CABECALHO_INDICE* cabecalhoIndice) {
+  if (arquivoBinarioIndice == NULL || cabecalhoIndice == NULL) return;
   resetLeituraDeArquivo(arquivoBinarioIndice, 0);
   fread(&cabecalhoIndice->status, sizeof(char), 1, arquivoBinarioIndice);
 
@@ -165,6 +305,16 @@ bool indiceLerRegistroDoArquivoBinario(FILE* arquivoBinarioIndice, REGISTRO_INDI
   return true;
 }
 
+bool indiceLerCabecalhoDoArquivoBinario(
+  FILE* arquivoBinarioIndice, 
+  CABECALHO_INDICE* cabecalhoIndice,
+  void (ftnLerCabecalho())
+) {
+  if (arquivoBinarioIndice == NULL || cabecalhoIndice == NULL) return false;
+  ftnLerCabecalho(arquivoBinarioIndice, cabecalhoIndice);
+  return true;
+}
+
 ARGS* indiceVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)()) {
 
   char* arquivoIndice = entradaObterArquivoIndice(entrada);
@@ -182,7 +332,7 @@ ARGS* indiceVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorReg
   };
 
   CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
-  indiceLerCabecalhoDoArquivoBinario(arquivoBinarioIndice, cabecalhoIndice);
+  indiceLerCabecalhoDoArquivoBinario(arquivoBinarioIndice, cabecalhoIndice, indiceLinearLerCabecalho);
 
   if (cabecalhoIndice->status == '0') {
     erroGenerico();
@@ -288,7 +438,7 @@ void indiceMapDadosAPartirDaPrimeiraOcorrencia(ARGS* args, void (*ftnPorRegistro
 bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)()) {
 
   CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
-  indiceLerCabecalhoDoArquivoBinario(args->arquivoIndiceBin, cabecalhoIndice);
+  indiceLerCabecalhoDoArquivoBinario(args->arquivoIndiceBin, cabecalhoIndice, indiceLinearLerCabecalho);
 
   if (cabecalhoIndice->status == '0') {
     indiceCabecalhoApagar(&cabecalhoIndice);
@@ -372,4 +522,11 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
 
   indiceCabecalhoApagar(&cabecalhoIndice);
   return true;
+}
+
+void indiceArvoreBVarreduraDeBusca(ARGS* args) {
+  if (args == NULL) return;
+
+  
+
 }

@@ -45,6 +45,7 @@
     char* entradaProximaLinhaDeBusca(ENTRADA* entrada);
     char* entradaObterLinhaDeBusca(ENTRADA* entrada);
     char* entradaObterLinhaDeAtualizacao(ENTRADA* entrada);
+    bool entradaObterIndiceEmArvoreB(ENTRADA* entrada);
 
     char* dadosObterTipoCampo(char* campoIndexado);
     

@@ -43,7 +43,7 @@ int main() {
     }
   } else
   if (funcionalidade == 8) {
-    indiceArvoreBCriarArquivoBinario(entrada);
+    indiceCriarArquivoBinario(entrada);
   } else {
     erroModo();
   }

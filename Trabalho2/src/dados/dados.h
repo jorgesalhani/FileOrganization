@@ -23,6 +23,8 @@
   typedef struct args_ ARGS;
   typedef struct no_ NO;
 
+  typedef struct registro_indice_ REGISTRO_INDICE;
+
   typedef struct chave_ CHAVE;
   typedef struct pagina_ PAGINA;
   typedef struct cabecalho_indiceB_ CABECALHO_INDICEB;
@@ -56,6 +58,7 @@
     int64_t bOffPrimOcorArqIndice;
     PAGINA* paginaIndiceArvoreB;
     CABECALHO_INDICEB* cabecalhoIndiceArvoreB;
+    REGISTRO_INDICE* registroIndice;
   };
 
   bool dadosCriarArquivoBinario(ENTRADA* entrada);
