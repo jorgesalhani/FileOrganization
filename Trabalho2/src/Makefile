@@ -4,6 +4,7 @@ ARQS_O = \
 	erros.o \
 	indice.o \
 	funcoesFornecidas.o \
+	arvoreB.o \
 	main.o
 
 BSH_COMPILAR_ALL = \
@@ -26,6 +27,9 @@ indice.o:
 
 dados.o:
 	gcc -g -c dados/dados.c -o dados.o -lmd
+
+arvoreB.o:
+	gcc -g -c arvoreB/arvoreB.c -o arvoreB.o -lmd
 
 main.o:
 	gcc -g -c main.c -o main.o -lmd

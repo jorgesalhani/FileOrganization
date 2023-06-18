@@ -456,6 +456,8 @@ ARGS* argsInit() {
   args->proxRamoArvore = NULL;
   args->bOffPrimOcorArqIndice = -1;
   args->cabecalho = NULL;
+  args->paginaIndiceArvoreB = NULL;
+  args->cabecalhoIndiceArvoreB = NULL;
   return args;
 }
 

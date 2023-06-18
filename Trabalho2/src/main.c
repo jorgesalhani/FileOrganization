@@ -2,6 +2,7 @@
 #include "utilitarios/erros.h"
 #include "dados/dados.h"
 #include "indice/indice.h"
+#include "arvoreB/arvoreB.h"
 
 int main() {
   ENTRADA* entrada = lerEntradas();
@@ -42,7 +43,7 @@ int main() {
     }
   } else
   if (funcionalidade == 8) {
-    indiceArvoreBsCriarArquivoBinario(entrada);
+    indiceArvoreBCriarArquivoBinario(entrada);
   } else {
     erroModo();
   }

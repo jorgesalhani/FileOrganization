@@ -21,7 +21,11 @@
   typedef struct cabecalho_ CABECALHO;
   typedef struct arvore_binaria_ ARVORE_BINARIA;
   typedef struct args_ ARGS;
-  typedef struct no_ NO ;
+  typedef struct no_ NO;
+
+  typedef struct chave_ CHAVE;
+  typedef struct pagina_ PAGINA;
+  typedef struct cabecalho_indiceB_ CABECALHO_INDICEB;
 
   enum ordemBuscaBinaria_ {
     emOrdem, preOrdem, posOrdem
@@ -50,6 +54,8 @@
     int idProxRamo;
     NO* proxRamoArvore;
     int64_t bOffPrimOcorArqIndice;
+    PAGINA* paginaIndiceArvoreB;
+    CABECALHO_INDICEB* cabecalhoIndiceArvoreB;
   };
 
   bool dadosCriarArquivoBinario(ENTRADA* entrada);
@@ -74,6 +80,7 @@
   int64_t dadosObterRemovido(REGISTRO* registro);
   bool dadosInserirNovosRegistros(ENTRADA* entrada);
   bool dadosAtualizarRegistros(ARGS* args);
+  ARGS* dadosVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)());
 
   CABECALHO* dadosCabecalhoInit();
   REGISTRO* dadosRegistroInit();
