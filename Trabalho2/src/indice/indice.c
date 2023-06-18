@@ -537,6 +537,7 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
 bool indiceOrdenarChavesNoRegistro(REGISTRO_INDICE* registroIndice) {
   if (registroIndice == NULL) return false;
   if (registroIndice->n == 0) return false;
+  if (registroIndice->n == 1) return true;
 
   bool swapped;
   int numChaves = ORDEM_ARVOREB-2;
@@ -552,9 +553,9 @@ bool indiceOrdenarChavesNoRegistro(REGISTRO_INDICE* registroIndice) {
         registroIndice->chaves[j+1] = temp;
         swapped = true;
       }
-      if (swapped == false)
-        break;
+      if (swapped == false) break;
     }
+    if (swapped == true && registroIndice->n == 2) break; 
   }
 }
 
@@ -573,8 +574,38 @@ bool indiceDeslocarChavesParaDireita(REGISTRO_INDICE* registroIndice) {
   return true;
 }
 
-bool executarSplit(ARGS* args) {
-  
+bool split1para2(ARGS* args) {
+  char* tipoDado = entradaObterTipoDado(args->entrada);
+  REGISTRO_INDICE* registroIndice = indiceRegistroInit(tipoDado);
+
+  indiceRegistroApagar(&registroIndice, tipoDado);
+
+}
+
+bool registroIndiceCheio(ARGS* args) {
+  return args->registroIndice->n == ORDEM_ARVOREB-2 ? true : false;
+}
+
+bool executarSplit(ARGS* args, int32_t noRaiz) {
+  if (args == NULL) return false;
+  if (registroIndiceCheio(args)) {
+    split1para2(args);
+    // split2para3();
+  }
+
+  bool deslocado = indiceDeslocarChavesParaDireita(args->registroIndice);
+  if (deslocado) {
+    args->registroIndice->chaves[0]->C = dadosObterIdCrime(args->registro);
+    args->registroIndice->chaves[0]->Pr = dadosObterByteoffset(args->registro);
+    args->registroIndice->n++;
+  }
+
+  indiceOrdenarChavesNoRegistro(args->registroIndice);
+  resetLeituraDeArquivo(args->arquivoIndiceBin, noRaiz);
+  indiceArvoreBArmazenarRegistro(args);
+
+  args->cabecalhoIndice->nroChaves++;
+  return true;
 }
 
 void indiceArvoreBInserirRegistro(ARGS* args) {
@@ -595,19 +626,7 @@ void indiceArvoreBInserirRegistro(ARGS* args) {
     indiceLerRegistroDoArquivoBinario(arquivoIndice, registroIndice, indiceArvoreBLerRegistro);
   }
 
-  bool registroCheio = args->registroIndice->n == ORDEM_ARVOREB-2 ? true : false;
-  if (registroCheio) executarSplit(args);
-  bool deslocado = indiceDeslocarChavesParaDireita(registroIndice);
-  if (deslocado) {
-    registroIndice->chaves[0]->C = dadosObterIdCrime(args->registro);
-    registroIndice->chaves[0]->Pr = dadosObterByteoffset(args->registro);
-    registroIndice->n++;
-  }
-
-  indiceOrdenarChavesNoRegistro(registroIndice);
-  resetLeituraDeArquivo(arquivoIndice, noRaiz);
-  indiceArvoreBArmazenarRegistro(args);
-  args->cabecalhoIndice->nroChaves++;
+  executarSplit(args, args->cabecalhoIndice->noRaiz);
 
   return;
 }
