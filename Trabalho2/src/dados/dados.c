@@ -605,8 +605,7 @@ ARGS* dadosVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegi
 
   bool indiceArvoreB = entradaObterIndiceEmArvoreB(entrada);
   if (indiceArvoreB) {
-    CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
-    args->cabecalhoIndice = cabecalhoIndice;
+    argsInitInformativoParaArvoreB(args);
   }
 
   resetLeituraDeArquivo(arquivoBinarioDados, cabecalho->tamanhoRegistro);

@@ -22,7 +22,7 @@ struct registro_indice_ {
 struct cabecalho_indice_ {
   char status;
   int32_t qtdReg;
-  int64_t tamanhoRegistro;
+  int64_t tamanhoRegistroLinear;
 
   int32_t noRaiz;
   int32_t RNNproxNo;
@@ -31,7 +31,7 @@ struct cabecalho_indice_ {
   int64_t tamanhoRegistroArvoreB;
 };
 
-void indiceArvoreBVarreduraDeBusca(ARGS* args);
+void indiceArvoreBInserirRegistro(ARGS* args);
 
 bool indiceCabecalhoApagar(CABECALHO_INDICE** cabecalho_indice) {
   if (cabecalho_indice == NULL || *cabecalho_indice == NULL) return false;
@@ -47,7 +47,7 @@ CABECALHO_INDICE* indiceCabecalhoInit() {
 
   cabecalhoIndice->status = '0';
   cabecalhoIndice->qtdReg = 0;
-  cabecalhoIndice->tamanhoRegistro = 
+  cabecalhoIndice->tamanhoRegistroLinear = 
     sizeof(cabecalhoIndice->status) + 
     sizeof(cabecalhoIndice->qtdReg);
 
@@ -266,7 +266,7 @@ bool indiceCriarArquivoBinario(ENTRADA* entrada) {
     indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceLinearArmazenarCabecalho);
   } else {
     indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceArvoreBArmazenarCabecalho);
-    ARGS* argsSeq = dadosVarreduraSequencialArquivoBinario(entrada, indiceArvoreBVarreduraDeBusca);
+    ARGS* argsSeq = dadosVarreduraSequencialArquivoBinario(entrada, indiceArvoreBInserirRegistro);
     indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceArvoreBArmazenarCabecalho);
     argsApagar(&argsSeq);
   }
@@ -355,7 +355,7 @@ ARGS* indiceVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorReg
 
   int32_t qtdReg = cabecalhoIndice->qtdReg;
 
-  resetLeituraDeArquivo(arquivoBinarioIndice, cabecalhoIndice->tamanhoRegistro);
+  resetLeituraDeArquivo(arquivoBinarioIndice, cabecalhoIndice->tamanhoRegistroLinear);
 
   char* tipoDado = entradaObterTipoDado(entrada);
   while (qtdReg--) {
@@ -454,7 +454,7 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
 
   int32_t qtdReg = cabecalhoIndice->qtdReg;
 
-  resetLeituraDeArquivo(args->arquivoIndiceBin, cabecalhoIndice->tamanhoRegistro);
+  resetLeituraDeArquivo(args->arquivoIndiceBin, cabecalhoIndice->tamanhoRegistroLinear);
 
   char* tipoDado = entradaObterTipoDado(entrada);
 
@@ -464,14 +464,14 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
 
   int32_t pivotSuperior = 
     tamRegIndice * (int32_t) (qtdReg - 1) + 
-    cabecalhoIndice->tamanhoRegistro;
+    cabecalhoIndice->tamanhoRegistroLinear;
 
   int32_t pivotCentral = (int32_t) (pivotSuperior / 2);
   int32_t sobra = pivotCentral%tamRegIndice;
   pivotCentral -= (tamRegIndice - sobra);
   pivotCentral += 1;
 
-  int32_t pivotInferior = cabecalhoIndice->tamanhoRegistro;
+  int32_t pivotInferior = cabecalhoIndice->tamanhoRegistroLinear;
 
   while ( pivotSuperior >= pivotInferior && 
           pivotCentral >= (pivotInferior) && 
@@ -508,7 +508,7 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
       break;
     }
     pivotCentral = (int32_t) (pivotInferior + (pivotSuperior - pivotInferior) / 2);
-    sobra = pivotCentral%tamRegIndice - cabecalhoIndice->tamanhoRegistro;
+    sobra = pivotCentral%tamRegIndice - cabecalhoIndice->tamanhoRegistroLinear;
     if (sobra < 0) {
       pivotCentral -= sobra;
       pivotCentral -= registroIndice->tamanhoRegistro;
@@ -524,9 +524,35 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
   return true;
 }
 
-void indiceArvoreBVarreduraDeBusca(ARGS* args) {
+void indiceArvoreBInserirRegistro(ARGS* args) {
   if (args == NULL) return;
 
-  
+  FILE* arquivoIndice = args->arquivoIndiceBin;
+  char* tipoDado = entradaObterTipoDado(args->entrada);
+  REGISTRO_INDICE* registroIndice = indiceRegistroInit(tipoDado);
+  REGISTRO* registroDado = args->registro;
 
+  if (args->cabecalhoIndice->noRaiz == -1) {
+    resetLeituraDeArquivo(arquivoIndice, args->cabecalhoIndice->tamanhoRegistroArvoreB);
+    indiceArvoreBArmazenarRegistro(args);
+    args->cabecalhoIndice->nroChaves++;
+  }
+
+}
+
+bool argsInitInformativoParaArvoreB(ARGS* args) {
+  if (args == NULL) return false;
+
+  char* arquivoIndice = entradaObterArquivoIndice(args->entrada);
+  FILE* arquivoIndiceBin = fopen(arquivoIndice, MODO_ESCRITA_ARQUIVO);
+  if (arquivoIndiceBin == NULL) {
+    erroGenerico();
+    return false;
+  };
+
+  CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
+  args->cabecalhoIndice = cabecalhoIndice;
+  args->arquivoIndiceBin = arquivoIndiceBin;
+
+  return true;
 }
