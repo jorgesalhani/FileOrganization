@@ -456,8 +456,7 @@ ARGS* argsInit() {
   args->proxRamoArvore = NULL;
   args->bOffPrimOcorArqIndice = -1;
   args->cabecalho = NULL;
-  args->paginaIndiceArvoreB = NULL;
-  args->cabecalhoIndiceArvoreB = NULL;
+  args->cabecalhoIndice = NULL;
   args->registroIndice = NULL;
   return args;
 }
@@ -469,6 +468,9 @@ bool argsApagar(ARGS** args) {
   char* tipoDado = entradaObterTipoDado((*args)->entrada);
   REGISTRO_INDICE* registroIndice = (*args)->registroIndice;
   indiceRegistroApagar(&registroIndice, tipoDado);
+
+  CABECALHO_INDICE* cabecalhoIndice = (*args)->cabecalhoIndice;
+  indiceCabecalhoApagar(&cabecalhoIndice);
   free(*args);
   *args = NULL;
   args = NULL;
@@ -599,6 +601,13 @@ ARGS* dadosVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegi
   ARGS* args = argsInit();
   args->entrada = entrada;
   args->arquivoDadosBin = arquivoBinarioDados;
+  args->cabecalho = cabecalho;
+
+  bool indiceArvoreB = entradaObterIndiceEmArvoreB(entrada);
+  if (indiceArvoreB) {
+    CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
+    args->cabecalhoIndice = cabecalhoIndice;
+  }
 
   resetLeituraDeArquivo(arquivoBinarioDados, cabecalho->tamanhoRegistro);
 

@@ -26,8 +26,7 @@
   typedef struct registro_indice_ REGISTRO_INDICE;
 
   typedef struct chave_ CHAVE;
-  typedef struct pagina_ PAGINA;
-  typedef struct cabecalho_indiceB_ CABECALHO_INDICEB;
+  typedef struct cabecalho_indice_ CABECALHO_INDICE;
 
   enum ordemBuscaBinaria_ {
     emOrdem, preOrdem, posOrdem
@@ -56,8 +55,7 @@
     int idProxRamo;
     NO* proxRamoArvore;
     int64_t bOffPrimOcorArqIndice;
-    PAGINA* paginaIndiceArvoreB;
-    CABECALHO_INDICEB* cabecalhoIndiceArvoreB;
+    CABECALHO_INDICE* cabecalhoIndice;
     REGISTRO_INDICE* registroIndice;
   };
 

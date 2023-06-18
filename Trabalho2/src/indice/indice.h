@@ -16,5 +16,7 @@
   bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)());
   bool indiceArvoreBsCriarArquivoBinario(ENTRADA* entrada);
   bool indiceRegistroApagar(REGISTRO_INDICE** registroIndice, char* tipoDado);
+  bool indiceCabecalhoApagar(CABECALHO_INDICE** cabecalho_indice);
+  CABECALHO_INDICE* indiceCabecalhoInit() ;
 
 #endif
