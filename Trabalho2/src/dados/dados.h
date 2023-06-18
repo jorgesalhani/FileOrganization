@@ -75,6 +75,7 @@
   void copiarRegistro(REGISTRO* regOrig, REGISTRO* regDest);
   ARGS* argsInit();
   bool dadosRemoverRegistroLogicamente(ARGS* args);
+  int dadosObterIdCrime(REGISTRO* registro);
   void dadosEncontrar(ARGS* args, void (*ftnPorRegistro)());
   void dadosImprimirRegistro(ARGS* args);
   void dadosAtualizarByteoffset(REGISTRO* registro, int64_t byteOffset);

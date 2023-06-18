@@ -129,6 +129,11 @@ bool dadosArmazenarRegistro(REGISTRO* registro, FILE* arquivoBinarioDados) {
   return true;
 }
 
+int dadosObterIdCrime(REGISTRO* registro) {
+  if (registro == NULL) return -1;
+  return registro->idCrime;
+}
+
 bool resetLeituraDeArquivo(FILE* arquivoBin, int64_t byteOffset) {
   if (arquivoBin == NULL) return false;
   fseek(arquivoBin, byteOffset, SEEK_SET);
