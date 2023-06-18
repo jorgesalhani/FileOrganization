@@ -11,6 +11,7 @@ struct entrada_ {
   char** linhasBusca;
   char** linhasAtualizacoes;
   int proxLinhaDeBusca;
+  bool indiceEmArvoreB;
 };
 
 bool strVaziaEntrada(char* str) {
@@ -37,11 +38,19 @@ ENTRADA* lerEntradas() {
   ENTRADA* entrada = (ENTRADA*) malloc(sizeof(ENTRADA));
   if (entrada == NULL) return NULL;
   
+  scanf("%d", &entrada->funcionalidade);
+  
   entrada->numeroCamposBuscados = 0;
   entrada->linhasBusca = NULL;
   entrada->linhasAtualizacoes = NULL;
+  entrada->indiceEmArvoreB = false;
 
-  scanf("%d", &entrada->funcionalidade);
+  if (entrada->funcionalidade == 8 ||
+    entrada->funcionalidade == 9 ||
+    entrada->funcionalidade == 10
+  ) {
+    entrada->indiceEmArvoreB = true;
+  }
   
   if (entrada->funcionalidade == 1) {
     scanf("%s", entrada->arquivoEntrada);
@@ -54,7 +63,9 @@ ENTRADA* lerEntradas() {
     return entrada;
   }
 
-  if (entrada->funcionalidade == 3) {
+  if (entrada->funcionalidade == 3 ||
+      entrada->funcionalidade == 8
+    ) {
     scanf("%s", entrada->arquivoEntrada);
     scanf("%s", entrada->campoIndexado);
     scanf("%s", entrada->tipoDado);
@@ -272,6 +283,11 @@ char* entradaObterLinhaDeBusca(ENTRADA* entrada) {
 char* entradaObterLinhaDeAtualizacao(ENTRADA* entrada) {
   if (entrada == NULL) return NULL;
   return entrada->linhasAtualizacoes[entrada->proxLinhaDeBusca];
+} 
+
+bool entradaObterIndiceEmArvoreB(ENTRADA* entrada) {
+  if (entrada == NULL) return NULL;
+  return entrada->indiceEmArvoreB;
 } 
 
 

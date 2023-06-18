@@ -40,6 +40,9 @@ int main() {
       binarioNaTela(entradaObterArquivoEntrada(entrada));
       indiceCriarArquivoBinario(entrada);
     }
+  } else
+  if (funcionalidade == 8) {
+    indiceCriarArquivoBinario(entrada);
   } else {
     erroModo();
   }

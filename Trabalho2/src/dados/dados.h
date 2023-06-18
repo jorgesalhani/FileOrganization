@@ -21,7 +21,12 @@
   typedef struct cabecalho_ CABECALHO;
   typedef struct arvore_binaria_ ARVORE_BINARIA;
   typedef struct args_ ARGS;
-  typedef struct no_ NO ;
+  typedef struct no_ NO;
+
+  typedef struct registro_indice_ REGISTRO_INDICE;
+
+  typedef struct chave_ CHAVE;
+  typedef struct cabecalho_indice_ CABECALHO_INDICE;
 
   enum ordemBuscaBinaria_ {
     emOrdem, preOrdem, posOrdem
@@ -50,6 +55,8 @@
     int idProxRamo;
     NO* proxRamoArvore;
     int64_t bOffPrimOcorArqIndice;
+    CABECALHO_INDICE* cabecalhoIndice;
+    REGISTRO_INDICE* registroIndice;
   };
 
   bool dadosCriarArquivoBinario(ENTRADA* entrada);
@@ -68,12 +75,14 @@
   void copiarRegistro(REGISTRO* regOrig, REGISTRO* regDest);
   ARGS* argsInit();
   bool dadosRemoverRegistroLogicamente(ARGS* args);
+  int dadosObterIdCrime(REGISTRO* registro);
   void dadosEncontrar(ARGS* args, void (*ftnPorRegistro)());
   void dadosImprimirRegistro(ARGS* args);
   void dadosAtualizarByteoffset(REGISTRO* registro, int64_t byteOffset);
   int64_t dadosObterRemovido(REGISTRO* registro);
   bool dadosInserirNovosRegistros(ENTRADA* entrada);
   bool dadosAtualizarRegistros(ARGS* args);
+  ARGS* dadosVarreduraSequencialArquivoBinario(ENTRADA* entrada, void (*ftnPorRegistro)());
 
   CABECALHO* dadosCabecalhoInit();
   REGISTRO* dadosRegistroInit();
