@@ -10,12 +10,13 @@ struct registro_indice_ {
   char* tipoDado;
   void* chaveBusca;
   int64_t byteOffset;
-  int32_t tamanhoRegistro;
+  int64_t tamanhoRegistroLinear;
     
   int32_t P[ORDEM_ARVOREB-1];
   CHAVE* chaves[ORDEM_ARVOREB-2];
   int32_t nivel;
   int32_t n;
+  int64_t tamanhoRegistroArvoreB;
 };
 
 struct cabecalho_indice_ {
@@ -75,7 +76,7 @@ REGISTRO_INDICE* indiceRegistroInit(char* tipoDado) {
 
   if (strcmp(tipoDado, "string") == 0) {
     registroIndice->chaveBusca = (char*) calloc(TAM_MAX_STR, sizeof(char));
-    registroIndice->tamanhoRegistro = 
+    registroIndice->tamanhoRegistroLinear = 
       sizeof(registroIndice->byteOffset) + 
       sizeof(char) * TAMANHO_CHAVE_BUSCA;
     return registroIndice;
@@ -83,7 +84,7 @@ REGISTRO_INDICE* indiceRegistroInit(char* tipoDado) {
 
   int32_t* chaveBusca;
   registroIndice->chaveBusca = chaveBusca;
-  registroIndice->tamanhoRegistro = 
+  registroIndice->tamanhoRegistroLinear = 
     sizeof(registroIndice->byteOffset) + sizeof(int32_t);
 
   registroIndice->n = 0;
@@ -97,6 +98,13 @@ REGISTRO_INDICE* indiceRegistroInit(char* tipoDado) {
     (registroIndice->chaves)[i]->Pr = -1;
     (registroIndice->P)[i+1] = -1;
   }
+  registroIndice->tamanhoRegistroArvoreB = 
+    sizeof(registroIndice->nivel) + 
+    sizeof(registroIndice->n) + 
+    sizeof(registroIndice->chaves[0]->C)*numChaves + 
+    sizeof(registroIndice->chaves[0]->Pr)*numChaves +
+    sizeof(registroIndice->P[0])*(numChaves+1);
+
   return registroIndice;
 }
 
@@ -154,7 +162,7 @@ bool indiceArmazenarCabecalho(
   ftnArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice);
 }
 
-void indiceArmazenarRegistro(ARGS* args, NO* raiz) {
+void indiceLinearArmazenarRegistro(ARGS* args, NO* raiz) {
   if (args == NULL || raiz == NULL) return;
   char* tipoDado = entradaObterTipoDado(args->entrada);
 
@@ -207,12 +215,12 @@ void indiceArvoreBArmazenarRegistro(ARGS* args) {
   
   fwrite(&registro->nivel, sizeof(int32_t), 1, arquivoBinarioIndice);
   fwrite(&registro->n, sizeof(int32_t), 1, arquivoBinarioIndice);
-  fwrite(&(registro->P)[0], sizeof(int64_t), 1, arquivoBinarioIndice);
+  fwrite(&(registro->P)[0], sizeof(int32_t), 1, arquivoBinarioIndice);
   int numChaves = ORDEM_ARVOREB-2;
   for (int i = 0; i < numChaves; i++) {
     fwrite(&(registro->chaves)[i]->C, sizeof(int32_t), 1, arquivoBinarioIndice);
     fwrite(&(registro->chaves)[i]->Pr, sizeof(int64_t), 1, arquivoBinarioIndice);
-    fwrite(&(registro->P)[i+1], sizeof(int64_t), 1, arquivoBinarioIndice);
+    fwrite(&(registro->P)[i+1], sizeof(int32_t), 1, arquivoBinarioIndice);
   }
   fflush(arquivoBinarioIndice);
   return;
@@ -250,7 +258,7 @@ bool indiceCriarArquivoBinario(ENTRADA* entrada) {
     cabecalhoIndice->qtdReg = args->arvoreBinaria->totalRegistros;
     indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceLinearArmazenarCabecalho);
     args->arvoreBinaria->ordem = emOrdem;
-    dadosVarreduraCompletaArvoreBinaria(args, args->arvoreBinaria->raiz, indiceArmazenarRegistro);
+    dadosVarreduraCompletaArvoreBinaria(args, args->arvoreBinaria->raiz, indiceLinearArmazenarRegistro);
     indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceLinearArmazenarCabecalho);
   } else {
     indiceArmazenarCabecalho(arquivoBinarioIndice, cabecalhoIndice, indiceArvoreBArmazenarCabecalho);
@@ -297,12 +305,12 @@ void indiceArvoreBLerRegistro(FILE* arquivoBinarioIndice, REGISTRO_INDICE* regis
   if (arquivoBinarioIndice == NULL || registroIndice == NULL) return; 
   fread(&registroIndice->nivel, sizeof(int32_t), 1, arquivoBinarioIndice);
   fread(&registroIndice->n, sizeof(int32_t), 1, arquivoBinarioIndice);
-  fread(&(registroIndice->P)[0], sizeof(int64_t), 1, arquivoBinarioIndice);
+  fread(&(registroIndice->P)[0], sizeof(int32_t), 1, arquivoBinarioIndice);
   int numChaves = ORDEM_ARVOREB-2;
   for (int i = 0; i < numChaves; i++) {
     fread(&(registroIndice->chaves)[i]->C, sizeof(int32_t), 1, arquivoBinarioIndice);
     fread(&(registroIndice->chaves)[i]->Pr, sizeof(int64_t), 1, arquivoBinarioIndice);
-    fread(&(registroIndice->P)[i+1], sizeof(int64_t), 1, arquivoBinarioIndice);
+    fread(&(registroIndice->P)[i+1], sizeof(int32_t), 1, arquivoBinarioIndice);
   }
 }
 
@@ -402,7 +410,7 @@ void indiceMapDadosAPartirDaPrimeiraOcorrencia(ARGS* args, void (*ftnPorRegistro
     REGISTRO_INDICE* registroIndice = indiceRegistroInit(entradaObterTipoDado(args->entrada));
     REGISTRO* registro = dadosRegistroInit();
     
-    bOffAnterior = args->bOffPrimOcorArqIndice - (int64_t) registroIndice->tamanhoRegistro;
+    bOffAnterior = args->bOffPrimOcorArqIndice - (int64_t) registroIndice->tamanhoRegistroLinear;
     if (bOffAnterior > 0) {
       resetLeituraDeArquivo(args->arquivoIndiceBin, bOffAnterior);
       
@@ -427,7 +435,7 @@ void indiceMapDadosAPartirDaPrimeiraOcorrencia(ARGS* args, void (*ftnPorRegistro
 
   REGISTRO_INDICE* registroIndice = indiceRegistroInit(entradaObterTipoDado(args->entrada));
   if (bOffAnterior > 0) {
-    int64_t bOffProx = args->bOffPrimOcorArqIndice + (int64_t) registroIndice->tamanhoRegistro;
+    int64_t bOffProx = args->bOffPrimOcorArqIndice + (int64_t) registroIndice->tamanhoRegistroLinear;
     indiceLerRegistroDoArquivoBinario(args->arquivoIndiceBin, registroIndice, indiceLinearLerRegistro);
     resetLeituraDeArquivo(args->arquivoDadosBin, registroIndice->byteOffset);
     dadosLerRegistroDoArquivoBinario(args->arquivoDadosBin, args->registro);
@@ -469,7 +477,7 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
   char* tipoDado = entradaObterTipoDado(entrada);
 
   REGISTRO_INDICE* registroBase = indiceRegistroInit(tipoDado);
-  int32_t tamRegIndice = registroBase->tamanhoRegistro;
+  int32_t tamRegIndice = registroBase->tamanhoRegistroLinear;
   indiceRegistroApagar(&registroBase, tipoDado);
 
   int32_t pivotSuperior = 
@@ -521,7 +529,7 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
     sobra = pivotCentral%tamRegIndice - cabecalhoIndice->tamanhoRegistroLinear;
     if (sobra < 0) {
       pivotCentral -= sobra;
-      pivotCentral -= registroIndice->tamanhoRegistro;
+      pivotCentral -= registroIndice->tamanhoRegistroLinear;
     } else {
       pivotCentral -= sobra;
     }
@@ -532,6 +540,23 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
 
   indiceCabecalhoApagar(&cabecalhoIndice);
   return true;
+}
+
+void ordenarChaves(int n, CHAVE* arr[n]) {
+  bool swapped;
+  for (int i = 0; i < n-1; i++) {
+    CHAVE* arr_i = arr[i];
+    swapped = false;
+    for (int j = 0; j < n - i - 1; j++) {
+      CHAVE* arr_j = arr[j];
+      if (arr[j]->C > arr[j+1]->C) {
+        CHAVE* temp = arr[j];
+        arr[j] = arr[j+1];
+        arr[j+1] = temp;
+        swapped = true;
+      }
+    }
+  }
 }
 
 bool indiceOrdenarChavesNoRegistro(REGISTRO_INDICE* registroIndice) {
@@ -574,38 +599,175 @@ bool indiceDeslocarChavesParaDireita(REGISTRO_INDICE* registroIndice) {
   return true;
 }
 
-bool split1para2(ARGS* args) {
+REGISTRO_INDICE** split1para2(ARGS* args) {
+  REGISTRO_INDICE** novosRegCriados = (REGISTRO_INDICE**) malloc(sizeof(REGISTRO_INDICE*)*2);
   char* tipoDado = entradaObterTipoDado(args->entrada);
-  REGISTRO_INDICE* registroIndice = indiceRegistroInit(tipoDado);
 
-  indiceRegistroApagar(&registroIndice, tipoDado);
+  /**
+   * 1. Criar no promovido [0]
+   * 2. Criar no irmao direito [1] 
+   * 3. Redistribuir chaves ordenadas
+   * 4. Atualizar registro raiz
+  */
+  
+  novosRegCriados[0] = indiceRegistroInit(tipoDado);
+  novosRegCriados[1] = indiceRegistroInit(tipoDado);
+  
+  REGISTRO_INDICE* registroIndicePromovido = novosRegCriados[0];
+  REGISTRO_INDICE* registroIndiceIrmaoDireito = novosRegCriados[1];
 
+  int32_t numChaves = args->registroIndice->n;
+  int32_t idParaInserir = dadosObterIdCrime(args->registro);
+  CHAVE* chavesId[numChaves+1];
+  
+  for (int i = 0; i < numChaves; i++) {
+    chavesId[i]->C = args->registroIndice->chaves[i]->C;
+    chavesId[i]->Pr = args->registroIndice->chaves[i]->Pr;
+  }
+  CHAVE* novaChave = arvoreBchaveInit();
+  novaChave->C = idParaInserir;
+  novaChave->Pr = dadosObterByteoffset(args->registro);
+  chavesId[numChaves] = novaChave;
+
+  ordenarChaves(numChaves+1, chavesId);
+
+  int posPromovida = (int) (numChaves+1)/2;
+  int posChaveId = numChaves;
+  int posicoesEmCadaReg = 0;
+
+  for (posChaveId; posChaveId > posPromovida; posChaveId--) {
+    registroIndiceIrmaoDireito->chaves[posicoesEmCadaReg]->C = chavesId[posChaveId]->C;
+    registroIndiceIrmaoDireito->chaves[posicoesEmCadaReg]->Pr = chavesId[posChaveId]->Pr;
+    posicoesEmCadaReg++;
+    registroIndiceIrmaoDireito->n++;
+  }
+
+  registroIndicePromovido->chaves[0]->C = chavesId[posChaveId]->C;
+  registroIndicePromovido->chaves[0]->Pr = chavesId[posChaveId]->Pr;
+  registroIndicePromovido->P[0] = args->cabecalhoIndice->noRaiz;
+  registroIndicePromovido->P[1] = 
+    args->cabecalhoIndice->noRaiz + 
+    args->registroIndice->tamanhoRegistroArvoreB;
+  registroIndicePromovido->n++;
+  posChaveId--;
+  posicoesEmCadaReg = 0;
+
+  for (posChaveId; posChaveId >= 0; posChaveId--) {
+    args->registroIndice->chaves[posicoesEmCadaReg]->C = chavesId[posChaveId]->C;
+    args->registroIndice->chaves[posicoesEmCadaReg]->Pr = chavesId[posChaveId]->Pr;
+    posicoesEmCadaReg++;
+  }
+
+  args->registroIndice->chaves[numChaves-1]->C = -1;
+  args->registroIndice->chaves[numChaves-1]->Pr = -1;
+  args->registroIndice->n--;
+
+  return novosRegCriados;
 }
 
 bool registroIndiceCheio(ARGS* args) {
   return args->registroIndice->n == ORDEM_ARVOREB-2 ? true : false;
 }
 
-bool executarSplit(ARGS* args, int32_t noRaiz) {
-  if (args == NULL) return false;
-  if (registroIndiceCheio(args)) {
-    split1para2(args);
-    // split2para3();
+bool indiceArvoreBVarreduraDeBuscaArquivoBinario(
+  ARGS* args, int64_t ramoPR, void (ftnPorRegistro(ARGS*))
+) {
+  if (args == NULL || ftnPorRegistro == NULL) return false;
+
+  /**
+   * Se n < 3, entao registro tem espaco:
+   * 1. Inserir nova chave
+   * 2. Ordenar
+   * 3. Armazenar registro no indice
+  */
+  REGISTRO_INDICE* registroIndice = args->registroIndice;
+  int32_t numChaves = ORDEM_ARVOREB - 2;
+  if (registroIndice->n < numChaves) {
+    bool deslocado = indiceDeslocarChavesParaDireita(registroIndice);
+    if (deslocado) {
+      registroIndice->chaves[0]->C = dadosObterIdCrime(args->registro);
+      registroIndice->chaves[0]->Pr = dadosObterByteoffset(args->registro);
+      registroIndice->n++;
+    }
+
+    indiceOrdenarChavesNoRegistro(registroIndice);
+    resetLeituraDeArquivo(args->arquivoIndiceBin, ramoPR);
+    indiceArvoreBArmazenarRegistro(args);
+
+    args->cabecalhoIndice->nroChaves++;
+    return true;
   }
 
-  bool deslocado = indiceDeslocarChavesParaDireita(args->registroIndice);
-  if (deslocado) {
-    args->registroIndice->chaves[0]->C = dadosObterIdCrime(args->registro);
-    args->registroIndice->chaves[0]->Pr = dadosObterByteoffset(args->registro);
-    args->registroIndice->n++;
+  
+  // Se n == 3, entao nao tem espaco
+  
+  /**
+   * Se ramoPR != -1, entao existe no folha
+   * 1. Comparar registro a ser inserido com
+   *  - P[0] : no mais a esquerda
+   *  - ...
+   *  - P[2] : no mais a direita
+   * 
+   * 2. Reset ponteiro de leitura para ramoPR
+   * 3. Ler registro
+   * 4. Realizar varredura novamente
+  */
+
+  FILE* arquivoIndice = args->arquivoIndiceBin;
+  int32_t regIdCrime = dadosObterIdCrime(args->registro);
+  int64_t proxRamoPR = -1;
+  if (ramoPR != -1) {
+    int i = 0;
+    for (i; i < numChaves; i++) {
+      if (regIdCrime < registroIndice->chaves[i]->C) break;
+    }
+    proxRamoPR = registroIndice->P[i];
+    if (proxRamoPR != -1) {
+      resetLeituraDeArquivo(arquivoIndice, ramoPR);
+      indiceLerRegistroDoArquivoBinario(arquivoIndice, registroIndice, indiceArvoreBLerRegistro);
+      indiceArvoreBVarreduraDeBuscaArquivoBinario(args, ramoPR, ftnPorRegistro);
+    }
   }
 
-  indiceOrdenarChavesNoRegistro(args->registroIndice);
-  resetLeituraDeArquivo(args->arquivoIndiceBin, noRaiz);
-  indiceArvoreBArmazenarRegistro(args);
+  // Se ramoPR == -1: no folha
+  /**
+   * 1. se noRaiz: split1-2
+   *  - Atualizar novo no raiz
+   *  - Atualizar RRNproxNo com posicao final do arqIndice
+   *  - Atualizar nroNiveis (+1)
+   * 2. contrario: split2-3
+  */
+  if (proxRamoPR == -1) {
+    int64_t noRaiz = args->cabecalhoIndice->noRaiz;
+    if (ramoPR == noRaiz) {
+      REGISTRO_INDICE** novosRegs = split1para2(args);
+      REGISTRO_INDICE* regPromovido = novosRegs[0];
+      REGISTRO_INDICE* regIrmaoDireito = novosRegs[1];
 
-  args->cabecalhoIndice->nroChaves++;
-  return true;
+      args->cabecalhoIndice->noRaiz = args->cabecalhoIndice->RNNproxNo;
+      args->cabecalhoIndice->RNNproxNo = noRaiz + 
+        2 * args->registroIndice->tamanhoRegistroArvoreB;
+
+      args->cabecalhoIndice->nroNiveis++;
+      
+      bool deslocado = indiceDeslocarChavesParaDireita(registroIndice);
+      if (deslocado) {
+        registroIndice->chaves[0]->C = dadosObterIdCrime(args->registro);
+        registroIndice->chaves[0]->Pr = dadosObterByteoffset(args->registro);
+        registroIndice->n++;
+      }
+
+      resetLeituraDeArquivo(arquivoIndice, ramoPR);
+      ftnPorRegistro(args);
+      args->registroIndice = regPromovido;
+      ftnPorRegistro(args);
+      args->registroIndice = regIrmaoDireito;
+      ftnPorRegistro(args);
+    }
+    // else split2para3(args);
+  }
+
+
 }
 
 void indiceArvoreBInserirRegistro(ARGS* args) {
@@ -613,20 +775,47 @@ void indiceArvoreBInserirRegistro(ARGS* args) {
 
   FILE* arquivoIndice = args->arquivoIndiceBin;
   char* tipoDado = entradaObterTipoDado(args->entrada);
+
+  /**
+   * Se noRaiz == -1: indice vazio
+   * 1. criar novo registro em RAM
+   * 2. set noRaiz byteOffset pelo tamanho do cabecalho
+   * 2. atualizar novo registro com (idCrime, PR1)
+   * 3. armazenar registro no arquivo de indice
+   * */ 
+
   REGISTRO_INDICE* registroIndice = indiceRegistroInit(tipoDado);
+  int64_t noRaiz = args->cabecalhoIndice->noRaiz;
   args->registroIndice = registroIndice;
 
-  if (args->cabecalhoIndice->noRaiz == -1) {
-    args->cabecalhoIndice->noRaiz = args->cabecalhoIndice->tamanhoRegistroArvoreB;
-  }
-  int64_t noRaiz = args->cabecalhoIndice->noRaiz;
-  resetLeituraDeArquivo(arquivoIndice, noRaiz);
-  
-  if (args->cabecalhoIndice->nroChaves != 0) {
-    indiceLerRegistroDoArquivoBinario(arquivoIndice, registroIndice, indiceArvoreBLerRegistro);
+  if (noRaiz == -1) {
+    int64_t tamRegIndiceCabec = args->cabecalhoIndice->tamanhoRegistroArvoreB;
+    args->cabecalhoIndice->noRaiz = tamRegIndiceCabec;
+    args->registroIndice->chaves[0]->C = dadosObterIdCrime(args->registro);
+    args->registroIndice->chaves[0]->Pr = dadosObterByteoffset(args->registro);
+    args->registroIndice->n++;
+    args->cabecalhoIndice->RNNproxNo += 
+      tamRegIndiceCabec + 
+      args->registroIndice->tamanhoRegistroArvoreB;
+    args->cabecalhoIndice->nroChaves++;
+    resetLeituraDeArquivo(args->arquivoIndiceBin, tamRegIndiceCabec);
+    indiceArvoreBArmazenarRegistro(args);
+
+    return;
   }
 
-  executarSplit(args, args->cabecalhoIndice->noRaiz);
+  /**
+   * Se noRaiz != -1: indice ja inicializado
+   * 1. reset ponteiro de leitura do arq de indice para noRaiz
+   * 2. ler registro do noRaiz
+   * 3. realizar busca recursiva
+  */
+
+  resetLeituraDeArquivo(arquivoIndice, noRaiz);
+  indiceLerRegistroDoArquivoBinario(arquivoIndice, registroIndice, indiceArvoreBLerRegistro);
+  indiceArvoreBVarreduraDeBuscaArquivoBinario(args, noRaiz, indiceArvoreBArmazenarRegistro);
+
+  // executarSplit(args, args->cabecalhoIndice->noRaiz);
 
   return;
 }

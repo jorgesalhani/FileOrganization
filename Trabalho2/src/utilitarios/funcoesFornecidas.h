@@ -1,6 +1,7 @@
 #ifndef FUNCOES_FORNECIDAS_H
     #define FUNCOES_FORNECIDAS_H
 
+    #include <stdbool.h>
     #include "erros.h"
 
     void readline(char *string);
