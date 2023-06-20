@@ -621,6 +621,7 @@ REGISTRO_INDICE** split1para2(ARGS* args) {
   CHAVE* chavesId[numChaves+1];
   
   for (int i = 0; i < numChaves; i++) {
+    chavesId[i] = arvoreBchaveInit();
     chavesId[i]->C = args->registroIndice->chaves[i]->C;
     chavesId[i]->Pr = args->registroIndice->chaves[i]->Pr;
   }
@@ -650,12 +651,12 @@ REGISTRO_INDICE** split1para2(ARGS* args) {
     args->registroIndice->tamanhoRegistroArvoreB;
   registroIndicePromovido->n++;
   posChaveId--;
-  posicoesEmCadaReg = 0;
+  posicoesEmCadaReg = posChaveId;
 
   for (posChaveId; posChaveId >= 0; posChaveId--) {
     args->registroIndice->chaves[posicoesEmCadaReg]->C = chavesId[posChaveId]->C;
     args->registroIndice->chaves[posicoesEmCadaReg]->Pr = chavesId[posChaveId]->Pr;
-    posicoesEmCadaReg++;
+    posicoesEmCadaReg--;
   }
 
   args->registroIndice->chaves[numChaves-1]->C = -1;
@@ -723,9 +724,9 @@ bool indiceArvoreBVarreduraDeBuscaArquivoBinario(
     }
     proxRamoPR = registroIndice->P[i];
     if (proxRamoPR != -1) {
-      resetLeituraDeArquivo(arquivoIndice, ramoPR);
+      resetLeituraDeArquivo(arquivoIndice, proxRamoPR);
       indiceLerRegistroDoArquivoBinario(arquivoIndice, registroIndice, indiceArvoreBLerRegistro);
-      indiceArvoreBVarreduraDeBuscaArquivoBinario(args, ramoPR, ftnPorRegistro);
+      indiceArvoreBVarreduraDeBuscaArquivoBinario(args, proxRamoPR, ftnPorRegistro);
     }
   }
 
@@ -744,27 +745,45 @@ bool indiceArvoreBVarreduraDeBuscaArquivoBinario(
       REGISTRO_INDICE* regPromovido = novosRegs[0];
       REGISTRO_INDICE* regIrmaoDireito = novosRegs[1];
 
-      args->cabecalhoIndice->noRaiz = args->cabecalhoIndice->RNNproxNo;
-      args->cabecalhoIndice->RNNproxNo = noRaiz + 
+      args->cabecalhoIndice->noRaiz = noRaiz + 
         2 * args->registroIndice->tamanhoRegistroArvoreB;
+      args->cabecalhoIndice->RNNproxNo = 
+        args->cabecalhoIndice->noRaiz + 
+        args->registroIndice->tamanhoRegistroArvoreB;
+
 
       args->cabecalhoIndice->nroNiveis++;
       
-      bool deslocado = indiceDeslocarChavesParaDireita(registroIndice);
-      if (deslocado) {
-        registroIndice->chaves[0]->C = dadosObterIdCrime(args->registro);
-        registroIndice->chaves[0]->Pr = dadosObterByteoffset(args->registro);
-        registroIndice->n++;
-      }
 
       resetLeituraDeArquivo(arquivoIndice, ramoPR);
       ftnPorRegistro(args);
+      args->registroIndice = regIrmaoDireito;
+      ftnPorRegistro(args);
       args->registroIndice = regPromovido;
+      ftnPorRegistro(args);
+    }
+    else {
+      REGISTRO_INDICE** novosRegs = split1para2(args);
+      REGISTRO_INDICE* regPromovido = novosRegs[0];
+      REGISTRO_INDICE* regIrmaoDireito = novosRegs[1];
+
+      args->cabecalhoIndice->noRaiz = noRaiz + 
+        2 * args->registroIndice->tamanhoRegistroArvoreB;
+      args->cabecalhoIndice->RNNproxNo = 
+        args->cabecalhoIndice->noRaiz + 
+        args->registroIndice->tamanhoRegistroArvoreB;
+
+
+      args->cabecalhoIndice->nroNiveis++;
+      
+
+      resetLeituraDeArquivo(arquivoIndice, ramoPR);
       ftnPorRegistro(args);
       args->registroIndice = regIrmaoDireito;
       ftnPorRegistro(args);
+      args->registroIndice = regPromovido;
+      ftnPorRegistro(args);
     }
-    // else split2para3(args);
   }
 
 
