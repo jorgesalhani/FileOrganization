@@ -20,5 +20,6 @@
   CABECALHO_INDICE* indiceCabecalhoInit() ;
   bool argsInitInformativoParaArvoreB(ARGS* args);
   bool indiceBuscaPorIndiceArvoreB(ENTRADA* entrada, ARGS* args, void (*ftnPorBusca)());
+  void indiceArvoreBInserirRecursivo(ARGS* args, void (ftnPorRegistro(ARGS*)));
 
 #endif

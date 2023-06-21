@@ -464,7 +464,7 @@ ARGS* argsInit() {
   args->cabecalhoIndice = NULL;
   args->registroIndice = NULL;
   args->byteOffPaiRegSplitado = -1;
-  args->idCrimeBuscado = -1;
+  args->idCrimeBuscado = -2;
   return args;
 }
 
