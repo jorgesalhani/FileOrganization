@@ -463,6 +463,8 @@ ARGS* argsInit() {
   args->cabecalho = NULL;
   args->cabecalhoIndice = NULL;
   args->registroIndice = NULL;
+  args->byteOffPaiRegSplitado = -1;
+  args->idCrimeBuscado = -2;
   return args;
 }
 
@@ -1020,11 +1022,33 @@ int dadosCompararRegistroComChaveBusca(ARGS* args) {
   }
 }
 
+void detectarIdCrimeBuscado(ARGS* args) {
+  if (args == NULL) return;
+
+  char delimEspaco[] = " ";
+  char* linhaDeBusca = entradaObterLinhaDeBusca(args->entrada);
+
+  char linhaDeBuscaCp[100];
+  strcpy(linhaDeBuscaCp, linhaDeBusca);
+  char* linhaSplit = strtok(linhaDeBuscaCp, delimEspaco);
+  int32_t valorInt = -1;
+  
+  while ((linhaSplit = strtok(NULL, delimEspaco)) != NULL) {
+
+    if (strcmp(linhaSplit, "idCrime") != 0) continue;
+    
+    linhaSplit = strtok(NULL, delimEspaco);
+    valorInt = (int32_t) atoi(linhaSplit);
+    args->idCrimeBuscado = valorInt;
+    return;
+  }
+}
+
 bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
   if (entrada == NULL) return false;
 
   char* campoIndexado = entradaObterCampoIndexado(entrada);
-
+  bool indiceEmArvoreB = entradaObterIndiceEmArvoreB(entrada);
   int nroCamposBuscados = entradaObterNumeroCamposBuscados(entrada);
   
   ARGS* args = argsInit();
@@ -1032,6 +1056,9 @@ bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
 
   CABECALHO* cabecalho = dadosCabecalhoInit();
   args->cabecalho = cabecalho;
+
+  CABECALHO_INDICE* cabecalhoIndice = indiceCabecalhoInit();
+  args->cabecalhoIndice = cabecalhoIndice;
 
   char* arquivoEntrada = entradaObterArquivoEntrada(entrada);
   FILE* arquivoBinarioDados = fopen(arquivoEntrada, MODO_LEITURA_ARQUIVO);
@@ -1054,7 +1081,9 @@ bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
   char* linhaDeBusca = entradaObterLinhaDeBusca(entrada);
   for (int i = 0; i < nroCamposBuscados; i++) {
     args->regEncontradoEmBusca = false;
-    if (entradaObterFuncionalidade(entrada) == 4) {
+    if ((entradaObterFuncionalidade(entrada) == 4) ||
+        (entradaObterFuncionalidade(entrada) == 9)    
+    ) {
       printf("Resposta para a busca %d\n", i+1);
     }
     bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(linhaDeBusca, campoIndexado);
@@ -1062,19 +1091,27 @@ bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
       busca = dadosBuscaSequencialArquivoBinario(entrada, args, ftnPorBusca);
       if (!busca) break;
     } else {
+      if (indiceEmArvoreB) {
+        detectarIdCrimeBuscado(args);
+        busca = indiceBuscaPorIndiceArvoreB(entrada, args, ftnPorBusca);
+        if (!busca) break;
+      } else 
       busca = indiceBuscaBinariaArquivoBinario(entrada, args, ftnPorBusca);
       if (!busca) break;
     }
 
-    if (!args->regEncontradoEmBusca && 
-        entradaObterFuncionalidade(entrada) == 4
-      ) erroSemRegistros();
+    if (!args->regEncontradoEmBusca && (
+        (entradaObterFuncionalidade(entrada) == 4) ||
+        (entradaObterFuncionalidade(entrada) == 9)
+    )) erroSemRegistros();
 
     linhaDeBusca = entradaProximaLinhaDeBusca(entrada);
   }
   if (busca) dadosArmazenarCabecalho(args->cabecalho, args->arquivoDadosBin);
   fclose(args->arquivoDadosBin);
   fclose(args->arquivoIndiceBin);
+  args->registro = NULL;
+  args->registroIndice = NULL;
   argsApagar(&args);
   return busca;
 }

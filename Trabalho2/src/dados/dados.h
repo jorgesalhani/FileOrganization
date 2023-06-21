@@ -57,6 +57,8 @@
     int64_t bOffPrimOcorArqIndice;
     CABECALHO_INDICE* cabecalhoIndice;
     REGISTRO_INDICE* registroIndice;
+    int64_t byteOffPaiRegSplitado;
+    int32_t idCrimeBuscado;
   };
 
   bool dadosCriarArquivoBinario(ENTRADA* entrada);
