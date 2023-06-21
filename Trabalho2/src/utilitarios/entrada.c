@@ -74,7 +74,8 @@ ENTRADA* lerEntradas() {
   }
 
   if (entrada->funcionalidade == 4 ||
-      entrada->funcionalidade == 5
+      entrada->funcionalidade == 5 ||
+      entrada->funcionalidade == 9
   ) {
     scanf("%s", entrada->arquivoEntrada);
     scanf("%s", entrada->campoIndexado);

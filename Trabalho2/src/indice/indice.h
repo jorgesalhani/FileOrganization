@@ -19,5 +19,6 @@
   bool indiceCabecalhoApagar(CABECALHO_INDICE** cabecalho_indice);
   CABECALHO_INDICE* indiceCabecalhoInit() ;
   bool argsInitInformativoParaArvoreB(ARGS* args);
+  bool indiceBuscaPorIndiceArvoreB(ENTRADA* entrada, ARGS* args, void (*ftnPorBusca)());
 
 #endif

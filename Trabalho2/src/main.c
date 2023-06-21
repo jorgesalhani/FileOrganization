@@ -41,8 +41,11 @@ int main() {
       indiceCriarArquivoBinario(entrada);
     }
   } else
-  if (funcionalidade == 8) {
+  if (funcionalidade == 8) { // NOT YET...
     indiceCriarArquivoBinario(entrada);
+  } else 
+  if (funcionalidade == 9){
+    dadosBuscarPorCampos(entrada, dadosImprimirRegistro);
   } else {
     erroModo();
   }
