@@ -45,7 +45,7 @@ int main() {
     indiceCriarArquivoBinario(entrada);
   } else 
   if (funcionalidade == 9){
-    dadosBuscarPorCampos(entrada, dadosImprimirRegistro);
+    // ArvoreBBuscar(entrada);
   } else {
     erroModo();
   }
