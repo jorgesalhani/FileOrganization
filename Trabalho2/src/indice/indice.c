@@ -82,6 +82,7 @@ CABECALHO_INDICE* indiceCabecalhoInit() {
   cabecalhoIndice->tamanhoRegistroArvoreB = TAM_MAX_CABECALHO_INDICEB;
   cabecalhoIndice->proxByteOffsetNoRaiz = -1;
   cabecalhoIndice->proxByteOffsetProxNo = -1;
+  cabecalhoIndice->tamanhoRegistroLinear = 0;
 
   return cabecalhoIndice;
 }
@@ -1036,13 +1037,13 @@ bool indiceBuscaPorIndiceArvoreB(ENTRADA* entrada, ARGS* args, void (*ftnPorBusc
   indiceLerCabecalhoDoArquivoBinario(args->arquivoIndiceBin, cabecalhoIndice, indiceArvoreBLerCabecalhoDoArquivoBinario);
 
   if (cabecalhoIndice->status == '0') {
-    indiceCabecalhoApagar(&cabecalhoIndice);
+    // indiceCabecalhoApagar(&cabecalhoIndice);
     erroGenerico();
     return false;
   }
 
   if (cabecalhoIndice->nroChaves == 0) {
-    indiceCabecalhoApagar(&cabecalhoIndice);
+    // indiceCabecalhoApagar(&cabecalhoIndice);
     erroSemRegistros();
     return false;
   }
@@ -1078,333 +1079,333 @@ bool indiceBuscaPorIndiceArvoreB(ENTRADA* entrada, ARGS* args, void (*ftnPorBusc
   return true;
 }
 
-CABECALHOBESTRELA *ArvoreBCriarCabecalho() {
-  CABECALHOBESTRELA *cabecalho = malloc(sizeof(CABECALHOBESTRELA));
-  if (cabecalho == NULL) {
-    printf("Sem memória RAM. Abandonando programa!");
-    exit(1);
-  }
-  return cabecalho;
-}
-
-void imprimirCabecalhoArvoreB(CABECALHOBESTRELA *cabecalho) {
-  printf("CABECALHO:\nStatus: %c\n", cabecalho->status);
-  printf("NoRaiz: %d\n", cabecalho->noRaiz);
-  printf("proxRRN: %d\n", cabecalho->proxRRN);
-  printf("nroNiveis: %d\n", cabecalho->nroNiveis);
-  printf("nroChaves: %d\n", cabecalho->nroChaves);
-}
-
-void removerCabecalhoArvoreB(CABECALHOBESTRELA** cabecalho) {
-  free(*cabecalho);
-  *cabecalho = NULL;
-}
-
-CABECALHOBESTRELA *lerCabecalhoArvoreB(FILE *indiceBinario) {
-  CABECALHOBESTRELA *cabecalho = ArvoreBCriarCabecalho();
-  fread(&cabecalho->status, sizeof(char), 1, indiceBinario);
-  fread(&cabecalho->noRaiz, sizeof(int32_t), 1, indiceBinario);
-  fread(&cabecalho->proxRRN, sizeof(int32_t), 1, indiceBinario);
-  fread(&cabecalho->nroNiveis, sizeof(int32_t), 1, indiceBinario);
-  fread(&cabecalho->nroChaves, sizeof(int32_t), 1, indiceBinario);
-  return cabecalho;
-}
-
-BTPAGE *criarPaginaArvoreB() {
-  BTPAGE *pagina = malloc(sizeof(BTPAGE));
-  if (pagina == NULL) {
-    printf("Sem memória RAM. Abandonando programa!");
-    exit(1);
-  }
-  return pagina;
-}
-
-BTPAGE *preencherPaginaArvoreB(int nivel, int contadorDeOcupacao, CHAVE chaves[], int Pfinal) {
-  BTPAGE* pagina = criarPaginaArvoreB();
-  pagina->nivel = nivel;
-  pagina->contadorDeOcupacao = contadorDeOcupacao;
-  for(int i = 0; i < 4; i++) {
-    if(i < contadorDeOcupacao) {
-      pagina->chaves[i] = chaves[i];
-      pagina->P[i] = chaves[i].Pp;
-    } else {
-      pagina->chaves[i].C = -1;
-      pagina->chaves[i].Pr = -1;
-      pagina->P[i] = -1;
-    }
-    pagina->P[contadorDeOcupacao] = Pfinal;
-  }
-  return pagina;
-}
-
-void removerPaginaArvoreB(BTPAGE** pagina) {
-  free(*pagina);
-  *pagina = NULL;
-}
-
-int arvoreBObterNivel(BTPAGE* pagina) {
-  if(pagina != NULL) {
-    return pagina->nivel;
-  }
-  return -1;
-}
-
-int arvoreBObterOcupacao(BTPAGE* pagina) {
-  if(pagina != NULL) {
-    return pagina->contadorDeOcupacao;
-  }
-  return -1;
-}
-
-int *arvoreBObterP(BTPAGE* pagina) {
-  if(pagina != NULL) {
-    return pagina->P;
-  }
-  return NULL;
-}
-
-CHAVE *arvoreBObterChaves(BTPAGE* pagina) {
-  if(pagina != NULL) {
-    return pagina->chaves;
-  }
-  return NULL;
-}
-
-void acessarPaginaArvoreB(FILE *indiceBinario, BTPAGE* pagAux, int32_t RRN) {
-  fseek(indiceBinario, (RRN+1)*76, SEEK_SET);
-  fread(&pagAux->nivel, sizeof(int32_t), 1, indiceBinario);
-  fread(&pagAux->contadorDeOcupacao, sizeof(int32_t), 1, indiceBinario);
-  for(int i = 0; i < 4; i++) {
-    fread(&pagAux->P[i], sizeof(int32_t), 1, indiceBinario);
-    fread(&pagAux->chaves[i].C, sizeof(int32_t), 1, indiceBinario);
-    fread(&pagAux->chaves[i].Pr, sizeof(int64_t), 1, indiceBinario);
-  }
-  fread(&pagAux->P[4], sizeof(int32_t), 1, indiceBinario);
-}
-
-void imprimirPaginaArvoreB(BTPAGE *pagina) {
-  int i;
-  printf("\nPAGINA:\nNivel: %d\n", pagina->nivel);
-  printf("Contador de Ocupacao: %d\n", pagina->contadorDeOcupacao);
-  for(i = 0; i < pagina->contadorDeOcupacao; i++) {
-    printf("\nPonteiro %d p/ Página: %d\n", i+1, pagina->P[i]);
-    printf("\n--Chave %d: %d\n", i+1, pagina->chaves[i].C);
-    printf("--Ponteiro %d p/ Arquivo: %ld\n", i+1, pagina->chaves[i].Pr);
-  }
-  printf("\nPonteiro %d p/ Página: %d\n", i+1, pagina->P[i]);
-}
-
-
-// TABELA.C
-FILE *abrirIndiceArvoreB(char *nomeIndice) {
-  char indisponivel = '0';
-  FILE *indiceBinario = fopen(nomeIndice, "rb+");
-  if (indiceBinario == NULL) {
-    printf("Erro ao abrir o arquivo!");
-    exit(1);
-  }
-  fwrite(&indisponivel, sizeof(char), 1, indiceBinario);
-  fseek(indiceBinario, 0, SEEK_SET);
-  return indiceBinario;
-}
-
-void fecharIndiceArvoreB(FILE* indiceBinario, bool error) {
-  if(!error) {
-    char disponivel = '1';
-    fseek(indiceBinario, 0, SEEK_SET);
-    fwrite(&disponivel, sizeof(char), 1, indiceBinario);
-  }
-  fclose(indiceBinario);
-}
-
-void atualizarPagina(FILE* indiceBinario, BTPAGE* pagina, int32_t RRN) {
-  fseek(indiceBinario, 76*(RRN+1), SEEK_SET);
-  int nivel = arvoreBObterNivel(pagina);
-  int contadorDeOcupacao= arvoreBObterOcupacao(pagina);
-  int campoVazio = -1;
-  int *P = arvoreBObterP(pagina);
-  CHAVE *chaves = arvoreBObterChaves(pagina);
-  
-  fwrite(&nivel, sizeof(int32_t), 1, indiceBinario);
-  fwrite(&contadorDeOcupacao, sizeof(int32_t), 1, indiceBinario);
-  
-  for(int i = 0; i < 5; i++) {
-    printf("\n%d\n", P[i]);
-  }
-  
-  for(int i = 0; i < 4; i++) {
-    if (i < contadorDeOcupacao) {
-      fwrite(&P[i], sizeof(int32_t), 1, indiceBinario);
-      fwrite(&chaves[i].C, sizeof(int32_t), 1, indiceBinario);
-      fwrite(&chaves[i].Pr, sizeof(int64_t), 1, indiceBinario);
-    } 
-    if(i == contadorDeOcupacao) {
-      fwrite(&P[contadorDeOcupacao], sizeof(int32_t), 1, indiceBinario);
-      fwrite(&campoVazio, sizeof(int32_t), 1, indiceBinario);
-      fwrite(&campoVazio, sizeof(int64_t), 1, indiceBinario);
-    }
-    if(i > contadorDeOcupacao) {
-      fwrite(&campoVazio, sizeof(int32_t), 1, indiceBinario);
-      fwrite(&campoVazio, sizeof(int32_t), 1, indiceBinario);
-      fwrite(&campoVazio, sizeof(int64_t), 1, indiceBinario);
-    } 
-  }
-}
-
-int novaPagina(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int32_t nivel, int32_t byteOffsetAtual) {
-  CHAVE* chaves;
-  BTPAGE* pagina = preencherPaginaArvoreB(nivel, 0, NULL, 0);
-  fseek(indiceBinario, 76*(cabecalho->proxRRN+1), SEEK_SET);
-  
-  fseek(indiceBinario, byteOffsetAtual, SEEK_SET);
-  char status;
-  int noRaiz;
-  int proxRRN;
-  int nroNiveis;
-  int nroChaves;
-}
-
-int64_t ArvoreBBuscar(FILE* indiceBinario, int RRN, int64_t chave) {
-  if(RRN == -1) {
-    return RRN;
-  }
-  int i;
-  int32_t nivel;
-  int32_t taxaDeOcupacao;
-  int32_t ponteiroPagina;
-  int32_t chaveComp;
-  int64_t ponteiroArquivo;
-  void* lixo = NULL;
-
-  fseek(indiceBinario, (RRN+1)*76, SEEK_SET);
-  fread(&nivel, sizeof(int32_t), 1, indiceBinario);
-  fread(&taxaDeOcupacao, sizeof(int32_t), 1, indiceBinario);
-  
-  for(i = 0; i < taxaDeOcupacao; i++) {
-    
-    fread(&ponteiroPagina, sizeof(int32_t), 1, indiceBinario);
-    fread(&chaveComp, sizeof(int32_t), 1, indiceBinario);
-    fread(&ponteiroArquivo, sizeof(int64_t), 1, indiceBinario);
-    
-    if(chave < chaveComp) {
-      return ArvoreBBuscar(indiceBinario, ponteiroPagina, chave);
-    }
-    if(chave == chaveComp) {
-      return ponteiroArquivo;
-    }
-  }
-  
-  fread(&ponteiroPagina, sizeof(int32_t), 1, indiceBinario);
-  return ArvoreBBuscar(indiceBinario, ponteiroPagina, chave); 
-}
-
-void ordenarChaves(CHAVE chaves[], int size) {
-    for (int i = 0; i < size - 1; i++) {
-        for (int j = 0; j < size - i - 1; j++) {
-            if (chaves[j].C > chaves[j + 1].C) {
-                CHAVE temp = chaves[j];
-                chaves[j] = chaves[j + 1];
-                chaves[j + 1] = temp;
-            }
-        }
-    }
-}
-
-void shiftPagina(FILE* indiceBinario, int RRN, CHAVE chave, int32_t nivel, int32_t taxaDeOcupacao) { 
-  int paginaInexistente = -1;
-  int novaTaxaDeOcupacao = taxaDeOcupacao+1;
-  CHAVE chavesArquivadas[novaTaxaDeOcupacao];
-  int ultimoPonteiroPagina;
-  
-  for(int i = 0; i < novaTaxaDeOcupacao; i++) {
-    fread(&chavesArquivadas[i].Pp, sizeof(int32_t), 1, indiceBinario);
-    fread(&chavesArquivadas[i].C, sizeof(int32_t), 1, indiceBinario);
-    fread(&chavesArquivadas[i].Pr, sizeof(int64_t), 1, indiceBinario);
-  }
-  fread(&ultimoPonteiroPagina, sizeof(int64_t), 1, indiceBinario);
-  chavesArquivadas[taxaDeOcupacao] = chave;
-
-  ordenarChaves(chavesArquivadas, novaTaxaDeOcupacao);
-
-  BTPAGE* pag = preencherPaginaArvoreB(nivel, novaTaxaDeOcupacao, chavesArquivadas, ultimoPonteiroPagina);
-  atualizarPagina(indiceBinario, pag, RRN);
-  removerPaginaArvoreB(&pag);
-
-}
-
-CHAVE* split1para2(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave, int32_t nivel) {
-  int paginaInexistente = -1;
-  CHAVE chavesArquivadas[4];
-  int ultimoPonteiroPagina;
-  
-  for(int i = 0; i < 4; i++) {
-    fread(&chavesArquivadas[i].Pp, sizeof(int32_t), 1, indiceBinario);
-    fread(&chavesArquivadas[i].C, sizeof(int32_t), 1, indiceBinario);
-    fread(&chavesArquivadas[i].Pr, sizeof(int64_t), 1, indiceBinario);
-  }
-  
-}
-
-// CHAVE* split(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave, int32_t nivel) {
-//   if(nivel == 1 || nivel == cabecalho->nroNiveis) {
-//     return split1para2(indiceBinario, cabecalho, RRN, chave, nivel);
-//   } else {
-    
+// CABECALHOBESTRELA *ArvoreBCriarCabecalho() {
+//   CABECALHOBESTRELA *cabecalho = malloc(sizeof(CABECALHOBESTRELA));
+//   if (cabecalho == NULL) {
+//     printf("Sem memória RAM. Abandonando programa!");
+//     exit(1);
 //   }
-  
-  
-  
-//   for(int i = 0; i < 4; i++) {
-//     fread(&chavesArquivadas[i].Pp, sizeof(int32_t), 1, indiceBinario);
-//     fread(&chavesArquivadas[i].C, sizeof(int32_t), 1, indiceBinario);
-//     fread(&chavesArquivadas[i].Pr, sizeof(int64_t), 1, indiceBinario);
-//   }
-  
+//   return cabecalho;
 // }
 
-CHAVE* inserirArvoreB(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave) {
-  int32_t nivel;
-  int32_t taxaDeOcupacao;
-  int32_t ponteiroPagina;
-  int32_t chaveComp;
-  int64_t ponteiroArquivo;
-  int i;
-  void* lixo = NULL;
+// void imprimirCabecalhoArvoreB(CABECALHOBESTRELA *cabecalho) {
+//   printf("CABECALHO:\nStatus: %c\n", cabecalho->status);
+//   printf("NoRaiz: %d\n", cabecalho->noRaiz);
+//   printf("proxRRN: %d\n", cabecalho->proxRRN);
+//   printf("nroNiveis: %d\n", cabecalho->nroNiveis);
+//   printf("nroChaves: %d\n", cabecalho->nroChaves);
+// }
 
-  fseek(indiceBinario, (RRN+1)*76, SEEK_SET);
-  fread(&nivel, sizeof(int32_t), 1, indiceBinario);
-  fread(&taxaDeOcupacao, sizeof(int32_t), 1, indiceBinario);
+// void removerCabecalhoArvoreB(CABECALHOBESTRELA** cabecalho) {
+//   free(*cabecalho);
+//   *cabecalho = NULL;
+// }
+
+// CABECALHOBESTRELA *lerCabecalhoArvoreB(FILE *indiceBinario) {
+//   CABECALHOBESTRELA *cabecalho = ArvoreBCriarCabecalho();
+//   fread(&cabecalho->status, sizeof(char), 1, indiceBinario);
+//   fread(&cabecalho->noRaiz, sizeof(int32_t), 1, indiceBinario);
+//   fread(&cabecalho->proxRRN, sizeof(int32_t), 1, indiceBinario);
+//   fread(&cabecalho->nroNiveis, sizeof(int32_t), 1, indiceBinario);
+//   fread(&cabecalho->nroChaves, sizeof(int32_t), 1, indiceBinario);
+//   return cabecalho;
+// }
+
+// BTPAGE *criarPaginaArvoreB() {
+//   BTPAGE *pagina = malloc(sizeof(BTPAGE));
+//   if (pagina == NULL) {
+//     printf("Sem memória RAM. Abandonando programa!");
+//     exit(1);
+//   }
+//   return pagina;
+// }
+
+// BTPAGE *preencherPaginaArvoreB(int nivel, int contadorDeOcupacao, CHAVE chaves[], int Pfinal) {
+//   BTPAGE* pagina = criarPaginaArvoreB();
+//   pagina->nivel = nivel;
+//   pagina->contadorDeOcupacao = contadorDeOcupacao;
+//   for(int i = 0; i < 4; i++) {
+//     if(i < contadorDeOcupacao) {
+//       pagina->chaves[i] = chaves[i];
+//       pagina->P[i] = chaves[i].Pp;
+//     } else {
+//       pagina->chaves[i].C = -1;
+//       pagina->chaves[i].Pr = -1;
+//       pagina->P[i] = -1;
+//     }
+//     pagina->P[contadorDeOcupacao] = Pfinal;
+//   }
+//   return pagina;
+// }
+
+// void removerPaginaArvoreB(BTPAGE** pagina) {
+//   free(*pagina);
+//   *pagina = NULL;
+// }
+
+// int arvoreBObterNivel(BTPAGE* pagina) {
+//   if(pagina != NULL) {
+//     return pagina->nivel;
+//   }
+//   return -1;
+// }
+
+// int arvoreBObterOcupacao(BTPAGE* pagina) {
+//   if(pagina != NULL) {
+//     return pagina->contadorDeOcupacao;
+//   }
+//   return -1;
+// }
+
+// int *arvoreBObterP(BTPAGE* pagina) {
+//   if(pagina != NULL) {
+//     return pagina->P;
+//   }
+//   return NULL;
+// }
+
+// CHAVE_B *arvoreBObterChaves(BTPAGE* pagina) {
+//   if(pagina != NULL) {
+//     return pagina->chaves;
+//   }
+//   return NULL;
+// }
+
+// void acessarPaginaArvoreB(FILE *indiceBinario, BTPAGE* pagAux, int32_t RRN) {
+//   fseek(indiceBinario, (RRN+1)*76, SEEK_SET);
+//   fread(&pagAux->nivel, sizeof(int32_t), 1, indiceBinario);
+//   fread(&pagAux->contadorDeOcupacao, sizeof(int32_t), 1, indiceBinario);
+//   for(int i = 0; i < 4; i++) {
+//     fread(&pagAux->P[i], sizeof(int32_t), 1, indiceBinario);
+//     fread(&pagAux->chaves[i].C, sizeof(int32_t), 1, indiceBinario);
+//     fread(&pagAux->chaves[i].Pr, sizeof(int64_t), 1, indiceBinario);
+//   }
+//   fread(&pagAux->P[4], sizeof(int32_t), 1, indiceBinario);
+// }
+
+// void imprimirPaginaArvoreB(BTPAGE *pagina) {
+//   int i;
+//   printf("\nPAGINA:\nNivel: %d\n", pagina->nivel);
+//   printf("Contador de Ocupacao: %d\n", pagina->contadorDeOcupacao);
+//   for(i = 0; i < pagina->contadorDeOcupacao; i++) {
+//     printf("\nPonteiro %d p/ Página: %d\n", i+1, pagina->P[i]);
+//     printf("\n--Chave %d: %d\n", i+1, pagina->chaves[i].C);
+//     printf("--Ponteiro %d p/ Arquivo: %ld\n", i+1, pagina->chaves[i].Pr);
+//   }
+//   printf("\nPonteiro %d p/ Página: %d\n", i+1, pagina->P[i]);
+// }
+
+
+// // TABELA.C
+// FILE *abrirIndiceArvoreB(char *nomeIndice) {
+//   char indisponivel = '0';
+//   FILE *indiceBinario = fopen(nomeIndice, "rb+");
+//   if (indiceBinario == NULL) {
+//     printf("Erro ao abrir o arquivo!");
+//     exit(1);
+//   }
+//   fwrite(&indisponivel, sizeof(char), 1, indiceBinario);
+//   fseek(indiceBinario, 0, SEEK_SET);
+//   return indiceBinario;
+// }
+
+// void fecharIndiceArvoreB(FILE* indiceBinario, bool error) {
+//   if(!error) {
+//     char disponivel = '1';
+//     fseek(indiceBinario, 0, SEEK_SET);
+//     fwrite(&disponivel, sizeof(char), 1, indiceBinario);
+//   }
+//   fclose(indiceBinario);
+// }
+
+// void atualizarPagina(FILE* indiceBinario, BTPAGE* pagina, int32_t RRN) {
+//   fseek(indiceBinario, 76*(RRN+1), SEEK_SET);
+//   int nivel = arvoreBObterNivel(pagina);
+//   int contadorDeOcupacao= arvoreBObterOcupacao(pagina);
+//   int campoVazio = -1;
+//   int *P = arvoreBObterP(pagina);
+//   CHAVE *chaves = arvoreBObterChaves(pagina);
   
-  if(nivel == 1) {
-    if(taxaDeOcupacao == 4) {
-      //SPLIT
-      printf("\nSPLIT!\n");
+//   fwrite(&nivel, sizeof(int32_t), 1, indiceBinario);
+//   fwrite(&contadorDeOcupacao, sizeof(int32_t), 1, indiceBinario);
+  
+//   for(int i = 0; i < 5; i++) {
+//     printf("\n%d\n", P[i]);
+//   }
+  
+//   for(int i = 0; i < 4; i++) {
+//     if (i < contadorDeOcupacao) {
+//       fwrite(&P[i], sizeof(int32_t), 1, indiceBinario);
+//       fwrite(&chaves[i].C, sizeof(int32_t), 1, indiceBinario);
+//       fwrite(&chaves[i].Pr, sizeof(int64_t), 1, indiceBinario);
+//     } 
+//     if(i == contadorDeOcupacao) {
+//       fwrite(&P[contadorDeOcupacao], sizeof(int32_t), 1, indiceBinario);
+//       fwrite(&campoVazio, sizeof(int32_t), 1, indiceBinario);
+//       fwrite(&campoVazio, sizeof(int64_t), 1, indiceBinario);
+//     }
+//     if(i > contadorDeOcupacao) {
+//       fwrite(&campoVazio, sizeof(int32_t), 1, indiceBinario);
+//       fwrite(&campoVazio, sizeof(int32_t), 1, indiceBinario);
+//       fwrite(&campoVazio, sizeof(int64_t), 1, indiceBinario);
+//     } 
+//   }
+// }
+
+// int novaPagina(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int32_t nivel, int32_t byteOffsetAtual) {
+//   CHAVE* chaves;
+//   BTPAGE* pagina = preencherPaginaArvoreB(nivel, 0, NULL, 0);
+//   fseek(indiceBinario, 76*(cabecalho->proxRRN+1), SEEK_SET);
+  
+//   fseek(indiceBinario, byteOffsetAtual, SEEK_SET);
+//   char status;
+//   int noRaiz;
+//   int proxRRN;
+//   int nroNiveis;
+//   int nroChaves;
+// }
+
+// int64_t ArvoreBBuscar(FILE* indiceBinario, int RRN, int64_t chave) {
+//   if(RRN == -1) {
+//     return RRN;
+//   }
+//   int i;
+//   int32_t nivel;
+//   int32_t taxaDeOcupacao;
+//   int32_t ponteiroPagina;
+//   int32_t chaveComp;
+//   int64_t ponteiroArquivo;
+//   void* lixo = NULL;
+
+//   fseek(indiceBinario, (RRN+1)*76, SEEK_SET);
+//   fread(&nivel, sizeof(int32_t), 1, indiceBinario);
+//   fread(&taxaDeOcupacao, sizeof(int32_t), 1, indiceBinario);
+  
+//   for(i = 0; i < taxaDeOcupacao; i++) {
+    
+//     fread(&ponteiroPagina, sizeof(int32_t), 1, indiceBinario);
+//     fread(&chaveComp, sizeof(int32_t), 1, indiceBinario);
+//     fread(&ponteiroArquivo, sizeof(int64_t), 1, indiceBinario);
+    
+//     if(chave < chaveComp) {
+//       return ArvoreBBuscar(indiceBinario, ponteiroPagina, chave);
+//     }
+//     if(chave == chaveComp) {
+//       return ponteiroArquivo;
+//     }
+//   }
+  
+//   fread(&ponteiroPagina, sizeof(int32_t), 1, indiceBinario);
+//   return ArvoreBBuscar(indiceBinario, ponteiroPagina, chave); 
+// }
+
+// void ordenarChaves(CHAVE chaves[], int size) {
+//     for (int i = 0; i < size - 1; i++) {
+//         for (int j = 0; j < size - i - 1; j++) {
+//             if (chaves[j].C > chaves[j + 1].C) {
+//                 CHAVE temp = chaves[j];
+//                 chaves[j] = chaves[j + 1];
+//                 chaves[j + 1] = temp;
+//             }
+//         }
+//     }
+// }
+
+// // void shiftPagina(FILE* indiceBinario, int RRN, CHAVE chave, int32_t nivel, int32_t taxaDeOcupacao) { 
+// //   int paginaInexistente = -1;
+// //   int novaTaxaDeOcupacao = taxaDeOcupacao+1;
+// //   CHAVE chavesArquivadas[novaTaxaDeOcupacao];
+// //   int ultimoPonteiroPagina;
+  
+// //   for(int i = 0; i < novaTaxaDeOcupacao; i++) {
+// //     fread(&chavesArquivadas[i].Pp, sizeof(int32_t), 1, indiceBinario);
+// //     fread(&chavesArquivadas[i].C, sizeof(int32_t), 1, indiceBinario);
+// //     fread(&chavesArquivadas[i].Pr, sizeof(int64_t), 1, indiceBinario);
+// //   }
+// //   fread(&ultimoPonteiroPagina, sizeof(int64_t), 1, indiceBinario);
+// //   chavesArquivadas[taxaDeOcupacao] = chave;
+
+// //   ordenarChaves(chavesArquivadas, novaTaxaDeOcupacao);
+
+// //   BTPAGE* pag = preencherPaginaArvoreB(nivel, novaTaxaDeOcupacao, chavesArquivadas, ultimoPonteiroPagina);
+// //   atualizarPagina(indiceBinario, pag, RRN);
+// //   removerPaginaArvoreB(&pag);
+
+// // }
+
+// // CHAVE_B* split1para2(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave, int32_t nivel) {
+// //   int paginaInexistente = -1;
+// //   CHAVE_B chavesArquivadas[4];
+// //   int ultimoPonteiroPagina;
+  
+// //   for(int i = 0; i < 4; i++) {
+// //     fread(&chavesArquivadas[i].Pp, sizeof(int32_t), 1, indiceBinario);
+// //     fread(&chavesArquivadas[i].C, sizeof(int32_t), 1, indiceBinario);
+// //     fread(&chavesArquivadas[i].Pr, sizeof(int64_t), 1, indiceBinario);
+// //   }
+  
+// // }
+
+// // CHAVE* split(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave, int32_t nivel) {
+// //   if(nivel == 1 || nivel == cabecalho->nroNiveis) {
+// //     return split1para2(indiceBinario, cabecalho, RRN, chave, nivel);
+// //   } else {
+    
+// //   }
+  
+  
+  
+// //   for(int i = 0; i < 4; i++) {
+// //     fread(&chavesArquivadas[i].Pp, sizeof(int32_t), 1, indiceBinario);
+// //     fread(&chavesArquivadas[i].C, sizeof(int32_t), 1, indiceBinario);
+// //     fread(&chavesArquivadas[i].Pr, sizeof(int64_t), 1, indiceBinario);
+// //   }
+  
+// // }
+
+// CHAVE_B* inserirArvoreB(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave) {
+//   int32_t nivel;
+//   int32_t taxaDeOcupacao;
+//   int32_t ponteiroPagina;
+//   int32_t chaveComp;
+//   int64_t ponteiroArquivo;
+//   int i;
+//   void* lixo = NULL;
+
+//   fseek(indiceBinario, (RRN+1)*76, SEEK_SET);
+//   fread(&nivel, sizeof(int32_t), 1, indiceBinario);
+//   fread(&taxaDeOcupacao, sizeof(int32_t), 1, indiceBinario);
+  
+//   if(nivel == 1) {
+//     if(taxaDeOcupacao == 4) {
+//       //SPLIT
+//       printf("\nSPLIT!\n");
       
-    } else {
-      //SHIFT
-      printf("\nSHIFT!\n");
-      shiftPagina(indiceBinario, RRN, chave, 1, taxaDeOcupacao);
-      return NULL;
-    }
-  } else {
-    for(i = 0; i < taxaDeOcupacao; i++) {
+//     } else {
+//       //SHIFT
+//       printf("\nSHIFT!\n");
+//       shiftPagina(indiceBinario, RRN, chave, 1, taxaDeOcupacao);
+//       return NULL;
+//     }
+//   } else {
+//     for(i = 0; i < taxaDeOcupacao; i++) {
     
-      fread(&ponteiroPagina, sizeof(int32_t), 1, indiceBinario);
-      fread(&chaveComp, sizeof(int32_t), 1, indiceBinario);
-      fread(&ponteiroArquivo, sizeof(int64_t), 1, indiceBinario);
+//       fread(&ponteiroPagina, sizeof(int32_t), 1, indiceBinario);
+//       fread(&chaveComp, sizeof(int32_t), 1, indiceBinario);
+//       fread(&ponteiroArquivo, sizeof(int64_t), 1, indiceBinario);
       
-      if(chave.C < chaveComp) {
-        return inserirArvoreB(indiceBinario, cabecalho, ponteiroPagina, chave);
-      }
-      if(chave.C == chaveComp) {
-        //REGISTRO JÁ EXISTE
-        printf("ERRO! Registro já existe.");
-      }
-    }
+//       if(chave.C < chaveComp) {
+//         return inserirArvoreB(indiceBinario, cabecalho, ponteiroPagina, chave);
+//       }
+//       if(chave.C == chaveComp) {
+//         //REGISTRO JÁ EXISTE
+//         printf("ERRO! Registro já existe.");
+//       }
+//     }
     
-    fread(&ponteiroPagina, sizeof(int32_t), 1, indiceBinario);
-    return inserirArvoreB(indiceBinario, cabecalho, ponteiroPagina, chave);
+//     fread(&ponteiroPagina, sizeof(int32_t), 1, indiceBinario);
+//     return inserirArvoreB(indiceBinario, cabecalho, ponteiroPagina, chave);
     
-  }
-  return NULL;
-}
+//   }
+//   return NULL;
+// }

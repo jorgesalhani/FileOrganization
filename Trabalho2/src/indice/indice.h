@@ -10,7 +10,6 @@
   #include "../dados/dados.h"
 
   typedef struct cabecalho_indice_ CABECALHO_INDICE;
-  typedef struct chave_arvore_B_estrela_ CHAVE;
   typedef struct cabecalho_arvore_B_estrela_ CABECALHOBESTRELA;
   typedef struct pagina_arvore_B_estrela_ BTPAGE;
 
@@ -81,29 +80,5 @@
   */
   bool indiceBuscaPorIndiceArvoreB(ENTRADA* entrada, ARGS* args, void (*ftnPorBusca)());
 
-  CABECALHOBESTRELA *ArvoreBCriarCabecalho();
-  void imprimirCabecalhoArvoreB(CABECALHOBESTRELA *cabecalho);
-  void removerCabecalhoArvoreB(CABECALHOBESTRELA** cabecalho);
-  CABECALHOBESTRELA *lerCabecalhoArvoreB(FILE *indiceBinario);
-  BTPAGE *criarPaginaArvoreB();
-  BTPAGE *preencherPaginaArvoreB(int nivel, int contadorDeOcupacao, CHAVE chaves[], int Pfinal);
-  void removerPaginaArvoreB(BTPAGE** pagina);
-  int arvoreBObterNivel(BTPAGE* pagina);
-  int arvoreBObterOcupacao(BTPAGE* pagina);
-  int *arvoreBObterP(BTPAGE* pagina);
-  CHAVE *arvoreBObterChaves(BTPAGE* pagina);
-  void acessarPaginaArvoreB(FILE *indiceBinario, BTPAGE* pagAux, int32_t RRN);
-  void imprimirPaginaArvoreB(BTPAGE *pagina) ;
-  FILE *abrirIndiceArvoreB(char *nomeIndice);
-
-  void fecharIndiceArvoreB(FILE* indiceBinario, bool error);
-  void atualizarPagina(FILE* indiceBinario, BTPAGE* pagina, int32_t RRN);
-  int novaPagina(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int32_t nivel, int32_t byteOffsetAtual) ;
-  int64_t ArvoreBBuscar(FILE* indiceBinario, int RRN, int64_t chave);
-  void ordenarChaves(CHAVE chaves[], int size);
-  void shiftPagina(FILE* indiceBinario, int RRN, CHAVE chave, int32_t nivel, int32_t taxaDeOcupacao);
-  CHAVE* split1para2(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave, int32_t nivel);
-  CHAVE* split(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave, int32_t nivel);
-  CHAVE* inserirArvoreB(FILE* indiceBinario, CABECALHOBESTRELA* cabecalho, int RRN, CHAVE chave);
 
 #endif
