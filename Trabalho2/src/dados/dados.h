@@ -50,6 +50,7 @@
     int idProxRamo;
     NO* proxRamoArvore;
     int64_t bOffPrimOcorArqIndice;
+    bool erroProcessamento;
   };
 
   bool dadosCriarArquivoBinario(ENTRADA* entrada);

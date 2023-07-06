@@ -23,9 +23,10 @@ int main() {
   } else 
   if (funcionalidade == 5) {
     sucesso = dadosBuscarPorCampos(entrada, dadosRemoverRegistroLogicamente);
-    if (!sucesso) return -1;
-    binarioNaTela(entradaObterArquivoEntrada(entrada));
-    indiceCriarArquivoBinario(entrada);
+    if (sucesso) {
+      binarioNaTela(entradaObterArquivoEntrada(entrada));
+      indiceCriarArquivoBinario(entrada);
+    }
   } else 
   if (funcionalidade == 6) {
     sucesso = dadosInserirNovosRegistros(entrada);

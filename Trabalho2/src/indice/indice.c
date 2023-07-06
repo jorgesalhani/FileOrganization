@@ -293,12 +293,14 @@ bool indiceBuscaBinariaArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPo
   if (cabecalhoIndice->status == '0') {
     indiceCabecalhoApagar(&cabecalhoIndice);
     erroGenerico();
+    args->erroProcessamento = true;
     return false;
   }
 
   if (cabecalhoIndice->qtdReg == 0) {
     indiceCabecalhoApagar(&cabecalhoIndice);
     erroSemRegistros();
+    args->erroProcessamento = true;
     return false;
   }
 

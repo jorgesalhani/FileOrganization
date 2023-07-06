@@ -90,9 +90,9 @@ void preencherString(char* dest, char* orig, int tamanho, bool comDelimitador) {
   }
 }
 
-void removerPreenchimento(char* dest, char* orig) {
+void removerPreenchimento(char* dest, char* orig, int tamTruncamento) {
   for (int i = 0; i < strlen(orig); i++) {
-    if (i > TAMANHO_CHAVE_BUSCA) break;
+    if (i > tamTruncamento) break;
     if (orig[i] != '$') dest[i] = orig[i];
     else break;
   }
@@ -122,6 +122,7 @@ bool dadosArmazenarRegistro(REGISTRO* registro, FILE* arquivoBinarioDados) {
   fwrite(registro->descricaoCrime, strlen(registro->descricaoCrime), 1, arquivoBinarioDados);
   if (!registro->atualizadoInplace) {
     fwrite(&registro->delimitadorCampos, sizeof(char), 1, arquivoBinarioDados);    
+    registro->descricaoCrime[strlen(registro->descricaoCrime)] = '|';
   }
   
   fwrite(&registro->delimitador, sizeof(char), 1, arquivoBinarioDados);
@@ -456,6 +457,7 @@ ARGS* argsInit() {
   args->proxRamoArvore = NULL;
   args->bOffPrimOcorArqIndice = -1;
   args->cabecalho = NULL;
+  args->erroProcessamento = false;
   return args;
 }
 
@@ -496,15 +498,11 @@ void dadosEncontrar(ARGS* args, void (*ftnPorRegistro)()) {
     if (strcmp(tipoCampo, "string") == 0) {
       char delimQuote[] = "\"";
       linhaSplit = strtok(NULL, delimQuote);
-      char valorTrunc[TAMANHO_CHAVE_BUSCA+1] = "";
-      strcpy(valorTrunc, linhaSplit);
-      valorTrunc[TAMANHO_CHAVE_BUSCA] = '\0';
-
-      char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
       char* valorReg = (char*) valorRegistro;
-      removerPreenchimento(valorLimpo, valorReg);
-      valorLimpo[TAMANHO_CHAVE_BUSCA] = '\0';
-      if (strcmp(valorLimpo, valorTrunc) != 0) match = false;
+
+      char valorLimpo[TAM_MAX_STR] = "";
+      removerPreenchimento(valorLimpo, valorReg, TAM_MAX_STR);
+      if (strcmp(valorLimpo, linhaSplit) != 0) match = false;
 
     } else {
       linhaSplit = strtok(NULL, delimEspaco);
@@ -521,21 +519,16 @@ void dadosEncontrar(ARGS* args, void (*ftnPorRegistro)()) {
 }
 
 bool dadosBuscaSequencialArquivoBinario(ENTRADA* entrada, ARGS* args, void (*ftnPorRegistro)()) {
-
-  dadosLerCabecalhoDoArquivoBinario(args->arquivoDadosBin, args->cabecalho);
+  if (entrada == NULL || args == NULL || ftnPorRegistro == NULL) return false;
 
   int32_t nroRegArq = args->cabecalho->nroRegArq;
   int64_t byteOffset = args->cabecalho->tamanhoRegistro;
-
-  if (args->cabecalho->status == '0') {
-    erroGenerico();
-    return false;
-  }
 
   if (args->cabecalho->nroRegArq == 0) {
     erroSemRegistros();
     return false;
   }
+
 
   resetLeituraDeArquivo(args->arquivoDadosBin, args->cabecalho->tamanhoRegistro);
 
@@ -976,17 +969,14 @@ int dadosCompararRegistroComChaveBusca(ARGS* args) {
     if (strcmp(tipoCampo, "string") == 0) {
       char delimQuote[] = "\"";
       linhaSplit = strtok(NULL, delimQuote);
-      char valorTrunc[TAMANHO_CHAVE_BUSCA+1] = "";
-      strcpy(valorTrunc, linhaSplit);
-      valorTrunc[TAMANHO_CHAVE_BUSCA] = '\0';
 
-      char valorLimpo[TAMANHO_CHAVE_BUSCA+1] = "";
       char* valorReg = (char*) valorRegistro;
-      removerPreenchimento(valorLimpo, valorReg);
-      valorLimpo[TAMANHO_CHAVE_BUSCA] = '\0';
+      int tamanhoCampo = strlen(valorReg);
 
+      char valorLimpo[TAM_MAX_STR] = "";
+      removerPreenchimento(valorLimpo, valorReg, TAM_MAX_STR);
       if (strcmp(campo, entradaObterCampoIndexado(args->entrada)) != 0) continue;
-      return (int)strcmp(valorTrunc, valorLimpo);
+      return (int)strcmp(linhaSplit, valorLimpo);
       
 
     } else {
@@ -1008,27 +998,36 @@ bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
 
   int nroCamposBuscados = entradaObterNumeroCamposBuscados(entrada);
   
-  ARGS* args = argsInit();
-  args->entrada = entrada;
-
-  CABECALHO* cabecalho = dadosCabecalhoInit();
-  args->cabecalho = cabecalho;
-
   char* arquivoEntrada = entradaObterArquivoEntrada(entrada);
   FILE* arquivoBinarioDados = fopen(arquivoEntrada, MODO_LEITURA_ARQUIVO);
   if (arquivoBinarioDados == NULL) {
     erroGenerico();
     return false;
   };
-  args->arquivoDadosBin = arquivoBinarioDados;
 
   char* arquivoIndice = entradaObterArquivoIndice(entrada);
   FILE* arquivoBinarioIndice = fopen(arquivoIndice, MODO_LEITURA_ARQUIVO);
   if (arquivoBinarioIndice == NULL) {
+    fclose(arquivoBinarioDados);
     erroGenerico();
     return false;
   };
+  
+  ARGS* args = argsInit();
+  args->entrada = entrada;
+
+  CABECALHO* cabecalho = dadosCabecalhoInit();
+  args->cabecalho = cabecalho;
+  
   args->arquivoIndiceBin = arquivoBinarioIndice;
+  args->arquivoDadosBin = arquivoBinarioDados;
+
+  dadosLerCabecalhoDoArquivoBinario(args->arquivoDadosBin, args->cabecalho);
+  
+  if (args->cabecalho->status == '0') {
+    erroGenerico();
+    return false;
+  }
 
   bool busca = false;
 
@@ -1041,10 +1040,12 @@ bool dadosBuscarPorCampos(ENTRADA* entrada, void (*ftnPorBusca)) {
     bool buscaIndexada = verificarSeCriterioDeBuscaIndexado(linhaDeBusca, campoIndexado);
     if (!buscaIndexada) {
       busca = dadosBuscaSequencialArquivoBinario(entrada, args, ftnPorBusca);
-      if (!busca) break;
+      if (args->erroProcessamento) break;
+      if (!busca) continue;
     } else {
       busca = indiceBuscaBinariaArquivoBinario(entrada, args, ftnPorBusca);
-      if (!busca) break;
+      if (args->erroProcessamento) break;
+      if (!busca) continue;
     }
 
     if (!args->regEncontradoEmBusca && 
