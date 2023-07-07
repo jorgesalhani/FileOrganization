@@ -34,4 +34,4 @@ clean:
 	rm *.o
 
 run:
-	./exec
+	valgrind ./exec
