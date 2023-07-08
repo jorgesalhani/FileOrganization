@@ -73,6 +73,7 @@ bool indiceArmazenarCabecalho(CABECALHO_INDICE* cabecalhoIndice, FILE* arquivoBi
   resetLeituraDeArquivo(arquivoBinarioIndice, 0);
   fwrite(&cabecalhoIndice->status, sizeof(char), 1, arquivoBinarioIndice);
   fwrite(&cabecalhoIndice->qtdReg, sizeof(int32_t), 1, arquivoBinarioIndice);
+  fflush(arquivoBinarioIndice);
   return true;
 }
 
@@ -96,6 +97,7 @@ void indiceArmazenarRegistro(ARGS* args, NO* raiz) {
   }
 
   fwrite(&registroIndice->byteOffset, sizeof(int64_t), 1, args->arquivoIndiceBin);
+  fflush(args->arquivoIndiceBin);
   args->registro = raiz->registro;
   indiceRegistroApagar(&registroIndice, tipoDado);
   return;
